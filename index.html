@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Dirio - Ultimate Shooter</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #000; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; touch-action: none; font-family: 'Courier New', Courier, monospace;
+        }
+        #game-container {
+            position: relative; width: 100%; max-width: 1024px; aspect-ratio: 256 / 240;
+            background-color: #5c94fc; overflow: hidden;
+        }
+        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+        
+        /* 手机端按键大幅上调、放大，释放大拇指 */
+        #mobile-controls {
+            position: absolute; bottom: 20%; left: 0; width: 100%; height: 50%;
+            display: flex; justify-content: space-between; pointer-events: none; z-index: 10;
+        }
+        .d-pad, .action-buttons { display: flex; pointer-events: auto; margin: 0 4%; gap: 18px; }
+        .d-pad { align-items: flex-end; padding-bottom: 5%; }
+        .action-buttons { align-items: flex-end; padding-bottom: 5%; }
+        .btn {
+            width: min(25vw, 100px); height: min(25vw, 100px); 
+            background: rgba(255, 255, 255, 0.3); border: 4px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            color: rgba(255, 255, 255, 1); font-weight: bold; font-size: min(6vw, 26px); line-height: 1.1;
+            user-select: none; -webkit-user-select: none; box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+        }
+        .btn small { font-size: 0.45em; display: block; font-weight: normal; margin-top: 3px; color: #ffeb3b; text-shadow: 1px 1px 0 #000; }
+        .btn.pressed { background: rgba(255, 255, 255, 0.7); transform: scale(0.92); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
+        #ui-layer {
+            position: absolute; top: 5px; left: 5px; right: 5px; color: white;
+            font-weight: bold; display: flex; justify-content: space-between;
+            font-size: clamp(10px, 3vw, 24px); text-shadow: 2px 2px 0 #000; pointer-events: none;
+        }
+
+        @media (hover: hover) and (pointer: fine) { #mobile-controls { display: none; } }
+        
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 20; cursor: pointer; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="256" height="240"></canvas>
+    
+    <div id="ui-layer">
+        <div>DIRIO<br><span id="score">000000</span></div>
+        <div>COINS<br>x<span id="coins">00</span></div>
+        <div>WORLD<br>Endless</div>
+        <div>SURVIVE<br><span id="time">000</span></div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="d-pad">
+            <div class="btn" id="btn-left">◀</div>
+            <div class="btn" id="btn-down">▼<br><small>钻管</small></div>
+            <div class="btn" id="btn-right">▶</div>
+        </div>
+        <div class="action-buttons">
+            <div class="btn" id="btn-b">B<br><small>跑/射击</small></div>
+            <div class="btn" id="btn-a">A<br><small>跳跃</small></div>
+        </div>
+    </div>
+    
+    <div id="start-screen">
+        <h1 style="color: #ffcccc; text-shadow: 3px 3px 0 #f00; font-size: 2em;">SUPER DIRIO: SHOOTER</h1>
+        <p>点击或按空格键开始</p>
+        <p style="font-size: 0.8em; margin-top: 20px; line-height: 1.5;">
+            键盘：WASD移动，K/X/空格跳跃，J/Z加速/开火<br>
+            触屏：使用底部超大虚拟按键操作
+        </p>
+        <p style="font-size: 0.85em; color: #ffeb3b; font-weight: bold; margin-top: 15px;">向下钻入金色管道，进行 1V1 枪战决斗！</p>
+    </div>
+</div>
+
+<script>
+/**
+ * 引擎常量与全局状态 (实现全局积分永久累积)
+ */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const TILE_SIZE = 16;
+const GRAVITY = 0.25;         
+const MAX_FALL_SPEED = 4.5;   
+const JUMP_SPEED = -4.8;      
+const MOVE_ACCEL = 0.04;      
+const AIR_ACCEL = 0.03;       
+const MOVE_FRICTION = 0.88;   
+const AIR_FRICTION = 0.95;    
+const MAX_WALK_SPEED = 1.6;   
+const MAX_RUN_SPEED = 2.8;    
+
+let globalScore = 0;
+let globalCoins = 0;
+let globalTime = 0;
+
+let audioCtx = null;
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+function playSound(type) {
+    if (!audioCtx) return;
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        
+        if (type === 'jump') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'coin') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now);
+            osc.frequency.setValueAtTime(1500, now + 0.05);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'stomp') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'bump') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'powerup') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(800, now + 0.5);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        } else if (type === 'pipe') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
+            osc.frequency.setValueAtTime(300, now + 0.1); osc.frequency.setValueAtTime(200, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        } else if (type === 'shoot') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'death') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 1);
+            osc.start(now); osc.stop(now + 1);
+        } else if (type === 'kick') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'star') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+            osc.frequency.linearRampToValueAtTime(1200, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
+        }
+    } catch(e){}
+}
+
+const C = {
+    'T': 'transparent', 'R': '#e52521', 'B': '#6b8c42', 'b': '#b53120', 'S': '#f0d0b0',
+    'O': '#c84c0c', 'o': '#000000', 'W': '#ffffff', 'G': '#00a800', 'g': '#005800', 
+    'C': '#f8d820', 'M': '#e83000', 'D': '#444444', 'Y': '#f8d820', 'y': '#c88c00', 'w': '#ffffe0'
+};
+
+function buildSprite(ascii, w, h) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const xCtx = c.getContext('2d'); const lines = ascii.trim().split('\n');
+    for (let y = 0; y < h; y++) {
+        let row = lines[y] ? lines[y].trim() : '';
+        for (let x = 0; x < w; x++) {
+            let char = row[x] || 'T';
+            if (char !== 'T' && char !== '.') { xCtx.fillStyle = C[char]; xCtx.fillRect(x, y, 1, 1); }
+        }
+    }
+    return c;
+}
+
+const Sprites = {
+    marioIdle: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n...RTRRR........\n..RRTRRR........\n.RRRTRRRR.......\n.SSRTRRSS.......\n.SSSRRSSS.......\n..bb...bb.......\n.bbb...bbb......`, 16, 16),
+    marioRun1: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n....RTR.........\n...RRTRRR.......\n..RRRTRRRR......\n..SSRTRRSS......\n..SSRRRSS.......\n...b...bbb......\n..bb............`, 16, 16),
+    marioRun2: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n...RTRRRR.......\n..RRRTRRR.......\n.RRRRTRRRR......\n.SSSRTRRSS......\n.SSSRRRSS.......\n...bb..bb.......\n..bbb..bbb......`, 16, 16),
+    marioRun3: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n...RTRRR........\n..RRTRRR........\n.RRRTRRRR.......\n.SSRTRRSS.......\n.SSSRRSSS.......\n..bbb...........\n...bb...........`, 16, 16),
+    marioSkid: buildSprite(`................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n....RTRRR.......\n...RRTRRRR......\n..RRRTRRRR......\n.SSSRTRRSS......\n.SSSRRRSS.......\n...b............\n..bbb...........\n...bb...........`, 16, 16),
+    marioJump: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n...RTRRRR.......\n..RRRTRRRR......\n.RRRRTRRRR......\n.SSRTRRSSS......\n.SSSRRRS........\n..bb..bb........\n.bbb..bbb.......`, 16, 16),
+    marioDead: buildSprite(`................\n................\n....RRRRR.......\n...RRRRRRRRR....\n...bbbSbbS......\n..bSbSSSbooo....\n..bSbSbbSbbb....\n..bbSbbbbSoo....\n....bbbbbbS.....\n...RTRRR........\n..RRTRRR........\n.RRRTRRRR.......\n.SSRTRRSS.......\n.SSSRRSSS.......\n..bb...bb.......\n.bbb...bbb......`, 16, 16),
+    brick: buildSprite(`OOOOOOOOOOOOOOOO\nOooOoooOooOoooOo\nOOOOOOOOOOOOOOOO\nooOoooOooOoooOoo\nOOOOOOOOOOOOOOOO\nOooOoooOooOoooOo\nOOOOOOOOOOOOOOOO\nooOoooOooOoooOoo\nOOOOOOOOOOOOOOOO\nOooOoooOooOoooOo\nOOOOOOOOOOOOOOOO\nooOoooOooOoooOoo\nOOOOOOOOOOOOOOOO\nOooOoooOooOoooOo\nOOOOOOOOOOOOOOOO\nooOoooOooOoooOoo`, 16, 16),
+    qBlock: buildSprite(`OOOOOOOOOOOOOOOO\nOooooooooooooooO\nOoCOCOCOCOCOCOoO\nOoOCCCCCCCCCCooO\nOoOCCCCooCCCCooO\nOoOCCCooooCCCooO\nOoOCCCooooCCCooO\nOoOCCCCooCCCCooO\nOoOCCCCCCooCCooO\nOoOCCCCCCooCCooO\nOoOCCCCCCCCCCooO\nOoOCCCCCCooCCooO\nOoOCCCCCCooCCooO\nOoOCCCCCCCCCCooO\nOoOooooooooooooO\nOOOOOOOOOOOOOOOO`, 16, 16),
+    usedBlock: buildSprite(`OooooooooooooooO\noOOOOOOOOOOOOOOo\noOooooooooooooOo\noOoOOOOOOOOOOoOo\noOoOooooooooOoOo\noOoOoOOOOOOoOoOo\noOoOoOooooOoOoOo\noOoOoOoOOoOoOoOo\noOoOoOoOOoOoOoOo\noOoOoOooooOoOoOo\noOoOoOOOOOOoOoOo\noOoOooooooooOoOo\noOoOOOOOOOOOOoOo\noOooooooooooooOo\noOOOOOOOOOOOOOOo\nOooooooooooooooO`, 16, 16),
+    ground: buildSprite(`OOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO\nooOooOooOooOooOo\nooOooOooOooOooOo\nOOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO\nooOooOooOooOooOo\nooOooOooOooOooOo\nOOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO`, 16, 16),
+    pipeTL: buildSprite(`oooooooooooooooo\noGGGGGGGGGGGGGGG\noGWWGGGGGGGGGGgG\noGWGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGWWGGGGGGGGGGgG\noGWGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noooooooooooooooo`, 16, 16),
+    pipeTR: buildSprite(`oooooooooooooooo\nGGGGGGGGGGGGGGGo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\noooooooooooooooo`, 16, 16),
+    pipeL: buildSprite(`..oooooooooooooo\n..oGGGGGGGGGGGGG\n..oGWWGGGGGGGGgG\n..oGWGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG`, 16, 16),
+    pipeR: buildSprite(`oooooooooooooo..\nGGGGGGGGGGGGGo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..`, 16, 16),
+    gPipeTL: buildSprite(`oooooooooooooooo\noYYYYYYYYYYYYYYY\noYwwYYYYYYYYYYyY\noYwYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYwwYYYYYYYYYYyY\noYwYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noooooooooooooooo`, 16, 16),
+    gPipeTR: buildSprite(`oooooooooooooooo\nYYYYYYYYYYYYYYYo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\nYYYYYYYYYYYYYYyo\noooooooooooooooo`, 16, 16),
+    gPipeL: buildSprite(`..oooooooooooooo\n..oYYYYYYYYYYYYY\n..oYwwYYYYYYYYyY\n..oYwYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY\n..oYYYYYYYYYYYyY`, 16, 16),
+    gPipeR: buildSprite(`oooooooooooooo..\nYYYYYYYYYYYYYo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..\nYYYYYYYYYYYYyo..`, 16, 16),
+    cloud: buildSprite(`................\n...WWWWW........\n.WWWWWWWWW......\nWWWWWWWWWWWW....\nWWWWWWWWWWWW....\n................\n................\n................\n................\n................\n................\n................\n................\n................\n................\n................`, 16, 16),
+    bossTurtle: buildSprite(`................\n...GGGGGG.......\n..GGGGGGGG......\n..GGWWGGW.......\n..GGWWGGW.......\n..GGGGGGGG......\n...GGGGGG.......\n...YYYYYY.......\n..YYYGGYYY......\n.YYYYGGYYYY.....\n.Y.YYGGYY.Y.....\n...YYYYYY.......\n...YYYYYY.......\n...YY..YY.......\n..YY....YY......\n.YY......YY.....`, 16, 16),
+    mushroom: buildSprite(`................\n................\n................\n.......MM.......\n.....MMMMMM.....\n....MMWWMMWM....\n...MWWWWMWMWM...\n..MMWWWWMMWMMM..\n..MMMWWMMMMMMM..\n..MMMMMMMMMMMM..\n...MMMMMMMMMM...\n....WWWWWWWW....\n....WWooWWoo....\n....WWWWWWWW....\n....WWWWWWWW....\n.....WWWWWW.....`, 16, 16),
+    coin: buildSprite(`......CCCC......\n....CCWWWWCC....\n...CWWWWWWoWC...\n..CWWWCCCCooWC..\n..CWWCCCCCCoWC..\n..CWWCCCCCCoWC..\n..CWWCCCCCCoWC..\n..CWWCCCCCCoWC..\n..CWWCCCCCCoWC..\n..CWWCCCCCCoWC..\n..CWWWCCCCooWC..\n...CWWWWWWoWC...\n....CCWWWWCC....\n......CCCC......\n................\n................`, 16, 16),
+    goomba1: buildSprite(`................\n................\n................\n.......oo.......\n......oooo......\n.....oooooo.....\n....ooWooWoo....\n...ooWWooWWoo...\n..ooWooooooWoo..\n.ooWooooooooWoo.\n.oooooooooooooo.\n.oooooooooooooo.\n..S...SSSS...S..\n.SSS.SSSSSS.SSS.\n.SSS........SSS.\n..S..........S..`, 16, 16),
+    goomba2: buildSprite(`................\n................\n................\n.......oo.......\n......oooo......\n.....oooooo.....\n....ooWooWoo....\n...ooWWooWWoo...\n..ooWooooooWoo..\n.ooWooooooooWoo.\n.oooooooooooooo.\n.oooooooooooooo.\n..S...SSSS...S..\n...S.SSSSSS.S...\n...SS......SS...\n....S......S....`, 16, 16),
+    goombaSquished: buildSprite(`................\n................\n................\n................\n................\n................\n................\n................\n................\n.......oo.......\n......oooo......\n.....oooooo.....\n....ooWooWoo....\n...ooWWooWWoo...\n..ooWooooooWoo..\n.ooWooooooooWoo.`, 16, 16),
+    bird1: buildSprite(`................\n......DD........\n......DDD.......\n.....DDDD.......\n....DDDDD.......\n...DDDDDD..D....\n.DDDDDDDDDDDD...\n...DDDDDD.......\n...DD...........\n................\n................\n................\n................\n................\n................\n................`, 16, 16),
+    bird2: buildSprite(`................\n................\n................\n....DDDDD.......\n...DDDDDD..D....\n.DDDDDDDDDDDD...\n...DDDDDDDD.....\n....DD..DD......\n......DD........\n................\n................\n................\n................\n................\n................\n................`, 16, 16),
+    koopa1: buildSprite(`................\n................\n......SS........\n.....SSSS.......\n....SSooS.......\n...SSSSS........\n...GGGG.........\n..GGGGGG........\n.GGGGGGGG.......\n.GGGGGGGG.SS....\n.GGGGGGGG.S.....\n..GGGGGG.SS.....\n...S..S.........\n..SS..SS........\n................\n................`, 16, 16),
+    koopa2: buildSprite(`................\n................\n......SS........\n.....SSSS.......\n....SSooS.......\n...SSSSS........\n...GGGG.........\n..GGGGGG........\n.GGGGGGGG.......\n.GGGGGGGG.SS....\n.GGGGGGGG.S.....\n..GGGGGG........\n....SS.SS.......\n...SS..SS.......\n................\n................`, 16, 16),
+    shell: buildSprite(`................\n................\n................\n................\n................\n................\n................\n...GGGG.........\n..GGGGGG........\n.GGGGGGGG.......\n.GWWGGWWG.......\n.GWWGGWWG.......\n.GGGGGGGG.......\n..GGGGGG........\n................\n................`, 16, 16),
+    star: buildSprite(`.......Y........\n......YYY.......\n.....YYYYY......\n.YYYYYYYYYYYY...\n...YYYYYYYY.....\n....YYYYYY......\n...YY....YY.....\n..YY......YY....\n................\n................\n................\n................\n................\n................\n................\n................`, 16, 16)
+};
+
+// 武器库 (4种枪械类型)
+const WEAPONS = [
+    { name: 'Pistol', speed: 6, dmg: 10, cooldown: 20, color: '#ffffff', w: 4, h: 4 },
+    { name: 'Shotgun', speed: 5, dmg: 8, cooldown: 35, color: '#ffff00', w: 3, h: 3 },
+    { name: 'Sniper', speed: 12, dmg: 25, cooldown: 45, color: '#00ffff', w: 8, h: 2 },
+    { name: 'Rocket', speed: 3, dmg: 35, cooldown: 65, color: '#ff0000', w: 6, h: 6 }
+];
+
+const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, jumpPressed: false };
+
+document.addEventListener('keydown', e => {
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = true;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = true;
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = true;
+    if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') { if (!Input.jump) Input.jumpPressed = true; Input.jump = true; }
+    if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = true;
+});
+document.addEventListener('keyup', e => {
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = false;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = false;
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = false;
+    if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') Input.jump = false;
+    if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = false;
+});
+
+function bindTouch(id, keyField, isJump=false) {
+    const el = document.getElementById(id); if(!el) return;
+    el.addEventListener('touchstart', (e) => {
+        e.preventDefault(); 
+        if(isJump && !Input[keyField]) Input.jumpPressed = true;
+        Input[keyField] = true; el.classList.add('pressed');
+    }, {passive: false});
+    el.addEventListener('touchend', (e) => {
+        e.preventDefault(); Input[keyField] = false; el.classList.remove('pressed');
+    }, {passive: false});
+}
+bindTouch('btn-left', 'left'); bindTouch('btn-right', 'right'); bindTouch('btn-down', 'down');
+bindTouch('btn-a', 'jump', true); bindTouch('btn-b', 'run');
+
+class Game {
+    constructor() {
+        this.reset();
+        this.scoreDisplay = document.getElementById('score');
+        this.coinsDisplay = document.getElementById('coins');
+        this.timeDisplay = document.getElementById('time');
+    }
+
+    reset() {
+        this.mode = 'main'; 
+        this.cameraX = 0;
+        this.frames = 0; 
+        
+        this.entities = []; this.particles = []; this.projectiles = [];
+        this.player = new Player(32, 60);
+        this.entities.push(this.player);
+        this.map = new InfiniteMap(this);
+        this.maxDist = 0;
+        this.deathTimer = 0; // 全局复活倒计时引擎
+        this.savedMainState = null;
+    }
+
+    enterMiniGame() {
+        // 保存主世界快照状态！
+        this.savedMainState = {
+            cameraX: this.cameraX,
+            playerX: this.player.x,
+            playerY: this.player.y,
+            isBig: this.player.isBig,
+            starTimer: this.player.starTimer,
+            entities: this.entities.filter(e => e.type !== 'player') // 保存场景中的怪物/道具
+        };
+
+        this.mode = 'shootout';
+        this.cameraX = 0;
+        this.player.x = 20; this.player.y = 180;
+        this.player.isBig = false; this.player.h = 16; 
+        this.player.hp = 100;
+        this.player.ammo = 15;
+        this.player.shootCooldown = 0;
+        this.player.facingRight = true;
+        this.player.gunDeck = Array.from({length:15}, () => WEAPONS[Math.floor(Math.random()*WEAPONS.length)]);
+        
+        this.boss = new BossTurtle(200, 176);
+        this.entities = [this.player, this.boss];
+        this.projectiles = [];
+        this.particles = [];
+        this.shootoutArena = new ShootoutArena(this);
+        
+        this.miniGameEnding = false;
+        this.exitTimer = 0;
+    }
+
+    exitMiniGame(win) {
+        this.mode = 'main';
+        if (win) { globalScore += 5000; globalCoins += 50; playSound('powerup'); }
+        else { playSound('pipe'); }
+        
+        // 恢复主世界快照状态！
+        let s = this.savedMainState;
+        this.cameraX = s.cameraX;
+        this.player.x = s.cameraX + canvas.width/2; // 确保不卡死，在屏幕中间
+        if (s.playerY) {
+            this.player.x = s.playerX;
+            this.player.y = s.playerY; // 原地复原
+        }
+        
+        this.player.isBig = s.isBig;
+        this.player.h = s.isBig ? 32 : 16;
+        this.player.starTimer = s.starTimer;
+        
+        this.player.vx = 0; 
+        this.player.vy = -6; // 从管子里猛地弹射出来！
+        this.player.state = 'jump';
+        this.player.isDeadState = false; 
+        this.deathTimer = 0;
+        
+        this.entities = [this.player, ...s.entities];
+        this.projectiles = [];
+        
+        this.map.updateGeneration(this.cameraX);
+        this.miniGameEnding = false;
+        this.savedMainState = null;
+    }
+
+    fireWeapon(entity, isPlayer) {
+        if (entity.ammo <= 0) return;
+        let gun = entity.gunDeck[15 - entity.ammo];
+        let dir = entity.facingRight ? 1 : -1;
+        let spawnX = entity.facingRight ? entity.x + entity.w : entity.x - gun.w;
+        let spawnY = entity.y + entity.h/2 - gun.h/2;
+        
+        if (gun.name === 'Shotgun') {
+            this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, -1.5, gun, isPlayer));
+            this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 0, gun, isPlayer));
+            this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 1.5, gun, isPlayer));
+        } else {
+            this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 0, gun, isPlayer));
+        }
+        entity.ammo--;
+        entity.shootCooldown = gun.cooldown;
+        playSound('shoot');
+    }
+
+    update() {
+        // [核心修复] 帧级死亡倒计时，绝不会卡死
+        if (this.player.isDeadState) {
+            if (this.deathTimer > 0) {
+                this.deathTimer--;
+                if (this.deathTimer <= 0) {
+                    if (this.mode === 'shootout') {
+                        this.exitMiniGame(false); // 枪战输了退回原地
+                    } else {
+                        this.reset(); // 主世界死了重开（保留全局积分）
+                    }
+                }
+            }
+        }
+
+        this.frames++; 
+        if (this.frames % 60 === 0 && this.mode === 'main') globalTime++;
+
+        let currentMap = this.mode === 'shootout' ? this.shootoutArena : this.map;
+
+        if (this.mode === 'main') {
+            this.map.updateGeneration(this.cameraX);
+            let currentDist = Math.max(0, Math.floor(this.player.x / 10));
+            if (currentDist > this.maxDist) { globalScore += (currentDist - this.maxDist); this.maxDist = currentDist; }
+        }
+
+        for (let i = this.entities.length - 1; i >= 0; i--) {
+            let e = this.entities[i]; e.update(currentMap, this.entities);
+            if (e.dead) this.entities.splice(i, 1);
+        }
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i]; p.update();
+            if (p.dead) this.particles.splice(i, 1);
+        }
+
+        if (this.mode === 'shootout') {
+            if (this.player.shootCooldown > 0) this.player.shootCooldown--;
+            if (Input.run && this.player.shootCooldown <= 0 && this.player.ammo > 0 && !this.miniGameEnding && !this.player.isDeadState) {
+                this.fireWeapon(this.player, true);
+            }
+            if (this.player.x < 16) this.player.x = 16;
+            if (this.player.x > 120) this.player.x = 120; 
+
+            if (this.boss && !this.boss.isDeadState && !this.miniGameEnding) {
+                if (this.boss.shootCooldown > 0) this.boss.shootCooldown--;
+                if (this.boss.shootCooldown <= 0 && this.boss.ammo > 0) {
+                    if (Math.random() < 0.05) this.fireWeapon(this.boss, false);
+                }
+            }
+
+            for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                let p = this.projectiles[i]; p.update();
+                if (!p.isPlayer && this.player.intersects(p) && !this.player.isDeadState) {
+                    this.player.hp -= p.weapon.dmg; this.projectiles.splice(i, 1);
+                    this.particles.push(new ScoreParticle(this.player.x, this.player.y, `-${p.weapon.dmg}`, '#ff0000'));
+                    playSound('bump'); 
+                }
+                else if (p.isPlayer && this.boss && !this.boss.isDeadState && this.boss.intersects(p)) {
+                    this.boss.hp -= p.weapon.dmg; this.projectiles.splice(i, 1);
+                    this.particles.push(new ScoreParticle(this.boss.x, this.boss.y, `-${p.weapon.dmg}`, '#ffff00'));
+                    playSound('bump'); 
+                }
+                if (p.dead) this.projectiles.splice(i, 1);
+            }
+
+            // 胜负状态判定
+            if (!this.miniGameEnding) {
+                if (this.player.hp <= 0 && !this.player.isDeadState) {
+                    this.player.die(); 
+                    this.miniGameEnding = true;
+                }
+                else if (this.boss.hp <= 0 && !this.boss.isDeadState) { 
+                    this.boss.die(); 
+                    this.miniGameEnding = true; 
+                    this.exitTimer = 120; // 延时退场
+                }
+                else if (this.player.ammo === 0 && this.boss.ammo === 0 && this.projectiles.length === 0) {
+                    this.miniGameEnding = true; this.exitTimer = 120;
+                }
+            } else {
+                if (this.boss.isDeadState && this.exitTimer > 0) {
+                    this.exitTimer--;
+                    if (this.exitTimer <= 0) this.exitMiniGame(true);
+                } else if (!this.player.isDeadState && this.exitTimer > 0) {
+                    this.exitTimer--;
+                    if (this.exitTimer <= 0) this.exitMiniGame(false);
+                }
+            }
+        } else {
+            // 平地相机
+            if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
+            if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
+            if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
+        }
+
+        this.scoreDisplay.innerText = globalScore.toString().padStart(6, '0');
+        this.coinsDisplay.innerText = globalCoins.toString().padStart(2, '0');
+        this.timeDisplay.innerText = globalTime.toString().padStart(3, '0');
+    }
+
+    draw() {
+        ctx.fillStyle = this.mode === 'shootout' ? '#222' : '#5c94fc';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save(); ctx.translate(-Math.floor(this.cameraX), 0);
+        
+        if (this.mode === 'shootout') {
+            this.shootoutArena.draw(ctx, this.cameraX);
+            this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
+            this.player.draw(ctx);
+            this.projectiles.forEach(p => p.draw(ctx));
+        } else {
+            this.map.drawBg(ctx, this.cameraX);
+            if (this.player.state === 'enter_pipe') {
+                this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
+                this.player.draw(ctx);
+                this.map.draw(ctx, this.cameraX);
+            } else {
+                this.map.draw(ctx, this.cameraX);
+                this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
+                this.player.draw(ctx);
+            }
+        }
+        
+        this.particles.forEach(p => p.draw(ctx));
+        ctx.restore();
+
+        if (this.mode === 'shootout') {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,42);
+            ctx.fillStyle = 'white'; ctx.font = 'bold 10px Courier New';
+            ctx.fillText(`P1 HP:${Math.max(0, this.player.hp)}`, 5, 12);
+            let pGun = this.player.ammo > 0 ? this.player.gunDeck[15 - this.player.ammo] : null;
+            ctx.fillStyle = pGun ? pGun.color : 'gray';
+            ctx.fillText(`[${pGun ? pGun.name : 'EMPTY'} x${this.player.ammo}]`, 5, 24);
+            ctx.fillStyle = '#ffeb3b'; ctx.fillText(`PRESS B TO SHOOT`, 5, 36);
+            
+            ctx.fillStyle = 'white';
+            ctx.fillText(`BOSS HP:${Math.max(0, this.boss ? this.boss.hp : 0)}`, 140, 12);
+            let bGun = (this.boss && this.boss.ammo > 0) ? this.boss.gunDeck[15 - this.boss.ammo] : null;
+            ctx.fillStyle = bGun ? bGun.color : 'gray';
+            ctx.fillText(`[${bGun ? bGun.name : 'EMPTY'} x${this.boss ? this.boss.ammo : 0}]`, 140, 24);
+        }
+    }
+
+    addScore(val, x, y) { globalScore += val; this.particles.push(new ScoreParticle(x, y, val.toString())); }
+    addCoin() { globalCoins++; this.addScore(200, this.player.x, this.player.y - 16); playSound('coin'); }
+}
+
+class Projectile {
+    constructor(x, y, vx, vy, weapon, isPlayer) {
+        this.x = x; this.y = y; this.w = weapon.w; this.h = weapon.h;
+        this.vx = vx; this.vy = vy; this.weapon = weapon; this.isPlayer = isPlayer;
+        this.dead = false;
+    }
+    update() {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > 256 || this.y < 0 || this.y > 240) this.dead = true;
+    }
+    draw(ctx) { ctx.fillSt
