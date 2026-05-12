@@ -46,7 +46,59 @@
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 20; cursor: pointer; text-align: center;
+            justify-content: center; align-items: center; z-index: 20; text-align: center;
+        }
+
+        /* 纯 CSS 8-Bit 像素风按钮 */
+        .pixel-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 30px;
+            background-color: #e52521; /* 经典马里奥红 */
+            color: #fff;
+            font-size: 1.8em;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            /* 伪造像素凸起高光和阴影 */
+            border: 4px solid #fff;
+            box-shadow: 
+                inset -5px -5px 0 rgba(0,0,0,0.4),
+                inset 5px 5px 0 rgba(255,255,255,0.4),
+                5px 5px 0 #000;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.1s ease;
+            animation: blink-text 1.5s infinite;
+        }
+
+        /* 按下时的下陷效果 */
+        .pixel-btn:active {
+            box-shadow: 
+                inset 5px 5px 0 rgba(0,0,0,0.5),
+                inset -5px -5px 0 rgba(255,255,255,0.2),
+                1px 1px 0 #000;
+            transform: translate(4px, 4px);
+            background-color: #c41c18; /* 按下变暗 */
+            animation: none; /* 按下时停止闪烁 */
+            color: #ccc;
+        }
+
+        @keyframes blink-text {
+            0%, 100% { color: #fff; text-shadow: 2px 2px 0 #000; }
+            50% { color: #ffeb3b; text-shadow: 2px 2px 0 #f00; }
+        }
+
+        .instructions {
+            margin-top: 40px;
+            font-size: 0.85em;
+            line-height: 1.8;
+            color: #ddd;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border: 2px solid #555;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -75,13 +127,16 @@
     </div>
     
     <div id="start-screen">
-        <h1 style="color: #ffcccc; text-shadow: 3px 3px 0 #f00; font-size: 2em;">SUPER DIRIO: SHOOTER</h1>
-        <p>点击或按空格键开始</p>
-        <p style="font-size: 0.8em; margin-top: 20px; line-height: 1.5;">
-            键盘：WASD移动，K/X/空格跳跃，J/Z加速/开火<br>
-            触屏：使用底部超大虚拟按键操作
-        </p>
-        <p style="font-size: 0.85em; color: #ffeb3b; font-weight: bold; margin-top: 15px;">向下钻入金色管道，进行 1V1 枪战决斗！</p>
+        <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.8em; margin: 0;">SUPER DIRIO</h1>
+        <p style="font-size: 1.2em; color: #ffeb3b; font-weight: bold; text-shadow: 2px 2px 0 #000; margin-top: 5px;">ULTIMATE SHOOTER</p>
+        
+        <div id="start-btn" class="pixel-btn">START GAME</div>
+
+        <div class="instructions">
+            <span style="color: #fff;">[ 电脑 ]</span> WASD移动 | K/空格跳跃 | J加速/开火<br>
+            <span style="color: #fff;">[ 手机 ]</span> 请使用屏幕底部的巨型虚拟按键<br>
+            <span style="color: #4CAF50; font-weight: bold;">★ 玩法提示：向下钻入金色管道，开启枪战决斗！</span>
+        </div>
     </div>
 </div>
 
@@ -226,7 +281,6 @@ const Sprites = {
     star: buildSprite(`.......Y........\n......YYY.......\n.....YYYYY......\n.YYYYYYYYYYYY...\n...YYYYYYYY.....\n....YYYYYY......\n...YY....YY.....\n..YY......YY....\n................\n................\n................\n................\n................\n................\n................\n................`, 16, 16)
 };
 
-// 武器库 (4种枪械类型)
 const WEAPONS = [
     { name: 'Pistol', speed: 6, dmg: 10, cooldown: 20, color: '#ffffff', w: 4, h: 4 },
     { name: 'Shotgun', speed: 5, dmg: 8, cooldown: 35, color: '#ffff00', w: 3, h: 3 },
@@ -284,19 +338,18 @@ class Game {
         this.entities.push(this.player);
         this.map = new InfiniteMap(this);
         this.maxDist = 0;
-        this.deathTimer = 0; // 全局复活倒计时引擎
+        this.deathTimer = 0; 
         this.savedMainState = null;
     }
 
     enterMiniGame() {
-        // 保存主世界快照状态！
         this.savedMainState = {
             cameraX: this.cameraX,
             playerX: this.player.x,
             playerY: this.player.y,
             isBig: this.player.isBig,
             starTimer: this.player.starTimer,
-            entities: this.entities.filter(e => e.type !== 'player') // 保存场景中的怪物/道具
+            entities: this.entities.filter(e => e.type !== 'player') 
         };
 
         this.mode = 'shootout';
@@ -324,13 +377,12 @@ class Game {
         if (win) { globalScore += 5000; globalCoins += 50; playSound('powerup'); }
         else { playSound('pipe'); }
         
-        // 恢复主世界快照状态！
         let s = this.savedMainState;
         this.cameraX = s.cameraX;
-        this.player.x = s.cameraX + canvas.width/2; // 确保不卡死，在屏幕中间
+        this.player.x = s.cameraX + canvas.width/2; 
         if (s.playerY) {
             this.player.x = s.playerX;
-            this.player.y = s.playerY; // 原地复原
+            this.player.y = s.playerY; 
         }
         
         this.player.isBig = s.isBig;
@@ -338,7 +390,7 @@ class Game {
         this.player.starTimer = s.starTimer;
         
         this.player.vx = 0; 
-        this.player.vy = -6; // 从管子里猛地弹射出来！
+        this.player.vy = -6; 
         this.player.state = 'jump';
         this.player.isDeadState = false; 
         this.deathTimer = 0;
@@ -371,15 +423,14 @@ class Game {
     }
 
     update() {
-        // [核心修复] 帧级死亡倒计时，绝不会卡死
         if (this.player.isDeadState) {
             if (this.deathTimer > 0) {
                 this.deathTimer--;
                 if (this.deathTimer <= 0) {
                     if (this.mode === 'shootout') {
-                        this.exitMiniGame(false); // 枪战输了退回原地
+                        this.exitMiniGame(false); 
                     } else {
-                        this.reset(); // 主世界死了重开（保留全局积分）
+                        this.reset(); 
                     }
                 }
             }
@@ -436,7 +487,6 @@ class Game {
                 if (p.dead) this.projectiles.splice(i, 1);
             }
 
-            // 胜负状态判定
             if (!this.miniGameEnding) {
                 if (this.player.hp <= 0 && !this.player.isDeadState) {
                     this.player.die(); 
@@ -445,7 +495,7 @@ class Game {
                 else if (this.boss.hp <= 0 && !this.boss.isDeadState) { 
                     this.boss.die(); 
                     this.miniGameEnding = true; 
-                    this.exitTimer = 120; // 延时退场
+                    this.exitTimer = 120; 
                 }
                 else if (this.player.ammo === 0 && this.boss.ammo === 0 && this.projectiles.length === 0) {
                     this.miniGameEnding = true; this.exitTimer = 120;
@@ -460,7 +510,6 @@ class Game {
                 }
             }
         } else {
-            // 平地相机
             if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
             if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
@@ -528,4 +577,537 @@ class Projectile {
         this.x += this.vx; this.y += this.vy;
         if (this.x < 0 || this.x > 256 || this.y < 0 || this.y > 240) this.dead = true;
     }
-    draw(ctx) { ctx.fillSt
+    draw(ctx) { ctx.fillStyle = this.weapon.color; ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.w, this.h); }
+}
+
+class Entity {
+    constructor(x, y, w, h) {
+        this.x = x; this.y = y; this.w = w; this.h = h;
+        this.vx = 0; this.vy = 0; this.dead = false; this.onGround = false;
+        this.type = 'none'; this.facingRight = true;
+    }
+    applyPhysics(map) {
+        this.vy += GRAVITY; if (this.vy > MAX_FALL_SPEED) this.vy = MAX_FALL_SPEED;
+        this.y += this.vy; this.onGround = false;
+        let yTiles = map.getIntersectingTiles({ x: this.x + 2, y: this.y, w: this.w - 4, h: this.h });
+        for (let t of yTiles) {
+            if (t.solid) {
+                if (this.vy > 0) { this.y = t.y * TILE_SIZE - this.h; this.vy = 0; this.onGround = true; }
+                else if (this.vy < 0) { this.y = t.y * TILE_SIZE + TILE_SIZE; this.vy = 0; this.onCeilingHit(t, map); }
+                break; 
+            }
+        }
+        this.x += this.vx;
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        for (let t of xTiles) {
+            if (t.solid) {
+                let oldVx = this.vx; 
+                if (this.vx > 0) { this.x = t.x * TILE_SIZE - this.w; this.vx = 0; }
+                else if (this.vx < 0) { this.x = t.x * TILE_SIZE + TILE_SIZE; this.vx = 0; }
+                this.onWallHit(t, oldVx); break;
+            }
+        }
+    }
+    onWallHit(tile, oldVx) {} onCeilingHit(tile, map) {}
+    intersects(other) {
+        return this.x < other.x + other.w && this.x + this.w > other.x && this.y < other.y + other.h && this.y + this.h > other.y;
+    }
+    dieFromStar() { this.state = 'star_dead'; this.vy = -3; this.vx = this.facingRight ? -1 : 1; playSound('kick'); }
+}
+
+class Player extends Entity {
+    constructor(x, y) {
+        super(x, y, 12, 16); this.type = 'player';
+        this.isBig = false; this.isDeadState = false;
+        this.jumpTimer = 0; this.invincibleTimer = 0; this.animTimer = 0;
+        this.state = 'idle'; this.skidding = false; this.jumpBuffer = 0;
+        this.pipeTimer = 0; this.starTimer = 0;
+    }
+
+    update(map, entities) {
+        if (this.state === 'enter_pipe') {
+            this.y += 0.5; this.pipeTimer--;
+            if (this.pipeTimer <= 0) { this.state = 'idle'; game.enterMiniGame(); }
+            return;
+        }
+        if (this.isDeadState) { this.vy += GRAVITY; this.y += this.vy; return; }
+        
+        if (game.mode === 'main' && Input.down && this.onGround) {
+            let centerCol = Math.floor((this.x + this.w / 2) / TILE_SIZE);
+            let footRow = Math.floor((this.y + this.h + 1) / TILE_SIZE);
+            let tile = map.columns && map.columns[centerCol] ? map.columns[centerCol][footRow] : null;
+            if (tile && (tile.type === 'gPipeTL' || tile.type === 'gPipeTR')) {
+                this.state = 'enter_pipe'; this.pipeTimer = 60; this.vx = 0; this.vy = 0;
+                let pipeLeftX = (centerCol * TILE_SIZE) + (tile.type === 'gPipeTL' ? 0 : -TILE_SIZE);
+                this.x = pipeLeftX + 2; playSound('pipe'); return;
+            }
+        }
+
+        if (this.invincibleTimer > 0) this.invincibleTimer--;
+        if (this.starTimer > 0) {
+            this.starTimer--;
+            if (this.starTimer % 20 === 0 && this.starTimer > 60) playSound('star');
+        }
+        
+        let accel = this.onGround ? MOVE_ACCEL : AIR_ACCEL;
+        let friction = this.onGround ? MOVE_FRICTION : AIR_FRICTION;
+        this.skidding = false;
+
+        if (Input.left) {
+            if (this.vx > 0 && this.onGround) this.skidding = true; 
+            this.vx -= accel; this.facingRight = false;
+        } else if (Input.right) {
+            if (this.vx < 0 && this.onGround) this.skidding = true; 
+            this.vx += accel; this.facingRight = true;
+        } else { this.vx *= friction; }
+        
+        let maxSpd = Input.run || this.starTimer > 0 ? MAX_RUN_SPEED + 0.5 : MAX_WALK_SPEED;
+        if (this.vx > maxSpd) this.vx = maxSpd; if (this.vx < -maxSpd) this.vx = -maxSpd;
+        if (Math.abs(this.vx) < 0.1 && !Input.left && !Input.right) this.vx = 0;
+
+        if (Input.jumpPressed) { this.jumpBuffer = 6; Input.jumpPressed = false; }
+        if (this.jumpBuffer > 0) {
+            if (this.onGround) { this.vy = JUMP_SPEED; this.onGround = false; this.jumpTimer = 1; this.jumpBuffer = 0; playSound('jump'); }
+            else { this.jumpBuffer--; }
+        }
+        if (Input.jump && this.jumpTimer > 0 && this.jumpTimer < 15) { this.vy -= 0.15; this.jumpTimer++; }
+        else if (!Input.jump) { this.jumpTimer = 0; }
+
+        this.applyPhysics(map);
+
+        if (game.mode === 'main') {
+            for (let e of entities) {
+                if (e === this || e.dead || e.state === 'star_dead' || e.state === 'squished') continue;
+                if (this.intersects(e)) {
+                    if (e.type === 'coin_item') {
+                        e.dead = true; game.addCoin();
+                    } else if (e.type === 'mushroom') {
+                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
+                        if (!this.isBig) { this.isBig = true; this.y -= 16; this.h = 32; }
+                    } else if (e.type === 'star') {
+                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
+                        this.starTimer = 600; 
+                    } else if (e.type === 'goomba' || e.type === 'bird' || e.type === 'koopa') {
+                        if (this.starTimer > 0) {
+                            e.dieFromStar(); game.addScore(200, e.x, e.y);
+                        } else if (e.type === 'koopa' && e.state === 'shell_idle') {
+                            e.state = 'shell_slide'; e.vx = this.x < e.x ? 3.5 : -3.5;
+                            playSound('kick'); this.invincibleTimer = 10;
+                        } else if (this.vy > 0 && this.y + this.h <= e.y + 12) {
+                            e.squish(); this.vy = Input.jump ? -4.8 : -3;
+                            game.addScore(100, e.x, e.y); playSound('stomp');
+                        } else if (this.invincibleTimer <= 0) {
+                            this.takeDamage();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!this.onGround) this.state = 'jump';
+        else if (Math.abs(this.vx) > 0.1) { this.state = this.skidding ? 'skid' : 'run'; this.animTimer += Math.abs(this.vx) * 0.3; }
+        else this.state = 'idle';
+    }
+
+    onCeilingHit(tile, map) {
+        this.jumpTimer = 0; if (game.mode === 'main' && (tile.type === 'qblock' || tile.type === 'brick')) map.hitBlock(tile.x, tile.y, this.isBig);
+    }
+
+    takeDamage() {
+        if (this.isBig) { this.isBig = false; this.h = 16; this.y += 16; this.invincibleTimer = 60; playSound('bump'); }
+        else { this.die(); }
+    }
+
+    die() {
+        if (this.isDeadState) return;
+        this.isDeadState = true; this.vy = -5; this.vx = 0; this.state = 'dead';
+        playSound('death'); 
+        
+        if (game.mode === 'shootout') {
+            game.deathTimer = 90; 
+        } else {
+            game.deathTimer = 120; 
+        }
+    }
+
+    draw(ctx) {
+        if (this.invincibleTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) return;
+        let sprite = Sprites.marioIdle;
+        if (this.state === 'dead') sprite = Sprites.marioDead;
+        else if (this.state === 'jump') sprite = Sprites.marioJump;
+        else if (this.state === 'skid') sprite = Sprites.marioSkid;
+        else if (this.state === 'run') {
+            let f = Math.floor(this.animTimer) % 3; sprite = f === 0 ? Sprites.marioRun1 : (f === 1 ? Sprites.marioRun2 : Sprites.marioRun3);
+        }
+        ctx.save(); ctx.translate(Math.floor(this.x + this.w / 2), Math.floor(this.y));
+        let displayFacingRight = this.skidding ? !this.facingRight : this.facingRight;
+        if (!displayFacingRight) ctx.scale(-1, 1);
+        if (this.starTimer > 0) ctx.filter = `hue-rotate(${(game.frames * 20) % 360}deg) saturate(200%)`;
+        if (this.isBig) { ctx.scale(1, 2); ctx.drawImage(sprite, -8, 0); } else { ctx.drawImage(sprite, -8, 0); }
+        ctx.restore();
+    }
+}
+
+class BossTurtle extends Entity {
+    constructor(x, y) {
+        super(x, y, 32, 32); this.type = 'boss';
+        this.hp = 150; this.ammo = 15;
+        this.gunDeck = Array.from({length:15}, () => WEAPONS[Math.floor(Math.random()*WEAPONS.length)]);
+        this.shootCooldown = 60;
+        this.isDeadState = false;
+    }
+    update(map) {
+        if (this.isDeadState) { this.vy += GRAVITY; this.y += this.vy; return; }
+        this.applyPhysics(map);
+        if (this.x > 200) this.vx = -1; else if (this.x < 50) this.vx = 1;
+        else if (Math.random() < 0.03) this.vx = Math.random() > 0.5 ? 1 : -1;
+        
+        if (game.player) { this.facingRight = game.player.x > this.x; }
+        
+        if (Math.random() < 0.02 && this.onGround) { this.vy = -5.5; }
+    }
+    die() {
+        this.isDeadState = true; this.vy = -5; this.vx = 0; playSound('kick');
+    }
+    draw(ctx) {
+        ctx.save(); ctx.translate(Math.floor(this.x + this.w / 2), Math.floor(this.y));
+        ctx.scale(this.facingRight ? 2 : -2, 2); 
+        ctx.drawImage(Sprites.bossTurtle, -8, 0); ctx.restore();
+    }
+}
+
+class Goomba extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'goomba'; this.vx = -0.5; this.animTimer = 0; this.state = 'walk'; }
+    update(map) {
+        if (this.state === 'star_dead') { this.vy += GRAVITY; this.y += this.vy; this.x += this.vx; if (this.y > 240) this.dead = true; return; }
+        if (this.state === 'squished') { this.deathTimer--; if (this.deathTimer <= 0) this.dead = true; return; }
+        this.applyPhysics(map); this.animTimer += 0.1;
+        if (this.x < game.cameraX - 64) this.dead = true; 
+    }
+    onWallHit(tile, oldVx) { this.vx = oldVx > 0 ? -0.5 : 0.5; }
+    squish() { this.state = 'squished'; this.vx = 0; this.deathTimer = 30; }
+    draw(ctx) {
+        let sp = Sprites.goomba1;
+        if (this.state === 'squished') sp = Sprites.goombaSquished;
+        else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.goomba2;
+        ctx.save(); ctx.translate(this.x+8, this.y+8);
+        if (this.state === 'star_dead') ctx.scale(1, -1);
+        ctx.drawImage(sp, -8, -8); ctx.restore();
+    }
+}
+
+class Koopa extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'koopa'; this.vx = -0.5; this.animTimer = 0; this.state = 'walk'; }
+    update(map, entities) {
+        if (this.state === 'star_dead') { this.vy += GRAVITY; this.y += this.vy; this.x += this.vx; if (this.y > 240) this.dead = true; return; }
+        this.applyPhysics(map); this.animTimer += 0.1;
+        if (this.state === 'shell_slide') {
+            for (let e of entities) {
+                if (e === this || e.dead || e.type === 'player' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
+                if (this.intersects(e)) { e.dieFromStar(); game.addScore(200, e.x, e.y); }
+            }
+        }
+        if (this.x < game.cameraX - 64) this.dead = true; 
+    }
+    onWallHit(tile, oldVx) { 
+        if (this.state === 'shell_slide') { this.vx = oldVx > 0 ? -3.5 : 3.5; playSound('bump'); } 
+        else { this.vx = oldVx > 0 ? -0.5 : 0.5; this.facingRight = this.vx > 0; }
+    }
+    squish() { if (this.state === 'walk' || this.state === 'shell_slide') { this.state = 'shell_idle'; this.vx = 0; } }
+    draw(ctx) {
+        let sp = Sprites.koopa1;
+        if (this.state === 'shell_idle' || this.state === 'shell_slide') sp = Sprites.shell;
+        else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.koopa2;
+        ctx.save(); ctx.translate(this.x+8, this.y+8);
+        if (this.state === 'star_dead') ctx.scale(1, -1);
+        else if (this.state === 'walk' && this.vx > 0) ctx.scale(-1, 1);
+        ctx.drawImage(sp, -8, -8); ctx.restore();
+    }
+}
+
+class Bird extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'bird'; this.vx = -1.8; this.vy = 0; this.animTimer = 0; this.state = 'fly'; }
+    update(map) {
+        if (this.state === 'squished' || this.state === 'star_dead') {
+            this.vy += GRAVITY; this.y += this.vy; this.x += this.state === 'star_dead' ? this.vx : 0;
+            if (this.y > 240) this.dead = true; return;
+        }
+        this.x += this.vx; this.animTimer += 0.1;
+        if (this.x < game.cameraX - 100) this.dead = true; 
+    }
+    squish() { this.state = 'squished'; this.vy = -1; this.vx = 0; }
+    draw(ctx) {
+        let sp = (Math.floor(this.animTimer) % 2 === 0) ? Sprites.bird1 : Sprites.bird2;
+        ctx.save(); ctx.translate(this.x + 8, this.y + 8);
+        if (this.state === 'squished' || this.state === 'star_dead') ctx.scale(1, -1); 
+        ctx.drawImage(sp, -8, -8); ctx.restore();
+    }
+}
+
+class Mushroom extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'mushroom'; this.vx = 1; this.spawning = true; this.spawnY = y - 16; this.vy = -0.5; }
+    update(map) {
+        if (this.spawning) { this.y += this.vy; if (this.y <= this.spawnY) { this.y = this.spawnY; this.spawning = false; this.vy = 0; } return; }
+        this.applyPhysics(map);
+    }
+    onWallHit(tile, oldVx) { this.vx = oldVx > 0 ? -1 : 1; }
+    draw(ctx) { ctx.drawImage(Sprites.mushroom, this.x, this.y); }
+}
+
+class Star extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'star'; this.vx = 1.5; this.spawning = true; this.spawnY = y - 16; this.vy = -1; }
+    update(map) {
+        if (this.spawning) { this.y += this.vy; if (this.y <= this.spawnY) { this.y = this.spawnY; this.spawning = false; this.vy = 0; } return; }
+        this.applyPhysics(map);
+    }
+    onWallHit(tile, oldVx) { this.vx = oldVx > 0 ? -1.5 : 1.5; }
+    onCeilingHit() { this.vy = 0; }
+    applyPhysics(map) {
+        this.vy += GRAVITY; if (this.vy > MAX_FALL_SPEED) this.vy = MAX_FALL_SPEED;
+        this.y += this.vy; this.onGround = false;
+        let yTiles = map.getIntersectingTiles({ x: this.x + 2, y: this.y, w: this.w - 4, h: this.h });
+        for (let t of yTiles) {
+            if (t.solid) {
+                if (this.vy > 0) { this.y = t.y * TILE_SIZE - this.h; this.vy = -4.5; } 
+                else if (this.vy < 0) { this.y = t.y * TILE_SIZE + TILE_SIZE; this.vy = 0; } break; 
+            }
+        }
+        this.x += this.vx;
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        for (let t of xTiles) {
+            if (t.solid) {
+                let oldVx = this.vx; 
+                if (this.vx > 0) { this.x = t.x * TILE_SIZE - this.w; this.vx = 0; }
+                else if (this.vx < 0) { this.x = t.x * TILE_SIZE + TILE_SIZE; this.vx = 0; }
+                this.onWallHit(t, oldVx); break;
+            }
+        }
+    }
+    draw(ctx) { ctx.save(); ctx.filter = `hue-rotate(${Date.now() % 360}deg)`; ctx.drawImage(Sprites.star, this.x, this.y); ctx.restore(); }
+}
+
+class CoinItem extends Entity {
+    constructor(x, y) { super(x, y, 16, 16); this.type = 'coin_item'; this.animTimer = 0; }
+    update() { this.animTimer += 0.1; }
+    draw(ctx) { ctx.save(); ctx.translate(this.x + 8, this.y + 8); ctx.scale(Math.abs(Math.sin(this.animTimer)), 1); ctx.drawImage(Sprites.coin, -8, -8); ctx.restore(); }
+}
+
+class ScoreParticle {
+    constructor(x, y, text, color = 'white') { this.x = x; this.y = y; this.text = text; this.color = color; this.vy = -2; this.life = 40; }
+    update() { this.y += this.vy; this.life--; if (this.life <= 0) this.dead = true; }
+    draw(ctx) { ctx.fillStyle = this.color; ctx.font = '10px Courier New'; ctx.fillText(this.text, this.x, this.y); }
+}
+class BrickDebris {
+    constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.life = 60; }
+    update() { this.vy += GRAVITY; this.x += this.vx; this.y += this.vy; this.life--; if (this.life <= 0) this.dead = true; }
+    draw(ctx) { ctx.fillStyle = '#c84c0c'; ctx.fillRect(this.x, this.y, 8, 8); }
+}
+
+class ShootoutArena {
+    constructor(gameInst) {
+        this.game = gameInst; this.rows = 15; this.columns = [];
+        for(let x=0; x<16; x++) {
+            let col = new Array(this.rows).fill(null);
+            col[13] = { x, y: 13, type: 'usedblock', solid: true, bounceY: 0 };
+            col[14] = { x, y: 14, type: 'usedblock', solid: true, bounceY: 0 };
+            if (x===0 || x===15) { for(let y=0; y<15; y++) col[y] = { x, y, type: 'usedblock', solid: true, bounceY: 0 }; }
+            this.columns[x] = col;
+        }
+    }
+    getIntersectingTiles(rect, shrinkX=0, shrinkY=0) {
+        let tiles = [];
+        let startX = Math.max(0, Math.floor((rect.x + shrinkX) / TILE_SIZE));
+        let endX = Math.min(15, Math.floor((rect.x + rect.w - shrinkX - 0.001) / TILE_SIZE));
+        let startY = Math.max(0, Math.floor((rect.y + shrinkY) / TILE_SIZE));
+        let endY = Math.min(this.rows - 1, Math.floor((rect.y + rect.h - shrinkY - 0.001) / TILE_SIZE));
+        for (let x = startX; x <= endX; x++) {
+            if (!this.columns[x]) continue;
+            for (let y = startY; y <= endY; y++) if (this.columns[x][y]) tiles.push(this.columns[x][y]);
+        }
+        return tiles;
+    }
+    draw(ctx, cameraX) {
+        for (let x = 0; x <= 15; x++) {
+            if (!this.columns[x]) continue;
+            for (let y = 0; y < this.rows; y++) {
+                if (this.columns[x][y]) ctx.drawImage(Sprites.usedBlock, x * TILE_SIZE, y * TILE_SIZE);
+            }
+        }
+    }
+}
+
+class InfiniteMap {
+    constructor(gameInst) {
+        this.game = gameInst; this.columns = []; this.bgColumns = []; this.rows = 15;
+        this.animTimer = 0; this.lastGenX = 0; this.state = 'safe_zone'; this.stateTimer = 20; 
+        this.groundY = 11; this.pipeHeight = 2; this.blocksSpawned = 0; this.isGoldenPipe = false;
+    }
+    buildPipe(col, x, isLeft) {
+        let topY = this.groundY - this.pipeHeight;
+        let pTL = this.isGoldenPipe ? 'gPipeTL' : 'pipeTL'; let pTR = this.isGoldenPipe ? 'gPipeTR' : 'pipeTR';
+        let pL = this.isGoldenPipe ? 'gPipeL' : 'pipeL'; let pR = this.isGoldenPipe ? 'gPipeR' : 'pipeR';
+        col[topY] = { x, y: topY, type: isLeft ? pTL : pTR, solid: true, bounceY: 0 };
+        for (let py = topY + 1; py < this.groundY; py++) col[py] = { x, y: py, type: isLeft ? pL : pR, solid: true, bounceY: 0 };
+    }
+    generateColumn() {
+        let x = this.lastGenX++; let col = new Array(this.rows).fill(null); let bgCol = new Array(this.rows).fill(null);
+        if (Math.random() < 0.05) bgCol[Math.floor(Math.random() * 4) + 1] = 'cloud';
+        
+        if (this.state === 'ground' && Math.random() < 0.05) {
+            let by = Math.random() < 0.5 ? 4 : 7;
+            for(let i=0; i<3; i++) this.game.entities.push(new CoinItem((x+i)*TILE_SIZE, by*TILE_SIZE));
+        }
+
+        if (this.state === 'safe_zone') {
+            this.buildGround(col, x, this.groundY); this.stateTimer--;
+            if (this.stateTimer === 10) col[6] = { x, y: 6, type: 'qblock', solid: true, bounceY: 0, item: 'mushroom' };
+            if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = 5; }
+        } else if (this.state === 'ground') {
+            this.buildGround(col, x, this.groundY); this.stateTimer--;
+            if (Math.random() < 0.25) {
+                let by = Math.random() < 0.5 ? 6 : 2;  let type = Math.random() < 0.4 ? 'qblock' : 'brick';
+                let item = null;
+                if (type === 'qblock') {
+                    this.blocksSpawned++;
+                    if (this.blocksSpawned < 3 && Math.random() < 0.5) item = 'mushroom';
+                    else {
+                        let rand = Math.random();
+                        if (rand < 0.1) item = 'star'; else if (rand < 0.3) item = 'mushroom'; else item = 'coin';
+                    }
+                }
+                col[by] = { x, y: by, type, solid: true, bounceY: 0, item };
+            }
+            if (this.stateTimer <= 0) {
+                let r = Math.random();
+                if (r < 0.2) { this.state = 'pit'; this.stateTimer = Math.floor(Math.random() * 3) + 2; }
+                else if (r < 0.5) { 
+                    this.state = 'pipe_start'; this.stateTimer = 2; 
+                    this.pipeHeight = Math.floor(Math.random() * 3) + 2; 
+                    this.isGoldenPipe = Math.random() < 0.2; 
+                }
+                else { this.stateTimer = Math.floor(Math.random() * 6) + 3; }
+            } else {
+                if (Math.random() < 0.1) {
+                    let EnemyClass = Math.random() < 0.4 ? Koopa : Goomba;
+                    this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
+                }
+                if (Math.random() < 0.05) {
+                    let heights = [this.groundY - 2, this.groundY - 5, this.groundY - 8];
+                    let by = heights[Math.floor(Math.random() * heights.length)];
+                    this.game.entities.push(new Bird((x + 10) * TILE_SIZE, by * TILE_SIZE));
+                }
+            }
+        } else if (this.state === 'pit') {
+            this.stateTimer--; if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
+        } else if (this.state === 'pipe_start') {
+            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
+            if (this.stateTimer <= 0) { this.state = 'pipe_gap'; this.stateTimer = Math.floor(Math.random() * 4) + 3; }
+        } else if (this.state === 'pipe_gap') {
+            this.buildGround(col, x, this.groundY); this.stateTimer--;
+            if (this.stateTimer === 2) this.game.entities.push(new Koopa(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE)); 
+            if (this.stateTimer <= 0) { this.state = 'pipe_end'; this.stateTimer = 2; this.pipeHeight = Math.floor(Math.random() * 3) + 2; }
+        } else if (this.state === 'pipe_end') {
+            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
+            if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
+        }
+        this.columns[x] = col; this.bgColumns[x] = bgCol;
+    }
+
+    buildGround(col, x, yStart) { for (let y = yStart; y < this.rows; y++) col[y] = { x, y, type: 'ground', solid: true, bounceY: 0 }; }
+
+    updateGeneration(cameraX) {
+        let targetCol = Math.floor((cameraX + canvas.width) / TILE_SIZE) + 2;
+        while (this.lastGenX < targetCol) this.generateColumn();
+        let cleanupCol = Math.floor(cameraX / TILE_SIZE) - 10;
+        if (cleanupCol > 0 && this.columns[cleanupCol]) { delete this.columns[cleanupCol]; delete this.bgColumns[cleanupCol]; }
+    }
+
+    getIntersectingTiles(rect, shrinkX=0, shrinkY=0) {
+        let tiles = [];
+        let startX = Math.max(0, Math.floor((rect.x + shrinkX) / TILE_SIZE));
+        let endX = Math.floor((rect.x + rect.w - shrinkX - 0.001) / TILE_SIZE);
+        let startY = Math.max(0, Math.floor((rect.y + shrinkY) / TILE_SIZE));
+        let endY = Math.min(this.rows - 1, Math.floor((rect.y + rect.h - shrinkY - 0.001) / TILE_SIZE));
+        for (let x = startX; x <= endX; x++) {
+            if (!this.columns[x]) continue;
+            for (let y = startY; y <= endY; y++) if (this.columns[x][y]) tiles.push(this.columns[x][y]);
+        }
+        return tiles;
+    }
+
+    hitBlock(tx, ty, isBig) {
+        if (!this.columns[tx] || !this.columns[tx][ty]) return;
+        let t = this.columns[tx][ty];
+        if (t.type === 'qblock') {
+            t.type = 'usedblock'; t.bounceY = -4; playSound('bump');
+            if (t.item === 'coin') this.game.addCoin();
+            else if (t.item === 'mushroom') { playSound('powerup'); this.game.entities.push(new Mushroom(tx * TILE_SIZE, ty * TILE_SIZE)); }
+            else if (t.item === 'star') { playSound('powerup'); this.game.entities.push(new Star(tx * TILE_SIZE, ty * TILE_SIZE)); }
+        } else if (t.type === 'brick') {
+            if (isBig) {
+                this.columns[tx][ty] = null; playSound('bump');
+                let px = tx * TILE_SIZE; let py = ty * TILE_SIZE;
+                this.game.particles.push(new BrickDebris(px, py, -2, -4)); this.game.particles.push(new BrickDebris(px+8, py, 2, -4));
+                this.game.particles.push(new BrickDebris(px, py+8, -2, -2)); this.game.particles.push(new BrickDebris(px+8, py+8, 2, -2));
+                this.game.addScore(50, px, py);
+            } else { t.bounceY = -4; playSound('bump'); }
+        }
+    }
+
+    drawBg(ctx, cameraX) {
+        let startCol = Math.max(0, Math.floor(cameraX / TILE_SIZE));
+        let endCol = startCol + Math.ceil(canvas.width / TILE_SIZE) + 1;
+        for (let x = startCol; x <= endCol; x++) {
+            if (!this.bgColumns[x]) continue;
+            for (let y = 0; y < this.rows; y++) {
+                if (this.bgColumns[x][y] === 'cloud') ctx.drawImage(Sprites.cloud, x * TILE_SIZE, y * TILE_SIZE);
+            }
+        }
+    }
+
+    draw(ctx, cameraX) {
+        this.animTimer++;
+        let startCol = Math.max(0, Math.floor(cameraX / TILE_SIZE));
+        let endCol = startCol + Math.ceil(canvas.width / TILE_SIZE) + 1;
+        for (let x = startCol; x <= endCol; x++) {
+            if (!this.columns[x]) continue;
+            for (let y = 0; y < this.rows; y++) {
+                let t = this.columns[x][y]; if (!t) continue;
+                if (t.bounceY < 0) t.bounceY += 1;
+                let drawX = x * TILE_SIZE; let drawY = y * TILE_SIZE + t.bounceY; let sp = null;
+                switch(t.type) {
+                    case 'ground': sp = Sprites.ground; break; case 'brick': sp = Sprites.brick; break;
+                    case 'qblock': sp = (Math.floor(this.animTimer / 15) % 2 === 0) ? Sprites.qBlock : Sprites.usedBlock; break;
+                    case 'usedblock': sp = Sprites.usedBlock; break;
+                    case 'pipeTL': sp = Sprites.pipeTL; break; case 'pipeTR': sp = Sprites.pipeTR; break;
+                    case 'pipeL': sp = Sprites.pipeL; break; case 'pipeR': sp = Sprites.pipeR; break;
+                    case 'gPipeTL': sp = Sprites.gPipeTL; break; case 'gPipeTR': sp = Sprites.gPipeTR; break;
+                    case 'gPipeL': sp = Sprites.gPipeL; break; case 'gPipeR': sp = Sprites.gPipeR; break;
+                }
+                if (sp) ctx.drawImage(sp, drawX, drawY);
+            }
+        }
+    }
+}
+
+let game; let isStarted = false; let lastTime = 0;
+function gameLoop(timestamp) {
+    if(!isStarted) return requestAnimationFrame(gameLoop);
+    let deltaTime = timestamp - lastTime;
+    if (deltaTime > 16) { game.update(); game.draw(); lastTime = timestamp; }
+    requestAnimationFrame(gameLoop);
+}
+
+// 绑定 8-Bit 像素风按钮来启动游戏
+document.getElementById('start-btn').addEventListener('click', startGame);
+window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !isStarted) startGame(); });
+
+function startGame() {
+    if(isStarted) return; initAudio(); game = new Game();
+    document.getElementById('start-screen').style.display = 'none';
+    isStarted = true; lastTime = performance.now(); requestAnimationFrame(gameLoop);
+}
+ctx.fillStyle = '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+</script>
+</body>
+</html>
