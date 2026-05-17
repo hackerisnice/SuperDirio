@@ -57,7 +57,7 @@
     
     <div id="ui-layer">
         <div>DIRIO<br><span id="score">000000</span></div>
-        <div>COINS<br>x<span id="coins">0000</span></div>
+        <div>COINS<br><span id="coins">0000</span></div>
         <div>WORLD<br>Endless</div>
         <div>SURVIVE<br><span id="time">000</span></div>
     </div>
@@ -81,7 +81,7 @@
             键盘：WASD移动，K/X/空格跳跃，J/Z加速/开火<br>
             触屏：使用底部超大虚拟按键操作
         </p>
-        <p style="font-size: 0.85em; color: #ffeb3b; font-weight: bold; margin-top: 15px;">已赠送1000金币！寻找落单的金管开启远距离传送决斗吧！</p>
+        <p style="font-size: 0.85em; color: #ffeb3b; font-weight: bold; margin-top: 15px;">★ 收集满 1000 金币，在金色管道按【下】开启枪战！</p>
     </div>
 </div>
 
@@ -105,8 +105,8 @@ const MAX_WALK_SPEED = 1.6;
 const MAX_RUN_SPEED = 2.8;    
 
 let globalScore = 0;
-// 初始赠送1000金币，方便玩家立刻体验需要门票的小游戏
-let globalCoins = 1000; 
+// 开局送 1000 块钱门票方便测试！
+let globalCoins = 1000;
 let globalTime = 0;
 
 let audioCtx = null;
@@ -278,7 +278,7 @@ class Game {
     reset() {
         this.mode = 'main'; 
         this.cameraX = 0;
-        this.frames = 0; this.gameOver = false;
+        this.frames = 0; 
         
         this.entities = []; this.particles = []; this.projectiles = [];
         this.player = new Player(32, 60);
@@ -290,14 +290,12 @@ class Game {
     }
 
     enterMiniGame() {
-        // 保存主世界快照状态，留着出去时恢复
         this.savedMainState = {
             cameraX: this.cameraX,
             playerX: this.player.x,
             playerY: this.player.y,
             isBig: this.player.isBig,
-            starTimer: this.player.starTimer,
-            entities: this.entities.filter(e => e.type !== 'player') 
+            starTimer: this.player.starTimer
         };
 
         this.mode = 'shootout';
@@ -322,51 +320,39 @@ class Game {
 
     exitMiniGame(win) {
         this.mode = 'main';
-        if (win) { globalScore += 5000; globalCoins += 50; playSound('powerup'); }
+        if (win) { globalScore += 5000; this.addCoin(2000, this.player.x, this.player.y); playSound('powerup'); }
         else { playSound('pipe'); }
         
         let s = this.savedMainState;
-        this.entities = [this.player];
-        this.projectiles = [];
-        this.particles = [];
-
-        // 【远距离传送机制】：加速生成15格的空地，并强制生成一个金管作为出口
-        this.map.state = 'safe_zone';
-        this.map.stateTimer = 15;
-        while(this.map.stateTimer > 0) this.map.generateColumn();
-
-        this.map.state = 'gpipe_exit'; // 孤立生成
-        this.map.stateTimer = 2;
-        this.map.pipeHeight = 3;
-        let exitColX = this.map.lastGenX;
-        this.map.generateColumn(); // 管道左侧
-        this.map.generateColumn(); // 管道右侧
-
-        this.map.state = 'safe_zone';
-        this.map.stateTimer = 10;
-        while(this.map.stateTimer > 0) this.map.generateColumn();
-
-        // 将相机和玩家无缝传送至新的金管出口
-        this.cameraX = (exitColX - 8) * TILE_SIZE;
-        // 保证出口一定要比入口远
-        if (this.cameraX < s.cameraX) this.cameraX = s.cameraX + 500; 
-
-        this.player.x = exitColX * TILE_SIZE + 2;
-        this.player.y = (this.map.groundY - 3) * TILE_SIZE; // 从管顶喷出
         
-        // 恢复马里奥之前的无敌和体型状态
+        // 【核心机制：远距离传送】将相机强制向后推进 150 个方块！
+        this.cameraX = s.cameraX + (150 * TILE_SIZE);
+        
+        // 强制清空旧地图并初始化新生成点，杜绝卡死
+        this.map.columns = [];
+        this.map.bgColumns = [];
+        this.map.lastGenX = Math.floor(this.cameraX / TILE_SIZE);
+        
+        // 强制地图的下一块立刻生成一个“金色出口管道”
+        this.map.state = 'exit_pipe_start';
+        this.map.stateTimer = 2;
+        this.map.updateGeneration(this.cameraX);
+
+        // 从新生成的管子口弹射而出
         this.player.isBig = s.isBig;
         this.player.h = s.isBig ? 32 : 16;
         this.player.starTimer = s.starTimer;
         
+        this.player.x = this.map.lastGenX * TILE_SIZE - 2 * TILE_SIZE + 2; 
+        this.player.y = (this.map.groundY - 1) * TILE_SIZE; 
         this.player.vx = 0; 
-        this.player.vy = -8; // 给一个极大的喷射速度
+        this.player.vy = -7; 
         this.player.state = 'jump';
         this.player.isDeadState = false; 
         this.deathTimer = 0;
         
-        this.maxDist = Math.max(this.maxDist, Math.floor(this.player.x / 10));
-        this.map.updateGeneration(this.cameraX);
+        this.entities = [this.player]; 
+        this.projectiles = [];
         this.miniGameEnding = false;
         this.savedMainState = null;
     }
@@ -391,14 +377,17 @@ class Game {
     }
 
     update() {
+        // 【核心修复】安全阻隔死亡逻辑，确保返回阻止后续代码执行！
         if (this.player.isDeadState) {
             if (this.deathTimer > 0) {
                 this.deathTimer--;
                 if (this.deathTimer <= 0) {
                     if (this.mode === 'shootout') {
-                        this.exitMiniGame(false); 
+                        this.exitMiniGame(false);
+                        return; 
                     } else {
-                        this.reset(); 
+                        this.reset();
+                        return; 
                     }
                 }
             }
@@ -471,10 +460,16 @@ class Game {
             } else {
                 if (this.boss.isDeadState && this.exitTimer > 0) {
                     this.exitTimer--;
-                    if (this.exitTimer <= 0) this.exitMiniGame(true);
+                    if (this.exitTimer <= 0) {
+                        this.exitMiniGame(true);
+                        return; // 安全退出当前帧
+                    }
                 } else if (!this.player.isDeadState && this.exitTimer > 0) {
                     this.exitTimer--;
-                    if (this.exitTimer <= 0) this.exitMiniGame(false);
+                    if (this.exitTimer <= 0) {
+                        this.exitMiniGame(false);
+                        return; // 安全退出当前帧
+                    }
                 }
             }
         } else {
@@ -484,7 +479,7 @@ class Game {
         }
 
         this.scoreDisplay.innerText = globalScore.toString().padStart(6, '0');
-        this.coinsDisplay.innerText = globalCoins.toString().padStart(4, '0'); // 金币位宽给足
+        this.coinsDisplay.innerText = globalCoins.toString().padStart(4, '0');
         this.timeDisplay.innerText = globalTime.toString().padStart(3, '0');
     }
 
@@ -531,8 +526,13 @@ class Game {
         }
     }
 
+    // 更新！统一使用 addCoin 并在画面浮现黄色金额数字
     addScore(val, x, y) { globalScore += val; this.particles.push(new ScoreParticle(x, y, val.toString())); }
-    addCoin() { globalCoins++; this.addScore(200, this.player.x, this.player.y - 16); playSound('coin'); }
+    addCoin(amount, x, y, playCoinSound=true) { 
+        globalCoins += amount; 
+        this.particles.push(new ScoreParticle(x, y, `+${amount}`, '#f8d820')); 
+        if(playCoinSound) playSound('coin'); 
+    }
 }
 
 class Projectile {
@@ -546,9 +546,6 @@ class Projectile {
         if (this.x < 0 || this.x > 256 || this.y < 0 || this.y > 240) this.dead = true;
     }
     draw(ctx) { ctx.fillStyle = this.weapon.color; ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.w, this.h); }
-    intersects(other) {
-        return this.x < other.x + other.w && this.x + this.w > other.x && this.y < other.y + other.h && this.y + this.h > other.y;
-    }
 }
 
 class Entity {
@@ -592,7 +589,7 @@ class Player extends Entity {
         this.isBig = false; this.isDeadState = false;
         this.jumpTimer = 0; this.invincibleTimer = 0; this.animTimer = 0;
         this.state = 'idle'; this.skidding = false; this.jumpBuffer = 0;
-        this.pipeTimer = 0; this.starTimer = 0;
+        this.pipeTimer = 0; this.starTimer = 0; this.coinRejectTimer = 0;
     }
 
     update(map, entities) {
@@ -603,26 +600,29 @@ class Player extends Entity {
         }
         if (this.isDeadState) { this.vy += GRAVITY; this.y += this.vy; return; }
         
-        // 金管钻入检测与门票扣费机制
+        // 钻金色管道与门票检测
         if (game.mode === 'main' && Input.down && this.onGround) {
             let centerCol = Math.floor((this.x + this.w / 2) / TILE_SIZE);
             let footRow = Math.floor((this.y + this.h + 1) / TILE_SIZE);
             let tile = map.columns && map.columns[centerCol] ? map.columns[centerCol][footRow] : null;
             if (tile && (tile.type === 'gPipeTL' || tile.type === 'gPipeTR')) {
+                // 扣钱门票机制
                 if (globalCoins >= 1000) {
                     globalCoins -= 1000;
                     this.state = 'enter_pipe'; this.pipeTimer = 60; this.vx = 0; this.vy = 0;
                     let pipeLeftX = (centerCol * TILE_SIZE) + (tile.type === 'gPipeTL' ? 0 : -TILE_SIZE);
                     this.x = pipeLeftX + 2; playSound('pipe'); 
-                    game.particles.push(new ScoreParticle(this.x, this.y, "-1000 COINS", "#ffeb3b"));
-                    return;
                 } else {
-                    if (Math.random() < 0.05) { // 限制提示频率
-                        game.particles.push(new ScoreParticle(this.x, this.y - 10, "NEED 1000 COINS", "#ff0000"));
+                    if (this.coinRejectTimer <= 0) {
+                        game.particles.push(new ScoreParticle(this.x, this.y - 10, "NEED 1000 COINS!", "red"));
+                        this.coinRejectTimer = 60;
+                        playSound('bump');
                     }
                 }
+                return;
             }
         }
+        if (this.coinRejectTimer > 0) this.coinRejectTimer--;
 
         if (this.invincibleTimer > 0) this.invincibleTimer--;
         if (this.starTimer > 0) {
@@ -661,22 +661,22 @@ class Player extends Entity {
                 if (e === this || e.dead || e.state === 'star_dead' || e.state === 'squished') continue;
                 if (this.intersects(e)) {
                     if (e.type === 'coin_item') {
-                        e.dead = true; game.addCoin();
+                        e.dead = true; game.addCoin(100, e.x, e.y, true);
                     } else if (e.type === 'mushroom') {
-                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
+                        e.dead = true; game.addCoin(200, e.x, e.y, false); playSound('powerup');
                         if (!this.isBig) { this.isBig = true; this.y -= 16; this.h = 32; }
                     } else if (e.type === 'star') {
-                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
+                        e.dead = true; game.addCoin(300, e.x, e.y, false); playSound('powerup');
                         this.starTimer = 600; 
                     } else if (e.type === 'goomba' || e.type === 'bird' || e.type === 'koopa') {
                         if (this.starTimer > 0) {
-                            e.dieFromStar(); game.addScore(200, e.x, e.y);
+                            e.dieFromStar(); game.addCoin(200, e.x, e.y, false);
                         } else if (e.type === 'koopa' && e.state === 'shell_idle') {
                             e.state = 'shell_slide'; e.vx = this.x < e.x ? 3.5 : -3.5;
                             playSound('kick'); this.invincibleTimer = 10;
                         } else if (this.vy > 0 && this.y + this.h <= e.y + 12) {
                             e.squish(); this.vy = Input.jump ? -4.8 : -3;
-                            game.addScore(100, e.x, e.y); playSound('stomp');
+                            game.addCoin(100, e.x, e.y, false); playSound('stomp');
                         } else if (this.invincibleTimer <= 0) {
                             this.takeDamage();
                         }
@@ -703,7 +703,12 @@ class Player extends Entity {
         if (this.isDeadState) return;
         this.isDeadState = true; this.vy = -5; this.vx = 0; this.state = 'dead';
         playSound('death'); 
-        if (game.mode === 'shootout') { game.deathTimer = 90; } else { game.deathTimer = 120; }
+        
+        if (game.mode === 'shootout') {
+            game.deathTimer = 90; 
+        } else {
+            game.deathTimer = 120; 
+        }
     }
 
     draw(ctx) {
@@ -776,7 +781,7 @@ class Koopa extends Entity {
         if (this.state === 'shell_slide') {
             for (let e of entities) {
                 if (e === this || e.dead || e.type === 'player' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
-                if (this.intersects(e)) { e.dieFromStar(); game.addScore(200, e.x, e.y); }
+                if (this.intersects(e)) { e.dieFromStar(); game.addCoin(200, e.x, e.y, false); }
             }
         }
         if (this.x < game.cameraX - 64) this.dead = true; 
@@ -867,7 +872,7 @@ class CoinItem extends Entity {
 class ScoreParticle {
     constructor(x, y, text, color = 'white') { this.x = x; this.y = y; this.text = text; this.color = color; this.vy = -2; this.life = 40; }
     update() { this.y += this.vy; this.life--; if (this.life <= 0) this.dead = true; }
-    draw(ctx) { ctx.fillStyle = this.color; ctx.font = '10px Courier New'; ctx.fillText(this.text, this.x, this.y); }
+    draw(ctx) { ctx.fillStyle = this.color; ctx.font = 'bold 10px Courier New'; ctx.fillText(this.text, this.x, this.y); }
 }
 class BrickDebris {
     constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.life = 60; }
@@ -921,17 +926,17 @@ class InfiniteMap {
         col[topY] = { x, y: topY, type: isLeft ? pTL : pTR, solid: true, bounceY: 0 };
         for (let py = topY + 1; py < this.groundY; py++) col[py] = { x, y: py, type: isLeft ? pL : pR, solid: true, bounceY: 0 };
     }
-    // 【核心修复】分离普通绿管和金管的生成机制
     generateColumn() {
         let x = this.lastGenX++; let col = new Array(this.rows).fill(null); let bgCol = new Array(this.rows).fill(null);
         if (Math.random() < 0.05) bgCol[Math.floor(Math.random() * 4) + 1] = 'cloud';
         
-        if (this.state === 'ground' && Math.random() < 0.05) {
-            let by = Math.random() < 0.5 ? 4 : 7;
-            for(let i=0; i<3; i++) this.game.entities.push(new CoinItem((x+i)*TILE_SIZE, by*TILE_SIZE));
+        // 远距离跳跃后，强制生成一根单边孤立金色管子弹出马里奥
+        if (this.state === 'exit_pipe_start') {
+            this.buildGround(col, x, this.groundY); this.pipeHeight = 2; this.isGoldenPipe = true;
+            this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
+            if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = 10; } 
         }
-
-        if (this.state === 'safe_zone') {
+        else if (this.state === 'safe_zone') {
             this.buildGround(col, x, this.groundY); this.stateTimer--;
             if (this.stateTimer === 10) col[6] = { x, y: 6, type: 'qblock', solid: true, bounceY: 0, item: 'mushroom' };
             if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = 5; }
@@ -949,17 +954,18 @@ class InfiniteMap {
             }
             if (this.stateTimer <= 0) {
                 let r = Math.random();
-                if (r < 0.2) { this.state = 'pit'; this.stateTimer = Math.floor(Math.random() * 3) + 2; }
-                else if (r < 0.4) { 
-                    this.state = 'pipe_start'; this.stateTimer = 2; this.pipeHeight = Math.floor(Math.random() * 3) + 2; this.isGoldenPipe = false; 
+                if (r < 0.15) { this.state = 'pit'; this.stateTimer = Math.floor(Math.random() * 3) + 2; }
+                else if (r < 0.35) { 
+                    this.state = 'pipe_start'; this.stateTimer = 2; 
+                    this.pipeHeight = Math.floor(Math.random() * 3) + 2; 
+                    this.isGoldenPipe = false;
                 }
-                else if (r < 0.5) { 
-                    this.state = 'gpipe_single'; this.stateTimer = 2; this.pipeHeight = Math.floor(Math.random() * 3) + 2; this.isGoldenPipe = true; 
+                else if (r < 0.45) {
+                    this.state = 'gold_pipe_start'; this.stateTimer = 2; this.pipeHeight = 2; this.isGoldenPipe = true;
                 }
                 else { this.stateTimer = Math.floor(Math.random() * 6) + 3; }
             } else if (Math.random() < 0.1) {
-                let EnemyClass = Math.random() < 0.4 ? Koopa : Goomba;
-                this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
+                this.game.entities.push(new Goomba(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
             }
         } else if (this.state === 'pit') {
             this.stateTimer--; if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
@@ -968,19 +974,12 @@ class InfiniteMap {
             if (this.stateTimer <= 0) { this.state = 'pipe_gap'; this.stateTimer = Math.floor(Math.random() * 4) + 3; }
         } else if (this.state === 'pipe_gap') {
             this.buildGround(col, x, this.groundY); this.stateTimer--;
-            if (this.stateTimer === 2) {
-                let EnemyClass = Math.random() < 0.5 ? Koopa : Goomba;
-                this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
-            }
+            if (this.stateTimer === 2) this.game.entities.push(new Goomba(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE)); 
             if (this.stateTimer <= 0) { this.state = 'pipe_end'; this.stateTimer = 2; this.pipeHeight = Math.floor(Math.random() * 3) + 2; }
         } else if (this.state === 'pipe_end') {
             this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
             if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
-        } else if (this.state === 'gpipe_single') {
-            // 【核心修复】金管绝对不再成对
-            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
-            if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
-        } else if (this.state === 'gpipe_exit') {
+        } else if (this.state === 'gold_pipe_start') {
             this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
             if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
         }
@@ -1014,7 +1013,7 @@ class InfiniteMap {
         let t = this.columns[tx][ty];
         if (t.type === 'qblock') {
             t.type = 'usedblock'; t.bounceY = -4; playSound('bump');
-            if (t.item === 'coin') this.game.addCoin();
+            if (t.item === 'coin') this.game.addCoin(100, tx * TILE_SIZE, ty * TILE_SIZE, true);
             else if (t.item === 'mushroom') { playSound('powerup'); this.game.entities.push(new Mushroom(tx * TILE_SIZE, ty * TILE_SIZE)); }
             else if (t.item === 'star') { playSound('powerup'); this.game.entities.push(new Star(tx * TILE_SIZE, ty * TILE_SIZE)); }
         } else if (t.type === 'brick') {
@@ -1023,7 +1022,7 @@ class InfiniteMap {
                 let px = tx * TILE_SIZE; let py = ty * TILE_SIZE;
                 this.game.particles.push(new BrickDebris(px, py, -2, -4)); this.game.particles.push(new BrickDebris(px+8, py, 2, -4));
                 this.game.particles.push(new BrickDebris(px, py+8, -2, -2)); this.game.particles.push(new BrickDebris(px+8, py+8, 2, -2));
-                this.game.addScore(50, px, py);
+                this.game.addCoin(50, px, py, false);
             } else { t.bounceY = -4; playSound('bump'); }
         }
     }
