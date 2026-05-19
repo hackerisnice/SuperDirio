@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub API 文件上传工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f6f8fa;
+            color: #24292f;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+            box-shadow: 0 3px 6px rgba(140,149,159,0.15);
+        }
+        h2 { margin-top: 0; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        input[type="file"] {
+            margin-top: 5px;
+        }
+        button {
+            background-color: #2da44e;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2c974b;
+        }
+        button:disabled {
+            background-color: #94d3a2;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            word-break: break-all;
+        }
+        .success { background-color: #dafbe1; color: #1a7f37; border: 1px solid #a3e635; }
+        .error { background-color: #ffebe9; color: #cf222e; border: 1px solid #ff8182; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>上传文件到 GitHub 仓库</h2>
+    
+    <div class="form-group">
+        <label for="token">GitHub Token (需勾选 repo 权限):</label>
+        <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    </div>
+    
+    <div class="form-group">
+        <label for="owner">仓库拥有者 (用户名):</label>
+        <input type="text" id="owner" placeholder="例如: octocat">
+    </div>
+
+    <div class="form-group">
+        <label for="repo">仓库名称:</label>
+        <input type="text" id="repo" placeholder="例如: my-website">
+    </div>
+
+    <div class="form-group">
+        <label for="path">保存路径及文件名:</label>
+        <input type="text" id="path" placeholder="例如: uploads/image.png">
+    </div>
+
+    <div class="form-group">
+        <label for="fileInput">选择文件:</label>
+        <input type="file" id="fileInput">
+    </div>
+
+    <button id="uploadBtn" onclick="uploadFile()">开始上传</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    async function uploadFile() {
+        const token = document.getElementById('token').value.trim();
+        const owner = document.getElementById('owner').value.trim();
+        const repo = document.getElementById('repo').value.trim();
+        const path = document.getElementById('path').value.trim();
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusDiv = document.getElementById('status');
+
+        // 基础校验
+        if (!token || !owner || !repo || !path || fileInput.files.length === 0) {
+            showStatus('请填写完整的配置信息并选择文件！', false);
+            return;
+        }
+
+        const file = fileInput.files[0];
+        uploadBtn.disabled = true;
+        uploadBtn.innerText = '读取文件中...';
+
+        try {
+            // 1. 将文件转换为 Base64 编码
+            const base64Content = await getBase64(file);
+
+            uploadBtn.innerText = '正在上传到 GitHub...';
+
+            // 2. 构造 GitHub API 请求
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: `Upload ${file.name} via Web API`,
+                    content: base64Content
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                showStatus(`✅ 上传成功！<br>文件链接: <a href="${responseData.content.html_url}" target="_blank">点击查看</a>`, true);
+            } else {
+                // 处理同名文件冲突 (如果文件已存在，需要提供 sha 才能覆盖，此基础版不包含覆盖逻辑)
+                if (responseData.message.includes("sha")) {
+                    showStatus('❌ 上传失败：该路径下已存在同名文件，无法直接覆盖。', false);
+                } else {
+                    showStatus(`❌ 上传失败: ${responseData.message}`, false);
+                }
+            }
+        } catch (error) {
+            showStatus(`❌ 发生错误: ${error.message}`, false);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerText = '开始上传';
+        }
+    }
+
+    // 将文件读取为 Base64 字符串的纯文本部分（去掉 Data URL 前缀）
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                // reader.result 格式为 "data:image/png;base64,iVBORw0KGgo..."
+                // GitHub API 只需要逗号后面的纯 Base64 内容
+                const base64String = reader.result.split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // 显示状态提示信息
+    function showStatus(message, isSuccess) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = message;
+        statusDiv.className = isSuccess ? 'success' : 'error';
+    }
+</script>
+
+</body>
+</html>
