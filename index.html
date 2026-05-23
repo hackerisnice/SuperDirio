@@ -413,7 +413,8 @@ class Game {
             }
         } else {
             if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
-            if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
+            // 避免浮点误差导致贴近左边缘时被“瞬间吸回”
+            if (this.player.x < this.cameraX - 0.5) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
 
@@ -489,7 +490,8 @@ class Entity {
             }
         }
         this.x += this.vx;
-        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        // 横向碰撞使用更窄的垂直采样，降低边角“卡边回弹”问题
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 3, w: this.w, h: this.h - 6 });
         for (let t of xTiles) {
             if (t.solid) {
                 let oldVx = this.vx; 
