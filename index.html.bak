@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Dirio - Ultimate Shooter</title>
+    <title>Super Dirio - Ultimate Edition</title>
     <style>
+        /* 极致暴力的样式重置，杜绝任何浏览器默认样式的干扰 */
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000; display: flex; justify-content: center; align-items: center;
-            overflow: hidden; touch-action: none; font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
         }
         #game-container {
             position: relative; width: 100%; max-width: 1024px; aspect-ratio: 256 / 240;
@@ -16,90 +18,57 @@
         }
         canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
         
-        /* 手机端按键大幅上调、放大，释放大拇指 */
+        /* 绝对定位的钢铁布局虚拟按键，恢复成动态巨型尺寸！ */
         #mobile-controls {
-            position: absolute; bottom: 20%; left: 0; width: 100%; height: 50%;
-            display: flex; justify-content: space-between; pointer-events: none; z-index: 10;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; pointer-events: none; z-index: 10;
         }
-        .d-pad, .action-buttons { display: flex; pointer-events: auto; margin: 0 4%; gap: 18px; }
-        .d-pad { align-items: flex-end; padding-bottom: 5%; }
-        .action-buttons { align-items: flex-end; padding-bottom: 5%; }
-        .btn {
-            width: min(25vw, 100px); height: min(25vw, 100px); 
-            background: rgba(255, 255, 255, 0.3); border: 4px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            color: rgba(255, 255, 255, 1); font-weight: bold; font-size: min(6vw, 26px); line-height: 1.1;
-            user-select: none; -webkit-user-select: none; box-shadow: 0 5px 10px rgba(0,0,0,0.4);
-            backdrop-filter: blur(2px);
+        .ctrl-btn {
+            position: absolute; 
+            /* 恢复巨型尺寸：随屏幕动态放大，最大 90px */
+            width: min(21vw, 150px); height: min(21vw, 150px); 
+            background: rgba(255, 255, 255, 0.25);
+            border: 4px solid rgba(255, 255, 255, 0.8); border-radius: 50%; pointer-events: auto;
+            color: #fff; font-weight: bold; font-size: min(5vw, 24px); text-align: center; line-height: 1.1;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .btn small { font-size: 0.45em; display: block; font-weight: normal; margin-top: 3px; color: #ffeb3b; text-shadow: 1px 1px 0 #000; }
-        .btn.pressed { background: rgba(255, 255, 255, 0.7); transform: scale(0.92); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+        .ctrl-btn small { font-size: 0.45em; color: #ffeb3b; text-shadow: 1px 1px 0 #000; margin-top: 3px; font-weight: normal; }
+        .ctrl-btn.pressed { background: rgba(255, 255, 255, 0.7); transform: scale(0.92); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
+        /* 精确计算的相对位置，模拟经典手柄弧度且绝不重叠 */
+        #btn-left  { bottom: 16%; left: 3%; }
+        #btn-down  { bottom: 2%; left: calc(3% + min(21vw, 150px) * 0.95); width: min(16vw, 130px); height: min(16vw, 130px); font-size: min(3.5vw, 75px); }
+        #btn-right { bottom: 16%; left: calc(3% + min(21vw, 150px) * 1.9); }
+        
+        #btn-b     { bottom: 8%; right: calc(4% + min(21vw, 150px) * 1.15); }
+        #btn-a     { bottom: 25%; right: 4%; }
+
+        /* UI 与 启动屏 */
         #ui-layer {
-            position: absolute; top: 5px; left: 5px; right: 5px; color: white;
+            position: absolute; top: 10px; left: 10px; right: 10px; color: white;
             font-weight: bold; display: flex; justify-content: space-between;
-            font-size: clamp(10px, 3vw, 24px); text-shadow: 2px 2px 0 #000; pointer-events: none;
+            font-size: clamp(12px, 3vw, 24px); text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 5;
         }
-
         @media (hover: hover) and (pointer: fine) { #mobile-controls { display: none; } }
         
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 20; text-align: center;
+            justify-content: center; align-items: center; z-index: 999; cursor: pointer; text-align: center;
         }
-
-        /* 纯 CSS 8-Bit 像素风按钮 */
         .pixel-btn {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 15px 30px;
-            background-color: #e52521; /* 经典马里奥红 */
-            color: #fff;
-            font-size: 1.8em;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            text-transform: uppercase;
-            /* 伪造像素凸起高光和阴影 */
-            border: 4px solid #fff;
-            box-shadow: 
-                inset -5px -5px 0 rgba(0,0,0,0.4),
-                inset 5px 5px 0 rgba(255,255,255,0.4),
-                5px 5px 0 #000;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            transition: transform 0.1s ease;
-            animation: blink-text 1.5s infinite;
+            margin-top: 30px; padding: 15px 30px; background-color: #e52521; color: #fff;
+            font-size: 24px; font-weight: bold; border: 4px solid #fff;
+            box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.4), 4px 4px 0 #000;
+            animation: blink 1.5s infinite;
         }
-
-        /* 按下时的下陷效果 */
-        .pixel-btn:active {
-            box-shadow: 
-                inset 5px 5px 0 rgba(0,0,0,0.5),
-                inset -5px -5px 0 rgba(255,255,255,0.2),
-                1px 1px 0 #000;
-            transform: translate(4px, 4px);
-            background-color: #c41c18; /* 按下变暗 */
-            animation: none; /* 按下时停止闪烁 */
-            color: #ccc;
+        .audio-toggle-btn {
+            margin-top: 12px; padding: 10px 18px; background-color: #2b2b2b; color: #fff;
+            font-size: 16px; font-weight: bold; border: 3px solid #fff; cursor: pointer;
+            box-shadow: inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.25), 3px 3px 0 #000;
         }
-
-        @keyframes blink-text {
-            0%, 100% { color: #fff; text-shadow: 2px 2px 0 #000; }
-            50% { color: #ffeb3b; text-shadow: 2px 2px 0 #f00; }
-        }
-
-        .instructions {
-            margin-top: 40px;
-            font-size: 0.85em;
-            line-height: 1.8;
-            color: #ddd;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border: 2px solid #555;
-            border-radius: 8px;
-        }
+        .audio-toggle-btn.off { background-color: #6a1b1b; }
+        @keyframes blink { 0%, 100% { color: #fff; } 50% { color: #ffeb3b; } }
     </style>
 </head>
 <body>
@@ -109,41 +78,35 @@
     
     <div id="ui-layer">
         <div>DIRIO<br><span id="score">000000</span></div>
-        <div>COINS<br>x<span id="coins">00</span></div>
+        <div>COINS<br><span id="coins">0000</span></div>
         <div>WORLD<br>Endless</div>
-        <div>SURVIVE<br><span id="time">000</span></div>
+        <div>TIME<br><span id="time">000</span></div>
     </div>
 
+    <!-- 钢铁布局的移动端巨型按键 -->
     <div id="mobile-controls">
-        <div class="d-pad">
-            <div class="btn" id="btn-left">◀</div>
-            <div class="btn" id="btn-down">▼<br><small>钻管</small></div>
-            <div class="btn" id="btn-right">▶</div>
-        </div>
-        <div class="action-buttons">
-            <div class="btn" id="btn-b">B<br><small>跑/射击</small></div>
-            <div class="btn" id="btn-a">A<br><small>跳跃</small></div>
-        </div>
+        <div class="ctrl-btn" id="btn-left">◀</div>
+        <div class="ctrl-btn" id="btn-down">▼<br><small>钻管</small></div>
+        <div class="ctrl-btn" id="btn-right">▶</div>
+        <div class="ctrl-btn" id="btn-b">B<br><small>跑/射</small></div>
+        <div class="ctrl-btn" id="btn-a">A<br><small>跳跃</small></div>
     </div>
     
-    <div id="start-screen">
-        <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.8em; margin: 0;">SUPER DIRIO</h1>
-        <p style="font-size: 1.2em; color: #ffeb3b; font-weight: bold; text-shadow: 2px 2px 0 #000; margin-top: 5px;">ULTIMATE SHOOTER</p>
-        
-        <div id="start-btn" class="pixel-btn">START GAME</div>
-
-        <div class="instructions">
-            <span style="color: #fff;">[ 电脑 ]</span> WASD移动 | K/空格跳跃 | J加速/开火<br>
-            <span style="color: #fff;">[ 手机 ]</span> 请使用屏幕底部的巨型虚拟按键<br>
-            <span style="color: #4CAF50; font-weight: bold;">★ 玩法提示：向下钻入金色管道，开启枪战决斗！</span>
-        </div>
+    <div id="start-screen" onclick="startGame()">
+        <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
+        <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
+        <div class="pixel-btn">START GAME</div>
+        <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
+        <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
+            WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
+            <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
+            <span style="color: #ff0000; font-weight: bold;">【更新】手机巨型虚拟按键回归，操作更爽快！</span>
+        </p>
     </div>
 </div>
 
 <script>
-/**
- * 引擎常量与全局状态 (实现全局积分永久累积)
- */
+/** 核心引擎与全局累积状态 */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -151,7 +114,7 @@ ctx.imageSmoothingEnabled = false;
 const TILE_SIZE = 16;
 const GRAVITY = 0.25;         
 const MAX_FALL_SPEED = 4.5;   
-const JUMP_SPEED = -4.8;      
+const JUMP_SPEED = -5.0;     
 const MOVE_ACCEL = 0.04;      
 const AIR_ACCEL = 0.03;       
 const MOVE_FRICTION = 0.88;   
@@ -160,77 +123,63 @@ const MAX_WALK_SPEED = 1.6;
 const MAX_RUN_SPEED = 2.8;    
 
 let globalScore = 0;
-let globalCoins = 0;
+let globalCoins = 1000; 
 let globalTime = 0;
+let soundEnabled = true;
 
 let audioCtx = null;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-
 function playSound(type) {
-    if (!audioCtx) return;
+    if (!audioCtx || !soundEnabled) return;
     try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
         if (type === 'jump') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(300, now);
-            osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.type = 'square'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'coin') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now);
-            osc.frequency.setValueAtTime(1500, now + 0.05);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now); osc.stop(now + 0.3);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1000, now); osc.frequency.setValueAtTime(1500, now + 0.05);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'stomp') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(200, now);
-            osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.type = 'square'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'bump') {
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'powerup') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(300, now);
-            osc.frequency.linearRampToValueAtTime(800, now + 0.5);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-            osc.start(now); osc.stop(now + 0.5);
+            osc.type = 'square'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(800, now + 0.5);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.5); osc.start(now); osc.stop(now + 0.5);
         } else if (type === 'pipe') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
-            osc.frequency.setValueAtTime(300, now + 0.1); osc.frequency.setValueAtTime(200, now + 0.2);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
-            osc.start(now); osc.stop(now + 0.4);
+            osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(300, now + 0.1); osc.frequency.setValueAtTime(200, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4); osc.start(now); osc.stop(now + 0.4);
         } else if (type === 'shoot') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now);
-            osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-            gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+            gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'death') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now);
-            osc.frequency.exponentialRampToValueAtTime(50, now + 1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 1);
-            osc.start(now); osc.stop(now + 1);
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(50, now + 1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 1); osc.start(now); osc.stop(now + 1);
         } else if (type === 'kick') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-            gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
         } else if (type === 'star') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
-            osc.frequency.linearRampToValueAtTime(1200, now + 0.2);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now); osc.stop(now + 0.2);
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
         }
     } catch(e){}
 }
 
+function toggleAudio(event) {
+    if (event) event.stopPropagation();
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('audio-toggle-btn');
+    if (!btn) return;
+    btn.textContent = `音效：${soundEnabled ? '开启' : '关闭'}`;
+    btn.classList.toggle('off', !soundEnabled);
+}
+
 const C = {
-    'T': 'transparent', 'R': '#e52521', 'B': '#6b8c42', 'b': '#b53120', 'S': '#f0d0b0',
-    'O': '#c84c0c', 'o': '#000000', 'W': '#ffffff', 'G': '#00a800', 'g': '#005800', 
-    'C': '#f8d820', 'M': '#e83000', 'D': '#444444', 'Y': '#f8d820', 'y': '#c88c00', 'w': '#ffffe0'
+    'T': 'transparent', 'R': '#e52521', 'B': '#6b8c42', 'b': '#b53120', 'S': '#f0d0b0', 'O': '#c84c0c', 'o': '#000000', 
+    'W': '#ffffff', 'G': '#00a800', 'g': '#005800', 'C': '#f8d820', 'M': '#e83000', 'D': '#444444', 'Y': '#f8d820', 'y': '#c88c00'
 };
 
 function buildSprite(ascii, w, h) {
@@ -321,95 +270,74 @@ bindTouch('btn-left', 'left'); bindTouch('btn-right', 'right'); bindTouch('btn-d
 bindTouch('btn-a', 'jump', true); bindTouch('btn-b', 'run');
 
 class Game {
-    constructor() {
-        this.reset();
-        this.scoreDisplay = document.getElementById('score');
-        this.coinsDisplay = document.getElementById('coins');
-        this.timeDisplay = document.getElementById('time');
-    }
+    constructor() { this.reset(); }
 
     reset() {
-        this.mode = 'main'; 
-        this.cameraX = 0;
-        this.frames = 0; 
-        
+        this.mode = 'main'; this.cameraX = 0; this.frames = 0; 
         this.entities = []; this.particles = []; this.projectiles = [];
-        this.player = new Player(32, 60);
-        this.entities.push(this.player);
-        this.map = new InfiniteMap(this);
-        this.maxDist = 0;
-        this.deathTimer = 0; 
-        this.savedMainState = null;
+        this.player = new Player(32, 60); this.entities.push(this.player);
+        this.map = new InfiniteMap(this); this.maxDist = 0;
+        this.deathTimer = 0; this.savedMainState = null;
+    }
+
+    gainReward(val, x, y) {
+        globalScore += val;
+        globalCoins += val; 
+        this.particles.push(new ScoreParticle(x, y, `+${val}`, '#ffeb3b'));
     }
 
     enterMiniGame() {
         this.savedMainState = {
-            cameraX: this.cameraX,
-            playerX: this.player.x,
-            playerY: this.player.y,
-            isBig: this.player.isBig,
-            starTimer: this.player.starTimer,
+            cameraX: this.cameraX, playerX: this.player.x, playerY: this.player.y,
+            isBig: this.player.isBig, starTimer: this.player.starTimer,
             entities: this.entities.filter(e => e.type !== 'player') 
         };
-
-        this.mode = 'shootout';
-        this.cameraX = 0;
-        this.player.x = 20; this.player.y = 180;
+        this.mode = 'shootout'; this.cameraX = 0;
+        this.player.x = 20; this.player.y = 80; 
         this.player.isBig = false; this.player.h = 16; 
-        this.player.hp = 100;
-        this.player.ammo = 15;
-        this.player.shootCooldown = 0;
-        this.player.facingRight = true;
-        this.player.gunDeck = Array.from({length:15}, () => WEAPONS[Math.floor(Math.random()*WEAPONS.length)]);
+        this.player.hp = 100; this.player.shootCooldown = 0; this.player.facingRight = true;
+        this.player.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
         
-        this.boss = new BossTurtle(200, 176);
-        this.entities = [this.player, this.boss];
-        this.projectiles = [];
-        this.particles = [];
         this.shootoutArena = new ShootoutArena(this);
-        
-        this.miniGameEnding = false;
-        this.exitTimer = 0;
+        this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
+        this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
+        this.miniGameEnding = false; this.exitTimer = 0;
     }
 
     exitMiniGame(win) {
         this.mode = 'main';
-        if (win) { globalScore += 5000; globalCoins += 50; playSound('powerup'); }
-        else { playSound('pipe'); }
-        
-        let s = this.savedMainState;
-        this.cameraX = s.cameraX;
-        this.player.x = s.cameraX + canvas.width/2; 
-        if (s.playerY) {
-            this.player.x = s.playerX;
-            this.player.y = s.playerY; 
+        if (win) { 
+            this.gainReward(2000, this.player.x, this.player.y); 
+            playSound('powerup'); 
+        } else { 
+            playSound('pipe'); 
         }
         
-        this.player.isBig = s.isBig;
-        this.player.h = s.isBig ? 32 : 16;
-        this.player.starTimer = s.starTimer;
+        let s = this.savedMainState;
+        this.cameraX = s.cameraX + 2000; 
+        let outCol = Math.floor(this.cameraX / TILE_SIZE) + 8;
+        this.map.lastGenX = outCol;
         
-        this.player.vx = 0; 
-        this.player.vy = -6; 
-        this.player.state = 'jump';
-        this.player.isDeadState = false; 
-        this.deathTimer = 0;
+        for(let i=0; i<15; i++) { this.map.state = 'safe_zone'; this.map.generateColumn(); }
+        let pipeX = outCol + 5;
+        this.map.buildPipe(this.map.columns[pipeX], pipeX, true, true);
+        this.map.buildPipe(this.map.columns[pipeX+1], pipeX+1, false, true);
+
+        this.player.x = pipeX * TILE_SIZE + 2; 
+        this.player.y = (this.map.groundY - 2) * TILE_SIZE; 
+        this.player.isBig = s.isBig; this.player.h = s.isBig ? 32 : 16; this.player.starTimer = s.starTimer;
+        this.player.vx = 0; this.player.vy = -8; this.player.state = 'jump'; this.player.isDeadState = false; 
         
-        this.entities = [this.player, ...s.entities];
-        this.projectiles = [];
-        
-        this.map.updateGeneration(this.cameraX);
-        this.miniGameEnding = false;
-        this.savedMainState = null;
+        this.deathTimer = 0; this.entities = [this.player]; this.projectiles = [];
+        this.map.updateGeneration(this.cameraX); this.miniGameEnding = false; this.savedMainState = null;
     }
 
     fireWeapon(entity, isPlayer) {
-        if (entity.ammo <= 0) return;
-        let gun = entity.gunDeck[15 - entity.ammo];
+        let gun = entity.currentGun;
+        if (!gun) return;
         let dir = entity.facingRight ? 1 : -1;
         let spawnX = entity.facingRight ? entity.x + entity.w : entity.x - gun.w;
         let spawnY = entity.y + entity.h/2 - gun.h/2;
-        
         if (gun.name === 'Shotgun') {
             this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, -1.5, gun, isPlayer));
             this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 0, gun, isPlayer));
@@ -417,9 +345,8 @@ class Game {
         } else {
             this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 0, gun, isPlayer));
         }
-        entity.ammo--;
-        entity.shootCooldown = gun.cooldown;
-        playSound('shoot');
+        entity.shootCooldown = gun.cooldown; playSound('shoot');
+        entity.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
     }
 
     update() {
@@ -427,20 +354,14 @@ class Game {
             if (this.deathTimer > 0) {
                 this.deathTimer--;
                 if (this.deathTimer <= 0) {
-                    if (this.mode === 'shootout') {
-                        this.exitMiniGame(false); 
-                    } else {
-                        this.reset(); 
-                    }
+                    if (this.mode === 'shootout') this.exitMiniGame(false); 
+                    else this.reset(); 
                 }
             }
         }
-
-        this.frames++; 
-        if (this.frames % 60 === 0 && this.mode === 'main') globalTime++;
+        this.frames++; if (this.frames % 60 === 0 && this.mode === 'main') globalTime++;
 
         let currentMap = this.mode === 'shootout' ? this.shootoutArena : this.map;
-
         if (this.mode === 'main') {
             this.map.updateGeneration(this.cameraX);
             let currentDist = Math.max(0, Math.floor(this.player.x / 10));
@@ -451,7 +372,6 @@ class Game {
             let e = this.entities[i]; e.update(currentMap, this.entities);
             if (e.dead) this.entities.splice(i, 1);
         }
-
         for (let i = this.particles.length - 1; i >= 0; i--) {
             let p = this.particles[i]; p.update();
             if (p.dead) this.particles.splice(i, 1);
@@ -459,55 +379,37 @@ class Game {
 
         if (this.mode === 'shootout') {
             if (this.player.shootCooldown > 0) this.player.shootCooldown--;
-            if (Input.run && this.player.shootCooldown <= 0 && this.player.ammo > 0 && !this.miniGameEnding && !this.player.isDeadState) {
-                this.fireWeapon(this.player, true);
-            }
-            if (this.player.x < 16) this.player.x = 16;
-            if (this.player.x > 120) this.player.x = 120; 
+            if (Input.run && this.player.shootCooldown <= 0 && !this.miniGameEnding && !this.player.isDeadState) this.fireWeapon(this.player, true);
+            
+            if (this.player.x < 16) this.player.x = 16; 
+            let maxW = (this.shootoutArena.cols - 1) * TILE_SIZE - this.player.w;
+            if (this.player.x > maxW) this.player.x = maxW; 
 
-            if (this.boss && !this.boss.isDeadState && !this.miniGameEnding) {
-                if (this.boss.shootCooldown > 0) this.boss.shootCooldown--;
-                if (this.boss.shootCooldown <= 0 && this.boss.ammo > 0) {
-                    if (Math.random() < 0.05) this.fireWeapon(this.boss, false);
-                }
-            }
+            let targetCam = this.player.x - canvas.width / 2;
+            if (targetCam < 0) targetCam = 0;
+            let maxCam = this.shootoutArena.cols * TILE_SIZE - canvas.width;
+            if (targetCam > maxCam) targetCam = maxCam;
+            this.cameraX = targetCam;
 
             for (let i = this.projectiles.length - 1; i >= 0; i--) {
-                let p = this.projectiles[i]; p.update();
+                let p = this.projectiles[i]; p.update(currentMap);
                 if (!p.isPlayer && this.player.intersects(p) && !this.player.isDeadState) {
                     this.player.hp -= p.weapon.dmg; this.projectiles.splice(i, 1);
-                    this.particles.push(new ScoreParticle(this.player.x, this.player.y, `-${p.weapon.dmg}`, '#ff0000'));
-                    playSound('bump'); 
+                    this.particles.push(new ScoreParticle(this.player.x, this.player.y, `-${p.weapon.dmg}`, '#ff0000')); playSound('bump'); 
                 }
                 else if (p.isPlayer && this.boss && !this.boss.isDeadState && this.boss.intersects(p)) {
                     this.boss.hp -= p.weapon.dmg; this.projectiles.splice(i, 1);
-                    this.particles.push(new ScoreParticle(this.boss.x, this.boss.y, `-${p.weapon.dmg}`, '#ffff00'));
-                    playSound('bump'); 
+                    this.particles.push(new ScoreParticle(this.boss.x, this.boss.y, `-${p.weapon.dmg}`, '#ffff00')); playSound('bump'); 
                 }
                 if (p.dead) this.projectiles.splice(i, 1);
             }
 
             if (!this.miniGameEnding) {
-                if (this.player.hp <= 0 && !this.player.isDeadState) {
-                    this.player.die(); 
-                    this.miniGameEnding = true;
-                }
-                else if (this.boss.hp <= 0 && !this.boss.isDeadState) { 
-                    this.boss.die(); 
-                    this.miniGameEnding = true; 
-                    this.exitTimer = 120; 
-                }
-                else if (this.player.ammo === 0 && this.boss.ammo === 0 && this.projectiles.length === 0) {
-                    this.miniGameEnding = true; this.exitTimer = 120;
-                }
+                if (this.player.hp <= 0 && !this.player.isDeadState) { this.player.die(); this.miniGameEnding = true; }
+                else if (this.boss.hp <= 0 && !this.boss.isDeadState) { this.boss.die(); this.miniGameEnding = true; this.exitTimer = 120; }
             } else {
-                if (this.boss.isDeadState && this.exitTimer > 0) {
-                    this.exitTimer--;
-                    if (this.exitTimer <= 0) this.exitMiniGame(true);
-                } else if (!this.player.isDeadState && this.exitTimer > 0) {
-                    this.exitTimer--;
-                    if (this.exitTimer <= 0) this.exitMiniGame(false);
-                }
+                if (this.boss.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(true); }
+                else if (!this.player.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(false); }
             }
         } else {
             if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
@@ -515,76 +417,65 @@ class Game {
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
 
-        this.scoreDisplay.innerText = globalScore.toString().padStart(6, '0');
-        this.coinsDisplay.innerText = globalCoins.toString().padStart(2, '0');
-        this.timeDisplay.innerText = globalTime.toString().padStart(3, '0');
+        document.getElementById('score').innerText = globalScore.toString().padStart(6, '0');
+        document.getElementById('coins').innerText = globalCoins.toString().padStart(4, '0');
+        document.getElementById('time').innerText = globalTime.toString().padStart(3, '0');
     }
 
     draw() {
-        ctx.fillStyle = this.mode === 'shootout' ? '#222' : '#5c94fc';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = this.mode === 'shootout' ? '#222' : '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(-Math.floor(this.cameraX), 0);
         
         if (this.mode === 'shootout') {
             this.shootoutArena.draw(ctx, this.cameraX);
             this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
-            this.player.draw(ctx);
-            this.projectiles.forEach(p => p.draw(ctx));
+            this.player.draw(ctx); this.projectiles.forEach(p => p.draw(ctx));
         } else {
             this.map.drawBg(ctx, this.cameraX);
             if (this.player.state === 'enter_pipe') {
                 this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
-                this.player.draw(ctx);
-                this.map.draw(ctx, this.cameraX);
+                this.player.draw(ctx); this.map.draw(ctx, this.cameraX);
             } else {
                 this.map.draw(ctx, this.cameraX);
                 this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
                 this.player.draw(ctx);
             }
         }
-        
-        this.particles.forEach(p => p.draw(ctx));
-        ctx.restore();
+        this.particles.forEach(p => p.draw(ctx)); ctx.restore();
 
         if (this.mode === 'shootout') {
-            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,42);
-            ctx.fillStyle = 'white'; ctx.font = 'bold 10px Courier New';
+            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,42); ctx.fillStyle = 'white'; ctx.font = 'bold 10px Courier New';
             ctx.fillText(`P1 HP:${Math.max(0, this.player.hp)}`, 5, 12);
-            let pGun = this.player.ammo > 0 ? this.player.gunDeck[15 - this.player.ammo] : null;
-            ctx.fillStyle = pGun ? pGun.color : 'gray';
-            ctx.fillText(`[${pGun ? pGun.name : 'EMPTY'} x${this.player.ammo}]`, 5, 24);
+            let pGun = this.player.currentGun;
+            ctx.fillStyle = pGun ? pGun.color : 'gray'; ctx.fillText(`[${pGun ? pGun.name : 'EMPTY'} ∞]`, 5, 24);
             ctx.fillStyle = '#ffeb3b'; ctx.fillText(`PRESS B TO SHOOT`, 5, 36);
-            
-            ctx.fillStyle = 'white';
-            ctx.fillText(`BOSS HP:${Math.max(0, this.boss ? this.boss.hp : 0)}`, 140, 12);
-            let bGun = (this.boss && this.boss.ammo > 0) ? this.boss.gunDeck[15 - this.boss.ammo] : null;
-            ctx.fillStyle = bGun ? bGun.color : 'gray';
-            ctx.fillText(`[${bGun ? bGun.name : 'EMPTY'} x${this.boss ? this.boss.ammo : 0}]`, 140, 24);
+            ctx.fillStyle = 'white'; ctx.fillText(`BOSS HP:${Math.max(0, this.boss ? this.boss.hp : 0)}`, 140, 12);
+            let bGun = this.boss && this.boss.currentGun;
+            ctx.fillStyle = bGun ? bGun.color : 'gray'; ctx.fillText(`[${bGun ? bGun.name : 'EMPTY'} ∞]`, 140, 24);
         }
     }
-
-    addScore(val, x, y) { globalScore += val; this.particles.push(new ScoreParticle(x, y, val.toString())); }
-    addCoin() { globalCoins++; this.addScore(200, this.player.x, this.player.y - 16); playSound('coin'); }
 }
 
 class Projectile {
     constructor(x, y, vx, vy, weapon, isPlayer) {
         this.x = x; this.y = y; this.w = weapon.w; this.h = weapon.h;
-        this.vx = vx; this.vy = vy; this.weapon = weapon; this.isPlayer = isPlayer;
-        this.dead = false;
+        this.vx = vx; this.vy = vy; this.weapon = weapon; this.isPlayer = isPlayer; this.dead = false;
     }
-    update() {
-        this.x += this.vx; this.y += this.vy;
-        if (this.x < 0 || this.x > 256 || this.y < 0 || this.y > 240) this.dead = true;
+    update(map) { 
+        this.x += this.vx; this.y += this.vy; 
+        if (this.y < 0 || this.y > 240) { this.dead = true; return; }
+        if (map && map.getIntersectingTiles) {
+            let tiles = map.getIntersectingTiles({x: this.x, y: this.y, w: this.w, h: this.h});
+            if (tiles.some(t => t.solid)) this.dead = true;
+        }
     }
     draw(ctx) { ctx.fillStyle = this.weapon.color; ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.w, this.h); }
 }
 
 class Entity {
     constructor(x, y, w, h) {
-        this.x = x; this.y = y; this.w = w; this.h = h;
-        this.vx = 0; this.vy = 0; this.dead = false; this.onGround = false;
-        this.type = 'none'; this.facingRight = true;
+        this.x = x; this.y = y; this.w = w; this.h = h; this.vx = 0; this.vy = 0;
+        this.dead = false; this.onGround = false; this.type = 'none'; this.facingRight = true;
     }
     applyPhysics(map) {
         this.vy += GRAVITY; if (this.vy > MAX_FALL_SPEED) this.vy = MAX_FALL_SPEED;
@@ -609,19 +500,15 @@ class Entity {
         }
     }
     onWallHit(tile, oldVx) {} onCeilingHit(tile, map) {}
-    intersects(other) {
-        return this.x < other.x + other.w && this.x + this.w > other.x && this.y < other.y + other.h && this.y + this.h > other.y;
-    }
+    intersects(other) { return this.x < other.x + other.w && this.x + this.w > other.x && this.y < other.y + other.h && this.y + this.h > other.y; }
     dieFromStar() { this.state = 'star_dead'; this.vy = -3; this.vx = this.facingRight ? -1 : 1; playSound('kick'); }
 }
 
 class Player extends Entity {
     constructor(x, y) {
-        super(x, y, 12, 16); this.type = 'player';
-        this.isBig = false; this.isDeadState = false;
-        this.jumpTimer = 0; this.invincibleTimer = 0; this.animTimer = 0;
-        this.state = 'idle'; this.skidding = false; this.jumpBuffer = 0;
-        this.pipeTimer = 0; this.starTimer = 0;
+        super(x, y, 12, 16); this.type = 'player'; this.isBig = false; this.isDeadState = false;
+        this.jumpTimer = 0; this.invincibleTimer = 0; this.animTimer = 0; this.state = 'idle';
+        this.skidding = false; this.jumpBuffer = 0; this.pipeTimer = 0; this.starTimer = 0;
     }
 
     update(map, entities) {
@@ -637,20 +524,24 @@ class Player extends Entity {
             let footRow = Math.floor((this.y + this.h + 1) / TILE_SIZE);
             let tile = map.columns && map.columns[centerCol] ? map.columns[centerCol][footRow] : null;
             if (tile && (tile.type === 'gPipeTL' || tile.type === 'gPipeTR')) {
-                this.state = 'enter_pipe'; this.pipeTimer = 60; this.vx = 0; this.vy = 0;
-                let pipeLeftX = (centerCol * TILE_SIZE) + (tile.type === 'gPipeTL' ? 0 : -TILE_SIZE);
-                this.x = pipeLeftX + 2; playSound('pipe'); return;
+                if (globalCoins >= 1000) {
+                    globalCoins -= 1000; this.state = 'enter_pipe'; this.pipeTimer = 60; this.vx = 0; this.vy = 0;
+                    let pipeLeftX = (centerCol * TILE_SIZE) + (tile.type === 'gPipeTL' ? 0 : -TILE_SIZE);
+                    this.x = pipeLeftX + 2; playSound('pipe'); return;
+                } else {
+                    if (this.pipeTimer <= 0) {
+                        game.particles.push(new ScoreParticle(this.x - 20, this.y - 10, "NEED 1000 COINS!", "#ff0000"));
+                        this.pipeTimer = 30; 
+                    }
+                }
             }
         }
+        if (this.pipeTimer > 0 && this.state !== 'enter_pipe') this.pipeTimer--;
 
         if (this.invincibleTimer > 0) this.invincibleTimer--;
-        if (this.starTimer > 0) {
-            this.starTimer--;
-            if (this.starTimer % 20 === 0 && this.starTimer > 60) playSound('star');
-        }
+        if (this.starTimer > 0) { this.starTimer--; if (this.starTimer % 20 === 0 && this.starTimer > 60) playSound('star'); }
         
-        let accel = this.onGround ? MOVE_ACCEL : AIR_ACCEL;
-        let friction = this.onGround ? MOVE_FRICTION : AIR_FRICTION;
+        let accel = this.onGround ? MOVE_ACCEL : AIR_ACCEL; let friction = this.onGround ? MOVE_FRICTION : AIR_FRICTION;
         this.skidding = false;
 
         if (Input.left) {
@@ -680,22 +571,21 @@ class Player extends Entity {
                 if (e === this || e.dead || e.state === 'star_dead' || e.state === 'squished') continue;
                 if (this.intersects(e)) {
                     if (e.type === 'coin_item') {
-                        e.dead = true; game.addCoin();
+                        e.dead = true; game.gainReward(100, e.x, e.y); playSound('coin');
                     } else if (e.type === 'mushroom') {
-                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
+                        e.dead = true; game.gainReward(200, e.x, e.y); playSound('powerup');
                         if (!this.isBig) { this.isBig = true; this.y -= 16; this.h = 32; }
                     } else if (e.type === 'star') {
-                        e.dead = true; game.addScore(1000, e.x, e.y); playSound('powerup');
-                        this.starTimer = 600; 
+                        e.dead = true; game.gainReward(300, e.x, e.y); playSound('powerup'); this.starTimer = 600; 
                     } else if (e.type === 'goomba' || e.type === 'bird' || e.type === 'koopa') {
                         if (this.starTimer > 0) {
-                            e.dieFromStar(); game.addScore(200, e.x, e.y);
+                            e.dieFromStar(); game.gainReward(200, e.x, e.y);
                         } else if (e.type === 'koopa' && e.state === 'shell_idle') {
                             e.state = 'shell_slide'; e.vx = this.x < e.x ? 3.5 : -3.5;
                             playSound('kick'); this.invincibleTimer = 10;
                         } else if (this.vy > 0 && this.y + this.h <= e.y + 12) {
                             e.squish(); this.vy = Input.jump ? -4.8 : -3;
-                            game.addScore(100, e.x, e.y); playSound('stomp');
+                            game.gainReward(100, e.x, e.y); playSound('stomp');
                         } else if (this.invincibleTimer <= 0) {
                             this.takeDamage();
                         }
@@ -721,13 +611,7 @@ class Player extends Entity {
     die() {
         if (this.isDeadState) return;
         this.isDeadState = true; this.vy = -5; this.vx = 0; this.state = 'dead';
-        playSound('death'); 
-        
-        if (game.mode === 'shootout') {
-            game.deathTimer = 90; 
-        } else {
-            game.deathTimer = 120; 
-        }
+        playSound('death'); game.deathTimer = game.mode === 'shootout' ? 90 : 120; 
     }
 
     draw(ctx) {
@@ -736,9 +620,8 @@ class Player extends Entity {
         if (this.state === 'dead') sprite = Sprites.marioDead;
         else if (this.state === 'jump') sprite = Sprites.marioJump;
         else if (this.state === 'skid') sprite = Sprites.marioSkid;
-        else if (this.state === 'run') {
-            let f = Math.floor(this.animTimer) % 3; sprite = f === 0 ? Sprites.marioRun1 : (f === 1 ? Sprites.marioRun2 : Sprites.marioRun3);
-        }
+        else if (this.state === 'run') { let f = Math.floor(this.animTimer) % 3; sprite = f === 0 ? Sprites.marioRun1 : (f === 1 ? Sprites.marioRun2 : Sprites.marioRun3); }
+        
         ctx.save(); ctx.translate(Math.floor(this.x + this.w / 2), Math.floor(this.y));
         let displayFacingRight = this.skidding ? !this.facingRight : this.facingRight;
         if (!displayFacingRight) ctx.scale(-1, 1);
@@ -750,29 +633,72 @@ class Player extends Entity {
 
 class BossTurtle extends Entity {
     constructor(x, y) {
-        super(x, y, 32, 32); this.type = 'boss';
-        this.hp = 150; this.ammo = 15;
-        this.gunDeck = Array.from({length:15}, () => WEAPONS[Math.floor(Math.random()*WEAPONS.length)]);
-        this.shootCooldown = 60;
-        this.isDeadState = false;
+        super(x, y, 32, 32); this.type = 'boss'; this.hp = 150;
+        this.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
+        this.shootCooldown = 60; this.isDeadState = false; this.jumpCooldown = 0;
     }
+    
     update(map) {
         if (this.isDeadState) { this.vy += GRAVITY; this.y += this.vy; return; }
+        
+        if (this.jumpCooldown > 0) this.jumpCooldown--;
+        if (this.shootCooldown > 0) this.shootCooldown--; 
+
+        if (game.player && !game.player.isDeadState) { 
+            let dist = game.player.x - this.x;
+            let absDist = Math.abs(dist);
+            this.facingRight = dist > 0; 
+            
+            let currentGun = this.currentGun;
+            let targetDist = 120; 
+            if (currentGun) {
+                if (currentGun.name === 'Shotgun') targetDist = 50; 
+                if (currentGun.name === 'Sniper') targetDist = 180; 
+            }
+            
+            if (absDist > targetDist + 30) this.vx = this.facingRight ? 1.4 : -1.4; 
+            else if (absDist < targetDist - 30) this.vx = this.facingRight ? -1.4 : 1.4; 
+            else {
+                if (Math.random() < 0.05) this.vx = Math.random() > 0.5 ? 1 : -1; 
+            }
+
+            if (this.onGround && this.jumpCooldown <= 0) {
+                let playerAbove = game.player.y < this.y - 32;
+                let stuck = (Math.abs(this.vx) < 0.1 && absDist > 40); 
+                if ((playerAbove && absDist < 80 && Math.random() < 0.1) || stuck) {
+                    this.vy = -6; 
+                    this.jumpCooldown = 40;
+                }
+            }
+
+            if (this.shootCooldown <= 0 && currentGun) {
+                let t = absDist / currentGun.speed; 
+                let predY = game.player.y + game.player.vy * t + 0.5 * GRAVITY * t * t; 
+                let groundLevel = 13 * TILE_SIZE - 16;
+                if (predY > groundLevel) predY = groundLevel; 
+
+                let myCenter = this.y + 16;
+                let pCurrentCenter = game.player.y + 8;
+                let pPredCenter = predY + 8;
+
+                if (Math.abs(myCenter - pCurrentCenter) < 24 || Math.abs(myCenter - pPredCenter) < 24 || Math.random() < 0.05) {
+                    game.fireWeapon(this, false);
+                }
+            }
+        }
+        
         this.applyPhysics(map);
-        if (this.x > 200) this.vx = -1; else if (this.x < 50) this.vx = 1;
-        else if (Math.random() < 0.03) this.vx = Math.random() > 0.5 ? 1 : -1;
-        
-        if (game.player) { this.facingRight = game.player.x > this.x; }
-        
-        if (Math.random() < 0.02 && this.onGround) { this.vy = -5.5; }
     }
-    die() {
-        this.isDeadState = true; this.vy = -5; this.vx = 0; playSound('kick');
+    
+    onWallHit(tile, oldVx) { 
+        this.vx = 0; 
+        if (this.onGround && this.jumpCooldown <= 0) { this.vy = -6.5; this.jumpCooldown = 30; } 
     }
+    
+    die() { this.isDeadState = true; this.vy = -5; this.vx = 0; playSound('kick'); }
     draw(ctx) {
         ctx.save(); ctx.translate(Math.floor(this.x + this.w / 2), Math.floor(this.y));
-        ctx.scale(this.facingRight ? 2 : -2, 2); 
-        ctx.drawImage(Sprites.bossTurtle, -8, 0); ctx.restore();
+        ctx.scale(this.facingRight ? 2 : -2, 2); ctx.drawImage(Sprites.bossTurtle, -8, 0); ctx.restore();
     }
 }
 
@@ -781,17 +707,13 @@ class Goomba extends Entity {
     update(map) {
         if (this.state === 'star_dead') { this.vy += GRAVITY; this.y += this.vy; this.x += this.vx; if (this.y > 240) this.dead = true; return; }
         if (this.state === 'squished') { this.deathTimer--; if (this.deathTimer <= 0) this.dead = true; return; }
-        this.applyPhysics(map); this.animTimer += 0.1;
-        if (this.x < game.cameraX - 64) this.dead = true; 
+        this.applyPhysics(map); this.animTimer += 0.1; if (this.x < game.cameraX - 64) this.dead = true; 
     }
     onWallHit(tile, oldVx) { this.vx = oldVx > 0 ? -0.5 : 0.5; }
     squish() { this.state = 'squished'; this.vx = 0; this.deathTimer = 30; }
     draw(ctx) {
-        let sp = Sprites.goomba1;
-        if (this.state === 'squished') sp = Sprites.goombaSquished;
-        else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.goomba2;
-        ctx.save(); ctx.translate(this.x+8, this.y+8);
-        if (this.state === 'star_dead') ctx.scale(1, -1);
+        let sp = Sprites.goomba1; if (this.state === 'squished') sp = Sprites.goombaSquished; else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.goomba2;
+        ctx.save(); ctx.translate(this.x+8, this.y+8); if (this.state === 'star_dead') ctx.scale(1, -1);
         ctx.drawImage(sp, -8, -8); ctx.restore();
     }
 }
@@ -804,7 +726,7 @@ class Koopa extends Entity {
         if (this.state === 'shell_slide') {
             for (let e of entities) {
                 if (e === this || e.dead || e.type === 'player' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
-                if (this.intersects(e)) { e.dieFromStar(); game.addScore(200, e.x, e.y); }
+                if (this.intersects(e)) { e.dieFromStar(); game.gainReward(200, e.x, e.y); }
             }
         }
         if (this.x < game.cameraX - 64) this.dead = true; 
@@ -815,12 +737,9 @@ class Koopa extends Entity {
     }
     squish() { if (this.state === 'walk' || this.state === 'shell_slide') { this.state = 'shell_idle'; this.vx = 0; } }
     draw(ctx) {
-        let sp = Sprites.koopa1;
-        if (this.state === 'shell_idle' || this.state === 'shell_slide') sp = Sprites.shell;
-        else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.koopa2;
+        let sp = Sprites.koopa1; if (this.state === 'shell_idle' || this.state === 'shell_slide') sp = Sprites.shell; else if (Math.floor(this.animTimer) % 2 === 0) sp = Sprites.koopa2;
         ctx.save(); ctx.translate(this.x+8, this.y+8);
-        if (this.state === 'star_dead') ctx.scale(1, -1);
-        else if (this.state === 'walk' && this.vx > 0) ctx.scale(-1, 1);
+        if (this.state === 'star_dead') ctx.scale(1, -1); else if (this.state === 'walk' && this.vx > 0) ctx.scale(-1, 1);
         ctx.drawImage(sp, -8, -8); ctx.restore();
     }
 }
@@ -832,8 +751,7 @@ class Bird extends Entity {
             this.vy += GRAVITY; this.y += this.vy; this.x += this.state === 'star_dead' ? this.vx : 0;
             if (this.y > 240) this.dead = true; return;
         }
-        this.x += this.vx; this.animTimer += 0.1;
-        if (this.x < game.cameraX - 100) this.dead = true; 
+        this.x += this.vx; this.animTimer += 0.1; if (this.x < game.cameraX - 100) this.dead = true; 
     }
     squish() { this.state = 'squished'; this.vy = -1; this.vx = 0; }
     draw(ctx) {
@@ -895,7 +813,7 @@ class CoinItem extends Entity {
 class ScoreParticle {
     constructor(x, y, text, color = 'white') { this.x = x; this.y = y; this.text = text; this.color = color; this.vy = -2; this.life = 40; }
     update() { this.y += this.vy; this.life--; if (this.life <= 0) this.dead = true; }
-    draw(ctx) { ctx.fillStyle = this.color; ctx.font = '10px Courier New'; ctx.fillText(this.text, this.x, this.y); }
+    draw(ctx) { ctx.fillStyle = this.color; ctx.font = 'bold 12px Courier New'; ctx.fillText(this.text, this.x, this.y); }
 }
 class BrickDebris {
     constructor(x, y, vx, vy) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.life = 60; }
@@ -905,19 +823,36 @@ class BrickDebris {
 
 class ShootoutArena {
     constructor(gameInst) {
-        this.game = gameInst; this.rows = 15; this.columns = [];
-        for(let x=0; x<16; x++) {
+        this.game = gameInst; this.rows = 15; this.cols = 40; this.columns = [];
+        
+        for(let x=0; x<this.cols; x++) {
             let col = new Array(this.rows).fill(null);
+            
+            // 地面与天花板边界
             col[13] = { x, y: 13, type: 'usedblock', solid: true, bounceY: 0 };
             col[14] = { x, y: 14, type: 'usedblock', solid: true, bounceY: 0 };
-            if (x===0 || x===15) { for(let y=0; y<15; y++) col[y] = { x, y, type: 'usedblock', solid: true, bounceY: 0 }; }
+            
+            // 两侧空气墙边界
+            if (x===0 || x===this.cols-1) { for(let y=0; y<15; y++) col[y] = { x, y, type: 'usedblock', solid: true, bounceY: 0 }; }
+            
+            // 立体高低跳台
+            if (x >= 4 && x <= 10) col[9] = { x, y: 9, type: 'brick', solid: true, bounceY: 0 }; // 左跳台
+            if (x >= 29 && x <= 35) col[9] = { x, y: 9, type: 'brick', solid: true, bounceY: 0 }; // 右跳台
+            if (x >= 15 && x <= 24) col[5] = { x, y: 5, type: 'brick', solid: true, bounceY: 0 }; // 中央制高点
+            
+            // 地面掩体 (可挡子弹)
+            if (x === 13 || x === 26) {
+                col[11] = { x, y: 11, type: 'usedblock', solid: true, bounceY: 0 };
+                col[12] = { x, y: 12, type: 'usedblock', solid: true, bounceY: 0 };
+            }
+
             this.columns[x] = col;
         }
     }
     getIntersectingTiles(rect, shrinkX=0, shrinkY=0) {
         let tiles = [];
         let startX = Math.max(0, Math.floor((rect.x + shrinkX) / TILE_SIZE));
-        let endX = Math.min(15, Math.floor((rect.x + rect.w - shrinkX - 0.001) / TILE_SIZE));
+        let endX = Math.min(this.cols-1, Math.floor((rect.x + rect.w - shrinkX - 0.001) / TILE_SIZE));
         let startY = Math.max(0, Math.floor((rect.y + shrinkY) / TILE_SIZE));
         let endY = Math.min(this.rows - 1, Math.floor((rect.y + rect.h - shrinkY - 0.001) / TILE_SIZE));
         for (let x = startX; x <= endX; x++) {
@@ -927,10 +862,16 @@ class ShootoutArena {
         return tiles;
     }
     draw(ctx, cameraX) {
-        for (let x = 0; x <= 15; x++) {
+        let startCol = Math.max(0, Math.floor(cameraX / TILE_SIZE));
+        let endCol = startCol + Math.ceil(canvas.width / TILE_SIZE) + 1;
+        for (let x = startCol; x <= endCol; x++) {
             if (!this.columns[x]) continue;
             for (let y = 0; y < this.rows; y++) {
-                if (this.columns[x][y]) ctx.drawImage(Sprites.usedBlock, x * TILE_SIZE, y * TILE_SIZE);
+                let t = this.columns[x][y];
+                if (t) {
+                    let sp = t.type === 'brick' ? Sprites.brick : Sprites.usedBlock;
+                    ctx.drawImage(sp, x * TILE_SIZE, y * TILE_SIZE);
+                }
             }
         }
     }
@@ -942,10 +883,10 @@ class InfiniteMap {
         this.animTimer = 0; this.lastGenX = 0; this.state = 'safe_zone'; this.stateTimer = 20; 
         this.groundY = 11; this.pipeHeight = 2; this.blocksSpawned = 0; this.isGoldenPipe = false;
     }
-    buildPipe(col, x, isLeft) {
+    buildPipe(col, x, isLeft, isGolden = false) {
         let topY = this.groundY - this.pipeHeight;
-        let pTL = this.isGoldenPipe ? 'gPipeTL' : 'pipeTL'; let pTR = this.isGoldenPipe ? 'gPipeTR' : 'pipeTR';
-        let pL = this.isGoldenPipe ? 'gPipeL' : 'pipeL'; let pR = this.isGoldenPipe ? 'gPipeR' : 'pipeR';
+        let pTL = isGolden ? 'gPipeTL' : 'pipeTL'; let pTR = isGolden ? 'gPipeTR' : 'pipeTR';
+        let pL = isGolden ? 'gPipeL' : 'pipeL'; let pR = isGolden ? 'gPipeR' : 'pipeR';
         col[topY] = { x, y: topY, type: isLeft ? pTL : pTR, solid: true, bounceY: 0 };
         for (let py = topY + 1; py < this.groundY; py++) col[py] = { x, y: py, type: isLeft ? pL : pR, solid: true, bounceY: 0 };
     }
@@ -969,10 +910,11 @@ class InfiniteMap {
                 let item = null;
                 if (type === 'qblock') {
                     this.blocksSpawned++;
-                    if (this.blocksSpawned < 3 && Math.random() < 0.5) item = 'mushroom';
-                    else {
-                        let rand = Math.random();
-                        if (rand < 0.1) item = 'star'; else if (rand < 0.3) item = 'mushroom'; else item = 'coin';
+                    let isBig = this.game.player && this.game.player.isBig;
+                    if (isBig) {
+                        if (Math.random() < 0.5) item = 'star'; else item = Math.random() < 0.5 ? 'coin' : 'mushroom';
+                    } else {
+                        if (Math.random() < 0.6) item = 'mushroom'; else item = Math.random() < 0.5 ? 'coin' : null;
                     }
                 }
                 col[by] = { x, y: by, type, solid: true, bounceY: 0, item };
@@ -980,10 +922,13 @@ class InfiniteMap {
             if (this.stateTimer <= 0) {
                 let r = Math.random();
                 if (r < 0.2) { this.state = 'pit'; this.stateTimer = Math.floor(Math.random() * 3) + 2; }
-                else if (r < 0.5) { 
+                else if (r < 0.4) { 
                     this.state = 'pipe_start'; this.stateTimer = 2; 
                     this.pipeHeight = Math.floor(Math.random() * 3) + 2; 
-                    this.isGoldenPipe = Math.random() < 0.2; 
+                }
+                else if (r < 0.6) {
+                    this.state = 'golden_pipe_start'; this.stateTimer = 2;
+                    this.pipeHeight = Math.floor(Math.random() * 2) + 2;
                 }
                 else { this.stateTimer = Math.floor(Math.random() * 6) + 3; }
             } else {
@@ -1000,14 +945,17 @@ class InfiniteMap {
         } else if (this.state === 'pit') {
             this.stateTimer--; if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
         } else if (this.state === 'pipe_start') {
-            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
+            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2, false); this.stateTimer--;
             if (this.stateTimer <= 0) { this.state = 'pipe_gap'; this.stateTimer = Math.floor(Math.random() * 4) + 3; }
         } else if (this.state === 'pipe_gap') {
             this.buildGround(col, x, this.groundY); this.stateTimer--;
             if (this.stateTimer === 2) this.game.entities.push(new Koopa(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE)); 
             if (this.stateTimer <= 0) { this.state = 'pipe_end'; this.stateTimer = 2; this.pipeHeight = Math.floor(Math.random() * 3) + 2; }
         } else if (this.state === 'pipe_end') {
-            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2); this.stateTimer--;
+            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2, false); this.stateTimer--;
+            if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
+        } else if (this.state === 'golden_pipe_start') {
+            this.buildGround(col, x, this.groundY); this.buildPipe(col, x, this.stateTimer === 2, true); this.stateTimer--;
             if (this.stateTimer <= 0) { this.state = 'ground'; this.stateTimer = Math.floor(Math.random() * 5) + 3; }
         }
         this.columns[x] = col; this.bgColumns[x] = bgCol;
@@ -1040,7 +988,7 @@ class InfiniteMap {
         let t = this.columns[tx][ty];
         if (t.type === 'qblock') {
             t.type = 'usedblock'; t.bounceY = -4; playSound('bump');
-            if (t.item === 'coin') this.game.addCoin();
+            if (t.item === 'coin') { this.game.gainReward(100, tx * TILE_SIZE, ty * TILE_SIZE); playSound('coin'); }
             else if (t.item === 'mushroom') { playSound('powerup'); this.game.entities.push(new Mushroom(tx * TILE_SIZE, ty * TILE_SIZE)); }
             else if (t.item === 'star') { playSound('powerup'); this.game.entities.push(new Star(tx * TILE_SIZE, ty * TILE_SIZE)); }
         } else if (t.type === 'brick') {
@@ -1049,7 +997,7 @@ class InfiniteMap {
                 let px = tx * TILE_SIZE; let py = ty * TILE_SIZE;
                 this.game.particles.push(new BrickDebris(px, py, -2, -4)); this.game.particles.push(new BrickDebris(px+8, py, 2, -4));
                 this.game.particles.push(new BrickDebris(px, py+8, -2, -2)); this.game.particles.push(new BrickDebris(px+8, py+8, 2, -2));
-                this.game.addScore(50, px, py);
+                this.game.gainReward(50, px, py); 
             } else { t.bounceY = -4; playSound('bump'); }
         }
     }
@@ -1090,17 +1038,13 @@ class InfiniteMap {
     }
 }
 
-let game; let isStarted = false; let lastTime = 0;
+let game = null; let isStarted = false; let lastTime = 0;
 function gameLoop(timestamp) {
-    if(!isStarted) return requestAnimationFrame(gameLoop);
+    if(!isStarted) return;
     let deltaTime = timestamp - lastTime;
     if (deltaTime > 16) { game.update(); game.draw(); lastTime = timestamp; }
     requestAnimationFrame(gameLoop);
 }
-
-// 绑定 8-Bit 像素风按钮来启动游戏
-document.getElementById('start-btn').addEventListener('click', startGame);
-window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !isStarted) startGame(); });
 
 function startGame() {
     if(isStarted) return; initAudio(); game = new Game();
