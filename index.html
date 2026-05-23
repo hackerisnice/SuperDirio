@@ -18,27 +18,30 @@
         }
         canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
         
-        /* 使用绝对定位的钢铁布局虚拟按键，绝不变形！ */
+        /* 绝对定位的钢铁布局虚拟按键，恢复成动态巨型尺寸！ */
         #mobile-controls {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; pointer-events: none; z-index: 10;
         }
         .ctrl-btn {
-            position: absolute; width: 70px; height: 70px; background: rgba(255, 255, 255, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.7); border-radius: 50%; pointer-events: auto;
-            color: #fff; font-weight: bold; font-size: 20px; text-align: center; line-height: 1.2;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+            position: absolute; 
+            /* 恢复巨型尺寸：随屏幕动态放大，最大 90px */
+            width: min(21vw, 90px); height: min(21vw, 90px); 
+            background: rgba(255, 255, 255, 0.25);
+            border: 4px solid rgba(255, 255, 255, 0.8); border-radius: 50%; pointer-events: auto;
+            color: #fff; font-weight: bold; font-size: min(5vw, 24px); text-align: center; line-height: 1.1;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5); backdrop-filter: blur(2px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .ctrl-btn small { font-size: 10px; color: #ffeb3b; text-shadow: 1px 1px 0 #000; margin-top: 2px; }
-        .ctrl-btn.pressed { background: rgba(255, 255, 255, 0.6); transform: scale(0.9); }
+        .ctrl-btn small { font-size: 0.45em; color: #ffeb3b; text-shadow: 1px 1px 0 #000; margin-top: 3px; font-weight: normal; }
+        .ctrl-btn.pressed { background: rgba(255, 255, 255, 0.7); transform: scale(0.92); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-        /* 绝对定位坐标 (适配绝大多数手机) */
-        #btn-left  { bottom: 30px; left: 10px; }
-        #btn-down  { bottom: 10px; left: 90px; width: 60px; height: 60px; font-size: 16px; }
-        #btn-right { bottom: 30px; left: 160px; }
+        /* 精确计算的相对位置，模拟经典手柄弧度且绝不重叠 */
+        #btn-left  { bottom: 16%; left: 3%; }
+        #btn-down  { bottom: 2%; left: calc(3% + min(21vw, 90px) * 0.95); width: min(16vw, 70px); height: min(16vw, 70px); font-size: min(3.5vw, 15px); }
+        #btn-right { bottom: 16%; left: calc(3% + min(21vw, 90px) * 1.9); }
         
-        #btn-b     { bottom: 20px; right: 90px; }
-        #btn-a     { bottom: 40px; right: 10px; }
+        #btn-b     { bottom: 8%; right: calc(4% + min(21vw, 90px) * 1.15); }
+        #btn-a     { bottom: 25%; right: 4%; }
 
         /* UI 与 启动屏 */
         #ui-layer {
@@ -74,7 +77,7 @@
         <div>TIME<br><span id="time">000</span></div>
     </div>
 
-    <!-- 钢铁布局的移动端按键 -->
+    <!-- 钢铁布局的移动端巨型按键 -->
     <div id="mobile-controls">
         <div class="ctrl-btn" id="btn-left">◀</div>
         <div class="ctrl-btn" id="btn-down">▼<br><small>钻管</small></div>
@@ -90,7 +93,7 @@
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
-            <span style="color: #ff0000; font-weight: bold;">【更新】无限弹药模式开启！决一死战！</span>
+            <span style="color: #ff0000; font-weight: bold;">【更新】手机巨型虚拟按键回归，操作更爽快！</span>
         </p>
     </div>
 </div>
@@ -113,7 +116,7 @@ const MAX_WALK_SPEED = 1.6;
 const MAX_RUN_SPEED = 2.8;    
 
 let globalScore = 0;
-let globalCoins = 1000; // 开局送门票
+let globalCoins = 1000; 
 let globalTime = 0;
 
 let audioCtx = null;
@@ -150,6 +153,9 @@ function playSound(type) {
         } else if (type === 'kick') {
             osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
             gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'star') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
         }
     } catch(e){}
 }
@@ -273,7 +279,7 @@ class Game {
         this.player.x = 20; this.player.y = 80; 
         this.player.isBig = false; this.player.h = 16; 
         this.player.hp = 100; this.player.shootCooldown = 0; this.player.facingRight = true;
-        this.player.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; // 初始随机武器
+        this.player.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
         
         this.shootoutArena = new ShootoutArena(this);
         this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
@@ -323,7 +329,6 @@ class Game {
             this.projectiles.push(new Projectile(spawnX, spawnY, dir*gun.speed, 0, gun, isPlayer));
         }
         entity.shootCooldown = gun.cooldown; playSound('shoot');
-        // 开火后随机换武器
         entity.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
     }
 
@@ -612,7 +617,7 @@ class Player extends Entity {
 class BossTurtle extends Entity {
     constructor(x, y) {
         super(x, y, 32, 32); this.type = 'boss'; this.hp = 150;
-        this.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; // Boss也享有无限随机火力
+        this.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
         this.shootCooldown = 60; this.isDeadState = false; this.jumpCooldown = 0;
     }
     
@@ -975,7 +980,7 @@ class InfiniteMap {
                 let px = tx * TILE_SIZE; let py = ty * TILE_SIZE;
                 this.game.particles.push(new BrickDebris(px, py, -2, -4)); this.game.particles.push(new BrickDebris(px+8, py, 2, -4));
                 this.game.particles.push(new BrickDebris(px, py+8, -2, -2)); this.game.particles.push(new BrickDebris(px+8, py+8, 2, -2));
-                this.game.gainReward(50, px, py); // 碎砖奖励
+                this.game.gainReward(50, px, py); 
             } else { t.bounceY = -4; playSound('bump'); }
         }
     }
