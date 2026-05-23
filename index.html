@@ -62,6 +62,12 @@
             box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.4), 4px 4px 0 #000;
             animation: blink 1.5s infinite;
         }
+        .audio-toggle-btn {
+            margin-top: 12px; padding: 10px 18px; background-color: #2b2b2b; color: #fff;
+            font-size: 16px; font-weight: bold; border: 3px solid #fff; cursor: pointer;
+            box-shadow: inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.25), 3px 3px 0 #000;
+        }
+        .audio-toggle-btn.off { background-color: #6a1b1b; }
         @keyframes blink { 0%, 100% { color: #fff; } 50% { color: #ffeb3b; } }
     </style>
 </head>
@@ -90,6 +96,7 @@
         <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
         <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
         <div class="pixel-btn">START GAME</div>
+        <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
@@ -118,11 +125,12 @@ const MAX_RUN_SPEED = 2.8;
 let globalScore = 0;
 let globalCoins = 1000; 
 let globalTime = 0;
+let soundEnabled = true;
 
 let audioCtx = null;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
-    if (!audioCtx) return;
+    if (!audioCtx || !soundEnabled) return;
     try {
         const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
@@ -158,6 +166,15 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
         }
     } catch(e){}
+}
+
+function toggleAudio(event) {
+    if (event) event.stopPropagation();
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('audio-toggle-btn');
+    if (!btn) return;
+    btn.textContent = `音效：${soundEnabled ? '开启' : '关闭'}`;
+    btn.classList.toggle('off', !soundEnabled);
 }
 
 const C = {
@@ -396,7 +413,8 @@ class Game {
             }
         } else {
             if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
-            if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
+            // 避免浮点误差导致贴近左边缘时被“瞬间吸回”
+            if (this.player.x < this.cameraX - 0.5) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
 
@@ -472,7 +490,8 @@ class Entity {
             }
         }
         this.x += this.vx;
-        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        // 横向碰撞使用更窄的垂直采样，降低边角“卡边回弹”问题
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 3, w: this.w, h: this.h - 6 });
         for (let t of xTiles) {
             if (t.solid) {
                 let oldVx = this.vx; 
