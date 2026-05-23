@@ -25,7 +25,7 @@
         .ctrl-btn {
             position: absolute; 
             /* 恢复巨型尺寸：随屏幕动态放大，最大 90px */
-            width: min(21vw, 90px); height: min(21vw, 90px); 
+            width: min(21vw, 150px); height: min(21vw, 150px); 
             background: rgba(255, 255, 255, 0.25);
             border: 4px solid rgba(255, 255, 255, 0.8); border-radius: 50%; pointer-events: auto;
             color: #fff; font-weight: bold; font-size: min(5vw, 24px); text-align: center; line-height: 1.1;
@@ -37,8 +37,8 @@
 
         /* 精确计算的相对位置，模拟经典手柄弧度且绝不重叠 */
         #btn-left  { bottom: 16%; left: 3%; }
-        #btn-down  { bottom: 2%; left: calc(3% + min(21vw, 90px) * 0.95); width: min(16vw, 70px); height: min(16vw, 70px); font-size: min(3.5vw, 15px); }
-        #btn-right { bottom: 16%; left: calc(3% + min(21vw, 90px) * 1.9); }
+        #btn-down  { bottom: 2%; left: calc(3% + min(21vw, 150px) * 0.95); width: min(16vw, 130px); height: min(16vw, 130px); font-size: min(3.5vw, 75px); }
+        #btn-right { bottom: 16%; left: calc(3% + min(21vw, 150px) * 1.9); }
         
         #btn-b     { bottom: 8%; right: calc(4% + min(21vw, 90px) * 1.15); }
         #btn-a     { bottom: 25%; right: 4%; }
