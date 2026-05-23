@@ -426,7 +426,8 @@ class Game {
                 if (!this.player.isDeadState) {
                     const speed = 1.35;
                     this.player.vx = (Input.left ? -speed : 0) + (Input.right ? speed : 0);
-                    this.player.vy = (Input.up ? -speed : 0) + (Input.down ? speed : 0);
+                    const dodgeUp = Input.up || Input.jump;
+                    this.player.vy = (dodgeUp ? -speed : 0) + (Input.down ? speed : 0);
                     this.player.x += this.player.vx;
                     this.player.y += this.player.vy;
                     this.player.x = Math.max(8, Math.min(256 - this.player.w - 8, this.player.x));
