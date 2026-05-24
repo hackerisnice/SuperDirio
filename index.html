@@ -307,6 +307,7 @@ class Game {
             this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
         } else {
             this.dodgeArena = new DodgeArena(this);
+            this.dodgeArena.reset();
             this.player.x = 120; this.player.y = 120; this.player.vx = 0; this.player.vy = 0;
             this.entities = [this.player]; this.projectiles = []; this.particles = [];
         }
@@ -493,7 +494,10 @@ class Game {
         } else if (this.mode === 'dodge') {
             ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,36);
             ctx.fillStyle = '#9cf'; ctx.font = 'bold 10px Courier New';
-            ctx.fillText(`DODGE TIME:${Math.ceil(this.dodgeArena.winFrames/60)}`, 6, 12);
+            const totalSec = this.dodgeArena.totalWinSeconds;
+            const remainSec = Math.max(0, Math.ceil(this.dodgeArena.winFrames / 60));
+            const survivedSec = Math.max(0, totalSec - remainSec);
+            ctx.fillText(`生存:${survivedSec}s/${totalSec}s`, 6, 12);
             ctx.fillStyle = '#8f8'; ctx.fillText(`方向键/右下按键移动，别碰蓝线`, 6, 25);
         }
     }
@@ -501,7 +505,13 @@ class Game {
 
 class DodgeArena {
     constructor(gameInst) {
-        this.game = gameInst; this.width = 256; this.height = 240; this.frame = 0; this.winFrames = 60 * 90;
+        this.game = gameInst; this.width = 256; this.height = 240; this.totalWinSeconds = 90;
+        this.hazards = [];
+        this.reset();
+    }
+    reset() {
+        this.frame = 0;
+        this.winFrames = 60 * this.totalWinSeconds;
         this.hazards = [];
     }
     spawnTelegraphLine(fast=true) {
