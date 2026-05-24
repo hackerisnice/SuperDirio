@@ -826,6 +826,12 @@ class Player extends Entity {
                         if (!this.isBig) { this.isBig = true; this.y -= 16; this.h = 32; }
                     } else if (e.type === 'star') {
                         e.dead = true; game.gainReward(300, e.x, e.y); playSound('powerup'); this.starTimer = 600; 
+                    } else if (e.type === 'golden_mario') {
+                        const myCenter = this.x + this.w / 2;
+                        const eCenter = e.x + e.w / 2;
+                        if (myCenter < eCenter) this.x = e.x - this.w;
+                        else this.x = e.x + e.w;
+                        this.vx = 0;
                     } else if (e.type === 'goomba' || e.type === 'bird' || e.type === 'koopa') {
                         if (this.starTimer > 0) {
                             e.dieFromStar(); game.gainReward(200, e.x, e.y);
@@ -994,8 +1000,21 @@ class Koopa extends Entity {
 }
 
 class GoldenMario extends Entity {
-    constructor(x, y) { super(x, y, 12, 16); this.type = 'golden_mario'; }
-    update() {}
+    constructor(x, y) { super(x, y, 12, 16); this.type = 'golden_mario'; this.walkDir = Math.random() < 0.5 ? -1 : 1; this.walkTimer = 60; this.animTimer = 0; }
+    update(map) {
+        this.animTimer += 0.1;
+        this.walkTimer--;
+        if (this.walkTimer <= 0) {
+            this.walkTimer = 40 + Math.floor(Math.random() * 80);
+            if (Math.random() < 0.65) this.walkDir *= -1;
+        }
+        this.vx = this.walkDir * 0.35;
+        this.facingRight = this.vx > 0;
+        this.applyPhysics(map);
+        if (this.onGround && Math.random() < 0.004) this.vy = -3.4;
+        if (this.x < game.cameraX - 64) this.dead = true;
+    }
+    onWallHit(tile, oldVx) { this.walkDir = oldVx > 0 ? -1 : 1; this.vx = this.walkDir * 0.35; }
     squish() {}
     dieFromStar() {}
     draw(ctx) {
@@ -1005,7 +1024,9 @@ class GoldenMario extends Entity {
         ctx.ellipse(this.x + 6, this.y + this.h + 2, 6, 2.2, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.filter = 'hue-rotate(35deg) saturate(250%)';
-        ctx.drawImage(Sprites.marioIdle, this.x, this.y);
+        const sp = Math.abs(this.vx) > 0.05 ? ((Math.floor(this.animTimer) % 2 === 0) ? Sprites.marioRun1 : Sprites.marioRun2) : Sprites.marioIdle;
+        if (!this.facingRight) { ctx.translate(this.x + 6, this.y); ctx.scale(-1, 1); ctx.drawImage(sp, -6, 0); }
+        else ctx.drawImage(sp, this.x, this.y);
         ctx.restore();
     }
 }
