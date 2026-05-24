@@ -62,6 +62,12 @@
             box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.4), 4px 4px 0 #000;
             animation: blink 1.5s infinite;
         }
+        .audio-toggle-btn {
+            margin-top: 12px; padding: 10px 18px; background-color: #2b2b2b; color: #fff;
+            font-size: 16px; font-weight: bold; border: 3px solid #fff; cursor: pointer;
+            box-shadow: inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.25), 3px 3px 0 #000;
+        }
+        .audio-toggle-btn.off { background-color: #6a1b1b; }
         @keyframes blink { 0%, 100% { color: #fff; } 50% { color: #ffeb3b; } }
     </style>
 </head>
@@ -90,6 +96,7 @@
         <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
         <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
         <div class="pixel-btn">START GAME</div>
+        <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
@@ -118,11 +125,12 @@ const MAX_RUN_SPEED = 2.8;
 let globalScore = 0;
 let globalCoins = 1000; 
 let globalTime = 0;
+let soundEnabled = true;
 
 let audioCtx = null;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
-    if (!audioCtx) return;
+    if (!audioCtx || !soundEnabled) return;
     try {
         const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
@@ -158,6 +166,15 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
         }
     } catch(e){}
+}
+
+function toggleAudio(event) {
+    if (event) event.stopPropagation();
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('audio-toggle-btn');
+    if (!btn) return;
+    btn.textContent = `音效：${soundEnabled ? '开启' : '关闭'}`;
+    btn.classList.toggle('off', !soundEnabled);
 }
 
 const C = {
@@ -227,6 +244,7 @@ document.addEventListener('keydown', e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = true;
     if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = true;
     if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = true;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = true;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') { if (!Input.jump) Input.jumpPressed = true; Input.jump = true; }
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = true;
 });
@@ -234,6 +252,7 @@ document.addEventListener('keyup', e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = false;
     if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = false;
     if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = false;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = false;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') Input.jump = false;
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = false;
 });
@@ -269,28 +288,36 @@ class Game {
         this.particles.push(new ScoreParticle(x, y, `+${val}`, '#ffeb3b'));
     }
 
-    enterMiniGame() {
+    enterMiniGame(type = 'random') {
+        const miniType = type === 'random' ? (Math.random() < 0.3 ? 'dodge' : 'shootout') : type;
         this.savedMainState = {
             cameraX: this.cameraX, playerX: this.player.x, playerY: this.player.y,
             isBig: this.player.isBig, starTimer: this.player.starTimer,
             entities: this.entities.filter(e => e.type !== 'player') 
         };
-        this.mode = 'shootout'; this.cameraX = 0;
+        this.mode = miniType; this.cameraX = 0;
         this.player.x = 20; this.player.y = 80; 
         this.player.isBig = false; this.player.h = 16; 
         this.player.hp = 100; this.player.shootCooldown = 0; this.player.facingRight = true;
         this.player.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
-        
-        this.shootoutArena = new ShootoutArena(this);
-        this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
-        this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
+
+        if (this.mode === 'shootout') {
+            this.shootoutArena = new ShootoutArena(this);
+            this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
+            this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
+        } else {
+            this.dodgeArena = new DodgeArena(this);
+            this.player.x = 120; this.player.y = 120; this.player.vx = 0; this.player.vy = 0;
+            this.entities = [this.player]; this.projectiles = []; this.particles = [];
+        }
         this.miniGameEnding = false; this.exitTimer = 0;
     }
 
     exitMiniGame(win) {
+        const prevMode = this.mode;
         this.mode = 'main';
         if (win) { 
-            this.gainReward(2000, this.player.x, this.player.y); 
+            this.gainReward(prevMode === 'dodge' ? 3000 : 2000, this.player.x, this.player.y); 
             playSound('powerup'); 
         } else { 
             playSound('pipe'); 
@@ -337,7 +364,7 @@ class Game {
             if (this.deathTimer > 0) {
                 this.deathTimer--;
                 if (this.deathTimer <= 0) {
-                    if (this.mode === 'shootout') this.exitMiniGame(false); 
+                    if (this.mode === 'shootout' || this.mode === 'dodge') this.exitMiniGame(false); 
                     else this.reset(); 
                 }
             }
@@ -352,7 +379,8 @@ class Game {
         }
 
         for (let i = this.entities.length - 1; i >= 0; i--) {
-            let e = this.entities[i]; e.update(currentMap, this.entities);
+            let e = this.entities[i];
+            if (!(this.mode === 'dodge' && e === this.player)) e.update(currentMap, this.entities);
             if (e.dead) this.entities.splice(i, 1);
         }
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -360,7 +388,7 @@ class Game {
             if (p.dead) this.particles.splice(i, 1);
         }
 
-        if (this.mode === 'shootout') {
+            if (this.mode === 'shootout') {
             if (this.player.shootCooldown > 0) this.player.shootCooldown--;
             if (Input.run && this.player.shootCooldown <= 0 && !this.miniGameEnding && !this.player.isDeadState) this.fireWeapon(this.player, true);
             
@@ -394,9 +422,33 @@ class Game {
                 if (this.boss.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(true); }
                 else if (!this.player.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(false); }
             }
-        } else {
-            if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
-            if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
+            } else if (this.mode === 'dodge') {
+                this.dodgeArena.update();
+                if (!this.player.isDeadState) {
+                    const speed = 1.35;
+                    const moveX = (Input.left ? -1 : 0) + (Input.right ? 1 : 0);
+                    const dodgeUp = Input.up || Input.jump;
+                    const moveY = (dodgeUp ? -1 : 0) + (Input.down ? 1 : 0);
+                    const len = Math.hypot(moveX, moveY) || 1;
+                    this.player.vx = moveX === 0 ? 0 : (moveX / len) * speed;
+                    this.player.vy = moveY === 0 ? 0 : (moveY / len) * speed;
+                    this.player.x += this.player.vx;
+                    this.player.y += this.player.vy;
+                    this.player.x = Math.max(8, Math.min(256 - this.player.w - 8, this.player.x));
+                    this.player.y = Math.max(8, Math.min(240 - this.player.h - 8, this.player.y));
+                    if (this.dodgeArena.hitPlayer(this.player)) this.player.die();
+                }
+                if (this.dodgeArena.winFrames <= 0 && !this.player.isDeadState) {
+                    this.miniGameEnding = true; this.exitTimer = 60;
+                }
+                if (this.miniGameEnding && this.exitTimer > 0) {
+                    this.exitTimer--;
+                    if (this.exitTimer <= 0) this.exitMiniGame(true);
+                }
+            } else {
+                if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
+                // 避免浮点误差导致贴近左边缘时被“瞬间吸回”
+                if (this.player.x < this.cameraX - 0.5) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
 
@@ -406,13 +458,16 @@ class Game {
     }
 
     draw() {
-        ctx.fillStyle = this.mode === 'shootout' ? '#222' : '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = (this.mode === 'shootout' || this.mode === 'dodge') ? '#222' : '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(-Math.floor(this.cameraX), 0);
         
         if (this.mode === 'shootout') {
             this.shootoutArena.draw(ctx, this.cameraX);
             this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
             this.player.draw(ctx); this.projectiles.forEach(p => p.draw(ctx));
+        } else if (this.mode === 'dodge') {
+            this.dodgeArena.draw(ctx);
+            this.player.draw(ctx);
         } else {
             this.map.drawBg(ctx, this.cameraX);
             if (this.player.state === 'enter_pipe') {
@@ -435,6 +490,115 @@ class Game {
             ctx.fillStyle = 'white'; ctx.fillText(`BOSS HP:${Math.max(0, this.boss ? this.boss.hp : 0)}`, 140, 12);
             let bGun = this.boss && this.boss.currentGun;
             ctx.fillStyle = bGun ? bGun.color : 'gray'; ctx.fillText(`[${bGun ? bGun.name : 'EMPTY'} ∞]`, 140, 24);
+        } else if (this.mode === 'dodge') {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,36);
+            ctx.fillStyle = '#9cf'; ctx.font = 'bold 10px Courier New';
+            ctx.fillText(`DODGE TIME:${Math.ceil(this.dodgeArena.winFrames/60)}`, 6, 12);
+            ctx.fillStyle = '#8f8'; ctx.fillText(`方向键/右下按键移动，别碰蓝线`, 6, 25);
+        }
+    }
+}
+
+class DodgeArena {
+    constructor(gameInst) {
+        this.game = gameInst; this.width = 256; this.height = 240; this.frame = 0; this.winFrames = 60 * 90;
+        this.hazards = [];
+    }
+    spawnTelegraphLine(fast=true) {
+        const vertical = Math.random() < 0.5;
+        const limit = vertical ? this.width : this.height;
+        const minGap = 46;
+        let pos = 20 + Math.random() * (limit - 40);
+        let tries = 0;
+        while (tries < 12 && this.hazards.some(h =>
+            h.type === 'line' &&
+            h.vertical === vertical &&
+            (h.state === 'warn' || h.state === 'hit') &&
+            Math.abs(h.pos - pos) < minGap
+        )) {
+            pos = 20 + Math.random() * (limit - 40);
+            tries++;
+        }
+        if (tries >= 12) return;
+        const delay = 180;
+        this.hazards.push({type:'line', vertical, pos, state:'warn', timer:delay, life: fast ? 120 : 190, colorWarn: '#f33', colorHit: fast ? '#39f' : '#3f3', thickness: fast ? 4 : 3});
+    }
+    spawnGear() {
+        const r = Math.random() < 0.5 ? 10 : 18;
+        const x = 20 + Math.random() * (this.width - 40), y = 20 + Math.random() * (this.height - 40);
+        this.hazards.push({
+            type:'gear', x, y, r, state:'warn', timer:180, life:150,
+            colorWarn:'#f33', colorHit:'#39f', angle: 0, spin: (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.04),
+            outerRing: r + 6
+        });
+    }
+    spawnGreenRayNoWarn() {
+        const edge = Math.floor(Math.random()*4);
+        let x=0,y=0,vx=0,vy=0,s=1.1;
+        if (edge===0){x=0;y=Math.random()*this.height;vx=s;}
+        if (edge===1){x=this.width;y=Math.random()*this.height;vx=-s;}
+        if (edge===2){x=Math.random()*this.width;y=0;vy=s;}
+        if (edge===3){x=Math.random()*this.width;y=this.height;vy=-s;}
+        this.hazards.push({type:'green_ray', x,y,vx,vy,life:220,r:4,color:'#37ff37'});
+    }
+    update() {
+        this.frame++; this.winFrames--;
+        if (this.frame % 85 === 0) this.spawnTelegraphLine(true);
+        if (this.frame % 170 === 0) this.spawnGear();
+        if (this.frame % 90 === 0) this.spawnGreenRayNoWarn();
+        // 移除骨头波形弹幕
+        for (const h of this.hazards) {
+            if (h.type === 'line' || h.type === 'gear') {
+                if (h.state === 'warn') { h.timer--; if (h.timer <= 0) h.state = 'hit'; }
+                else h.life--;
+                if (h.type === 'gear') h.angle += h.spin;
+            } else if (h.type === 'green_ray') {
+                h.x += h.vx; h.y += h.vy; h.life--;
+            }
+        }
+        this.hazards = this.hazards.filter(h => h.life > 0);
+    }
+    hitPlayer(p) {
+        for (const h of this.hazards) {
+            if (h.type === 'line' && h.state === 'hit') {
+                if (h.vertical) { if (Math.abs((p.x + p.w/2) - h.pos) < h.thickness + p.w/2) return true; }
+                else if (Math.abs((p.y + p.h/2) - h.pos) < h.thickness + p.h/2) return true;
+            } else if (h.type === 'gear' && h.state === 'hit') {
+                let dx = (p.x + p.w/2) - h.x, dy = (p.y + p.h/2) - h.y;
+                if (Math.hypot(dx,dy) < h.outerRing + 2) return true;
+            } else if (h.type === 'green_ray') {
+                if (Math.abs((p.x + p.w/2) - h.x) < h.r + p.w/2 && Math.abs((p.y + p.h/2) - h.y) < h.r + p.h/2) return true;
+            }
+        }
+        return false;
+    }
+    draw(ctx) {
+        ctx.fillStyle = '#101820'; ctx.fillRect(0,0,this.width,this.height);
+        for (const h of this.hazards) {
+            if (h.type === 'line') {
+                ctx.fillStyle = (h.state === 'warn' ? (Math.floor(this.frame / 8) % 2 ? '#ff7777' : h.colorWarn) : h.colorHit);
+                if (h.vertical) ctx.fillRect(h.pos - h.thickness/2, 0, h.thickness, this.height);
+                else ctx.fillRect(0, h.pos - h.thickness/2, this.width, h.thickness);
+            } else if (h.type === 'gear') {
+                ctx.strokeStyle = (h.state === 'warn' ? (Math.floor(this.frame / 8) % 2 ? '#ff8888' : h.colorWarn) : h.colorHit);
+                ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.stroke();
+                // 外圈碰撞环
+                ctx.globalAlpha = 0.35;
+                ctx.beginPath(); ctx.arc(h.x, h.y, h.outerRing, 0, Math.PI*2); ctx.stroke();
+                ctx.globalAlpha = 1;
+                // 旋转齿
+                ctx.save();
+                ctx.translate(h.x, h.y);
+                ctx.rotate(h.angle);
+                for (let i = 0; i < 8; i++) {
+                    ctx.rotate(Math.PI / 4);
+                    ctx.fillStyle = (h.state === 'warn' ? '#ff6666' : '#66b3ff');
+                    ctx.fillRect(h.r - 1, -2, 6, 4);
+                }
+                ctx.restore();
+            } else if (h.type === 'green_ray') {
+                ctx.fillStyle = h.color; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.fill();
+            }
         }
     }
 }
@@ -472,7 +636,8 @@ class Entity {
             }
         }
         this.x += this.vx;
-        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        // 横向碰撞使用更窄的垂直采样，降低边角“卡边回弹”问题
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 3, w: this.w, h: this.h - 6 });
         for (let t of xTiles) {
             if (t.solid) {
                 let oldVx = this.vx; 
