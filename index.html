@@ -308,7 +308,7 @@ class Game {
         this.entities = []; this.particles = []; this.projectiles = [];
         this.player = new Player(32, 60); this.entities.push(this.player);
         this.merchant = new GoldenMario(180, 110); this.entities.push(this.merchant);
-        this.shopOpen = false; this.itemCooldown = 0; this.aimY = 120;
+        this.shopOpen = false; this.itemCooldown = 0; this.aimY = 120; this.activeMerchant = null;
         this.map = new InfiniteMap(this); this.maxDist = 0;
         this.deathTimer = 0; this.savedMainState = null;
     }
@@ -318,8 +318,9 @@ class Game {
         globalCoins += val; 
         this.particles.push(new ScoreParticle(x, y, `+${val}`, '#ffeb3b'));
     }
-    toggleShop() {
+    toggleShop(merchant = null) {
         if (this.mode !== 'main') return;
+        if (merchant) this.activeMerchant = merchant;
         this.shopOpen = !this.shopOpen;
         const dialog = document.getElementById('shop-dialog');
         dialog.style.display = this.shopOpen ? 'block' : 'none';
@@ -431,8 +432,13 @@ class Game {
             let currentDist = Math.max(0, Math.floor(this.player.x / 10));
             if (currentDist > this.maxDist) { globalScore += (currentDist - this.maxDist); this.maxDist = currentDist; }
             if (this.itemCooldown > 0) this.itemCooldown--;
-            if (Input.run && this.player.shootCooldown <= 0 && this.player.intersects(this.merchant)) {
-                this.toggleShop(); this.player.shootCooldown = 20;
+            const nearMerchant = this.entities.find(e =>
+                e.type === 'golden_mario' &&
+                Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 20 &&
+                Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 26
+            );
+            if (Input.run && this.player.shootCooldown <= 0 && nearMerchant) {
+                this.toggleShop(nearMerchant); this.player.shootCooldown = 20;
             }
             if (this.shopOpen) this.player.invincibleTimer = Math.max(this.player.invincibleTimer, 2);
             if (inventory.bird > 0) {
@@ -992,7 +998,16 @@ class GoldenMario extends Entity {
     update() {}
     squish() {}
     dieFromStar() {}
-    draw(ctx) { ctx.save(); ctx.filter = 'hue-rotate(35deg) saturate(250%)'; ctx.drawImage(Sprites.marioIdle, this.x, this.y); ctx.restore(); }
+    draw(ctx) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.ellipse(this.x + 6, this.y + this.h + 2, 6, 2.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.filter = 'hue-rotate(35deg) saturate(250%)';
+        ctx.drawImage(Sprites.marioIdle, this.x, this.y);
+        ctx.restore();
+    }
 }
 
 class ThrownBird extends Entity {
@@ -1206,7 +1221,7 @@ class InfiniteMap {
                     this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
                 }
                 // 平地可随机刷出“金色马里奥”（友好生物）
-                if (Math.random() < 0.012) {
+                if (Math.random() < 0.035) {
                     this.game.entities.push(new GoldenMario(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
                 }
                 if (Math.random() < 0.05) {
