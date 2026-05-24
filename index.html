@@ -62,6 +62,17 @@
             box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.4), 4px 4px 0 #000;
             animation: blink 1.5s infinite;
         }
+        .audio-toggle-btn {
+            margin-top: 12px; padding: 10px 18px; background-color: #2b2b2b; color: #fff;
+            font-size: 16px; font-weight: bold; border: 3px solid #fff; cursor: pointer;
+            box-shadow: inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.25), 3px 3px 0 #000;
+        }
+        .audio-toggle-btn.off { background-color: #6a1b1b; }
+        #item-fab { position:absolute; left:8px; top:78px; z-index:22; font-weight:bold; border:2px solid #fff; background:#1e3a8a; color:#fff; padding:6px 10px; }
+        #item-panel { position:absolute; left:8px; top:106px; width:180px; max-height:126px; overflow:auto; z-index:23; background:rgba(0,0,0,0.9); color:#fff; border:2px solid #fff; padding:10px; display:none; }
+        #item-close { position:absolute; right:4px; top:4px; }
+        #shop-dialog { position:absolute; left:50%; bottom:54px; transform:translateX(-50%); width:min(94%,560px); z-index:24; background:rgba(0,0,0,0.88); color:#fff; border:2px solid #fff; padding:10px; display:none; }
+        .shop-btn { margin:4px 6px 0 0; }
         @keyframes blink { 0%, 100% { color: #fff; } 50% { color: #ffeb3b; } }
     </style>
 </head>
@@ -75,6 +86,16 @@
         <div>COINS<br><span id="coins">0000</span></div>
         <div>WORLD<br>Endless</div>
         <div>TIME<br><span id="time">000</span></div>
+    </div>
+    <button id="item-fab" onclick="toggleItemPanel()">道具</button>
+    <div id="item-panel">
+        <button id="item-close" onclick="toggleItemPanel(false)">X</button>
+        <div style="font-weight:bold; margin-bottom:8px;">道具栏</div>
+        <div id="item-list"></div>
+    </div>
+    <div id="shop-dialog">
+        <div id="shop-title" style="font-weight:bold;">金色马里奥：要买点啥？</div>
+        <div id="shop-actions"></div>
     </div>
 
     <!-- 钢铁布局的移动端巨型按键 -->
@@ -90,6 +111,7 @@
         <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
         <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
         <div class="pixel-btn">START GAME</div>
+        <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
@@ -102,6 +124,7 @@
 /** 核心引擎与全局累积状态 */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const uiLayer = document.getElementById('ui-layer');
 ctx.imageSmoothingEnabled = false;
 
 const TILE_SIZE = 16;
@@ -118,11 +141,12 @@ const MAX_RUN_SPEED = 2.8;
 let globalScore = 0;
 let globalCoins = 1000; 
 let globalTime = 0;
+let soundEnabled = true;
 
 let audioCtx = null;
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
-    if (!audioCtx) return;
+    if (!audioCtx || !soundEnabled) return;
     try {
         const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
@@ -158,6 +182,15 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2);
         }
     } catch(e){}
+}
+
+function toggleAudio(event) {
+    if (event) event.stopPropagation();
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('audio-toggle-btn');
+    if (!btn) return;
+    btn.textContent = `音效：${soundEnabled ? '开启' : '关闭'}`;
+    btn.classList.toggle('off', !soundEnabled);
 }
 
 const C = {
@@ -221,12 +254,26 @@ const WEAPONS = [
 ];
 
 const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, jumpPressed: false };
+const inventory = { shell: 0, bird: 0 };
+let itemPanelOpen = false;
+function refreshItemPanel() {
+    const el = document.getElementById('item-list');
+    if (!el) return;
+    el.innerHTML = `龟壳 x${inventory.shell}<br>飞鸟 x${inventory.bird}<br><small>小游戏内隐藏且禁用</small>`;
+}
+function toggleItemPanel(force) {
+    if (!game || game.mode !== 'main') return;
+    itemPanelOpen = force === undefined ? !itemPanelOpen : !!force;
+    document.getElementById('item-panel').style.display = itemPanelOpen ? 'block' : 'none';
+    refreshItemPanel();
+}
 
 document.addEventListener('keydown', e => {
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = true;
     if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = true;
     if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = true;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = true;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') { if (!Input.jump) Input.jumpPressed = true; Input.jump = true; }
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = true;
 });
@@ -234,6 +281,7 @@ document.addEventListener('keyup', e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = false;
     if (e.code === 'ArrowRight' || e.code === 'KeyD') Input.right = false;
     if (e.code === 'ArrowDown' || e.code === 'KeyS') Input.down = false;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = false;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') Input.jump = false;
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = false;
 });
@@ -259,6 +307,8 @@ class Game {
         this.mode = 'main'; this.cameraX = 0; this.frames = 0; 
         this.entities = []; this.particles = []; this.projectiles = [];
         this.player = new Player(32, 60); this.entities.push(this.player);
+        this.merchant = new GoldenMario(180, 110); this.entities.push(this.merchant);
+        this.shopOpen = false; this.itemCooldown = 0; this.aimY = 120;
         this.map = new InfiniteMap(this); this.maxDist = 0;
         this.deathTimer = 0; this.savedMainState = null;
     }
@@ -268,29 +318,60 @@ class Game {
         globalCoins += val; 
         this.particles.push(new ScoreParticle(x, y, `+${val}`, '#ffeb3b'));
     }
+    toggleShop() {
+        if (this.mode !== 'main') return;
+        this.shopOpen = !this.shopOpen;
+        const dialog = document.getElementById('shop-dialog');
+        dialog.style.display = this.shopOpen ? 'block' : 'none';
+        if (!this.shopOpen) return;
+        const actions = document.getElementById('shop-actions');
+        const opts = [
+            ['变大蘑菇', 200, () => { if (!this.player.isBig) { this.player.isBig = true; this.player.h = 32; this.player.y -= 16; } }],
+            ['无敌星', 500, () => { this.player.starTimer = 600; }],
+            ['龟壳', 100, () => { inventory.shell++; refreshItemPanel(); }],
+            ['飞鸟', 300, () => { inventory.bird++; refreshItemPanel(); }]
+        ];
+        actions.innerHTML = '';
+        opts.forEach(([name, cost, fn]) => {
+            const btn = document.createElement('button');
+            btn.className = 'shop-btn';
+            btn.textContent = `${name} (${cost})`;
+            btn.onclick = () => { if (globalCoins >= cost) { globalCoins -= cost; fn(); playSound('coin'); } };
+            actions.appendChild(btn);
+        });
+    }
 
-    enterMiniGame() {
+    enterMiniGame(type = 'random') {
+        const miniType = type === 'random' ? (Math.random() < 0.3 ? 'dodge' : 'shootout') : type;
         this.savedMainState = {
             cameraX: this.cameraX, playerX: this.player.x, playerY: this.player.y,
             isBig: this.player.isBig, starTimer: this.player.starTimer,
             entities: this.entities.filter(e => e.type !== 'player') 
         };
-        this.mode = 'shootout'; this.cameraX = 0;
+        this.mode = miniType; this.cameraX = 0;
         this.player.x = 20; this.player.y = 80; 
         this.player.isBig = false; this.player.h = 16; 
         this.player.hp = 100; this.player.shootCooldown = 0; this.player.facingRight = true;
         this.player.currentGun = WEAPONS[Math.floor(Math.random()*WEAPONS.length)]; 
-        
-        this.shootoutArena = new ShootoutArena(this);
-        this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
-        this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
+
+        if (this.mode === 'shootout') {
+            this.shootoutArena = new ShootoutArena(this);
+            this.boss = new BossTurtle((this.shootoutArena.cols - 4) * TILE_SIZE, 80);
+            this.entities = [this.player, this.boss]; this.projectiles = []; this.particles = [];
+        } else {
+            this.dodgeArena = new DodgeArena(this);
+            this.dodgeArena.reset();
+            this.player.x = 120; this.player.y = 120; this.player.vx = 0; this.player.vy = 0;
+            this.entities = [this.player]; this.projectiles = []; this.particles = [];
+        }
         this.miniGameEnding = false; this.exitTimer = 0;
     }
 
     exitMiniGame(win) {
+        const prevMode = this.mode;
         this.mode = 'main';
         if (win) { 
-            this.gainReward(2000, this.player.x, this.player.y); 
+            this.gainReward(prevMode === 'dodge' ? 3000 : 2000, this.player.x, this.player.y); 
             playSound('powerup'); 
         } else { 
             playSound('pipe'); 
@@ -311,7 +392,7 @@ class Game {
         this.player.isBig = s.isBig; this.player.h = s.isBig ? 32 : 16; this.player.starTimer = s.starTimer;
         this.player.vx = 0; this.player.vy = -8; this.player.state = 'jump'; this.player.isDeadState = false; 
         
-        this.deathTimer = 0; this.entities = [this.player]; this.projectiles = [];
+        this.deathTimer = 0; this.entities = [this.player, this.merchant]; this.projectiles = [];
         this.map.updateGeneration(this.cameraX); this.miniGameEnding = false; this.savedMainState = null;
     }
 
@@ -337,7 +418,7 @@ class Game {
             if (this.deathTimer > 0) {
                 this.deathTimer--;
                 if (this.deathTimer <= 0) {
-                    if (this.mode === 'shootout') this.exitMiniGame(false); 
+                    if (this.mode === 'shootout' || this.mode === 'dodge') this.exitMiniGame(false); 
                     else this.reset(); 
                 }
             }
@@ -349,10 +430,35 @@ class Game {
             this.map.updateGeneration(this.cameraX);
             let currentDist = Math.max(0, Math.floor(this.player.x / 10));
             if (currentDist > this.maxDist) { globalScore += (currentDist - this.maxDist); this.maxDist = currentDist; }
+            if (this.itemCooldown > 0) this.itemCooldown--;
+            if (Input.run && this.player.shootCooldown <= 0 && this.player.intersects(this.merchant)) {
+                this.toggleShop(); this.player.shootCooldown = 20;
+            }
+            if (this.shopOpen) this.player.invincibleTimer = Math.max(this.player.invincibleTimer, 2);
+            if (inventory.bird > 0) {
+                if (Input.up) this.aimY = Math.max(12, this.aimY - 2);
+                if (Input.down) this.aimY = Math.min(228, this.aimY + 2);
+                if (Input.jumpPressed && this.itemCooldown <= 0 && !this.shopOpen) {
+                    inventory.bird--; refreshItemPanel(); this.itemCooldown = 14; Input.jumpPressed = false;
+                    const sx = this.player.x + (this.player.facingRight ? this.player.w : -8);
+                    const sy = this.player.y + this.player.h / 2;
+                    const dx = (this.cameraX + 8) - sx; const dy = this.aimY - sy;
+                    const len = Math.hypot(dx, dy) || 1;
+                    this.entities.push(new ThrownBird(sx, sy, (dx / len) * 3.2, (dy / len) * 3.2));
+                }
+            }
+            if (inventory.shell > 0 && Input.down && this.player.onGround && this.itemCooldown <= 0) {
+                inventory.shell--; refreshItemPanel(); this.itemCooldown = 14;
+                const shell = new Koopa(this.player.x + (this.player.facingRight ? 14 : -14), this.player.y);
+                shell.state = 'shell_slide'; shell.vx = this.player.facingRight ? 3.6 : -3.6; shell.vy = 0; shell.onGround = true;
+                shell.ownerPlayer = true;
+                this.entities.push(shell);
+            }
         }
 
         for (let i = this.entities.length - 1; i >= 0; i--) {
-            let e = this.entities[i]; e.update(currentMap, this.entities);
+            let e = this.entities[i];
+            if (!(this.mode === 'dodge' && e === this.player)) e.update(currentMap, this.entities);
             if (e.dead) this.entities.splice(i, 1);
         }
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -360,7 +466,7 @@ class Game {
             if (p.dead) this.particles.splice(i, 1);
         }
 
-        if (this.mode === 'shootout') {
+            if (this.mode === 'shootout') {
             if (this.player.shootCooldown > 0) this.player.shootCooldown--;
             if (Input.run && this.player.shootCooldown <= 0 && !this.miniGameEnding && !this.player.isDeadState) this.fireWeapon(this.player, true);
             
@@ -394,25 +500,54 @@ class Game {
                 if (this.boss.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(true); }
                 else if (!this.player.isDeadState && this.exitTimer > 0) { this.exitTimer--; if (this.exitTimer <= 0) this.exitMiniGame(false); }
             }
-        } else {
-            if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
-            if (this.player.x < this.cameraX) { this.player.x = this.cameraX; this.player.vx = 0; }
+            } else if (this.mode === 'dodge') {
+                this.dodgeArena.update();
+                if (!this.player.isDeadState) {
+                    const speed = 1.35;
+                    const moveX = (Input.left ? -1 : 0) + (Input.right ? 1 : 0);
+                    const dodgeUp = Input.up || Input.jump;
+                    const moveY = (dodgeUp ? -1 : 0) + (Input.down ? 1 : 0);
+                    const len = Math.hypot(moveX, moveY) || 1;
+                    this.player.vx = moveX === 0 ? 0 : (moveX / len) * speed;
+                    this.player.vy = moveY === 0 ? 0 : (moveY / len) * speed;
+                    this.player.x += this.player.vx;
+                    this.player.y += this.player.vy;
+                    this.player.x = Math.max(8, Math.min(256 - this.player.w - 8, this.player.x));
+                    this.player.y = Math.max(8, Math.min(240 - this.player.h - 8, this.player.y));
+                    if (this.dodgeArena.hitPlayer(this.player)) this.player.die();
+                }
+                if (this.dodgeArena.winFrames <= 0 && !this.player.isDeadState) {
+                    this.exitMiniGame(true);
+                    return;
+                }
+            } else {
+                if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
+                // 避免浮点误差导致贴近左边缘时被“瞬间吸回”
+                if (this.player.x < this.cameraX - 0.5) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
 
+        const inMiniGame = this.mode === 'shootout' || this.mode === 'dodge';
+        uiLayer.style.display = inMiniGame ? 'none' : 'flex';
+        document.getElementById('item-fab').style.display = inMiniGame ? 'none' : 'block';
+        document.getElementById('item-panel').style.display = (!inMiniGame && itemPanelOpen) ? 'block' : 'none';
+        if (inMiniGame) { this.shopOpen = false; document.getElementById('shop-dialog').style.display = 'none'; }
         document.getElementById('score').innerText = globalScore.toString().padStart(6, '0');
         document.getElementById('coins').innerText = globalCoins.toString().padStart(4, '0');
         document.getElementById('time').innerText = globalTime.toString().padStart(3, '0');
     }
 
     draw() {
-        ctx.fillStyle = this.mode === 'shootout' ? '#222' : '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = (this.mode === 'shootout' || this.mode === 'dodge') ? '#222' : '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(-Math.floor(this.cameraX), 0);
         
         if (this.mode === 'shootout') {
             this.shootoutArena.draw(ctx, this.cameraX);
             this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
             this.player.draw(ctx); this.projectiles.forEach(p => p.draw(ctx));
+        } else if (this.mode === 'dodge') {
+            this.dodgeArena.draw(ctx);
+            this.player.draw(ctx);
         } else {
             this.map.drawBg(ctx, this.cameraX);
             if (this.player.state === 'enter_pipe') {
@@ -424,7 +559,13 @@ class Game {
                 this.player.draw(ctx);
             }
         }
-        this.particles.forEach(p => p.draw(ctx)); ctx.restore();
+        this.particles.forEach(p => p.draw(ctx));
+        if (this.mode === 'main' && inventory.bird > 0) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([3, 2]);
+            ctx.beginPath(); ctx.moveTo(this.cameraX + 8, this.aimY); ctx.lineTo(this.player.x + (this.player.facingRight ? this.player.w : 0), this.player.y + this.player.h / 2); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        ctx.restore();
 
         if (this.mode === 'shootout') {
             ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,42); ctx.fillStyle = 'white'; ctx.font = 'bold 10px Courier New';
@@ -435,6 +576,124 @@ class Game {
             ctx.fillStyle = 'white'; ctx.fillText(`BOSS HP:${Math.max(0, this.boss ? this.boss.hp : 0)}`, 140, 12);
             let bGun = this.boss && this.boss.currentGun;
             ctx.fillStyle = bGun ? bGun.color : 'gray'; ctx.fillText(`[${bGun ? bGun.name : 'EMPTY'} ∞]`, 140, 24);
+        } else if (this.mode === 'dodge') {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,256,36);
+            ctx.fillStyle = '#9cf'; ctx.font = 'bold 10px Courier New';
+            const totalSec = this.dodgeArena.totalWinSeconds;
+            const remainSec = Math.max(0, Math.ceil(this.dodgeArena.winFrames / 60));
+            const survivedSec = Math.max(0, totalSec - remainSec);
+            ctx.fillText(`生存:${survivedSec}s/${totalSec}s`, 6, 12);
+            ctx.fillStyle = '#8f8'; ctx.fillText(`方向键/右下按键移动，别碰蓝线`, 6, 25);
+        }
+    }
+}
+
+class DodgeArena {
+    constructor(gameInst) {
+        this.game = gameInst; this.width = 256; this.height = 240; this.totalWinSeconds = 90;
+        this.hazards = [];
+        this.reset();
+    }
+    reset() {
+        this.frame = 0;
+        this.winFrames = 60 * this.totalWinSeconds;
+        this.hazards = [];
+    }
+    spawnTelegraphLine(fast=true) {
+        const vertical = Math.random() < 0.5;
+        const limit = vertical ? this.width : this.height;
+        const minGap = 46;
+        let pos = 20 + Math.random() * (limit - 40);
+        let tries = 0;
+        while (tries < 12 && this.hazards.some(h =>
+            h.type === 'line' &&
+            h.vertical === vertical &&
+            (h.state === 'warn' || h.state === 'hit') &&
+            Math.abs(h.pos - pos) < minGap
+        )) {
+            pos = 20 + Math.random() * (limit - 40);
+            tries++;
+        }
+        if (tries >= 12) return;
+        const delay = 180;
+        this.hazards.push({type:'line', vertical, pos, state:'warn', timer:delay, life: fast ? 120 : 190, colorWarn: '#f33', colorHit: fast ? '#39f' : '#3f3', thickness: fast ? 4 : 3});
+    }
+    spawnGear() {
+        const r = Math.random() < 0.5 ? 10 : 18;
+        const x = 20 + Math.random() * (this.width - 40), y = 20 + Math.random() * (this.height - 40);
+        this.hazards.push({
+            type:'gear', x, y, r, state:'warn', timer:180, life:150,
+            colorWarn:'#f33', colorHit:'#39f', angle: 0, spin: (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.04),
+            outerRing: r + 6
+        });
+    }
+    spawnGreenRayNoWarn() {
+        const edge = Math.floor(Math.random()*4);
+        let x=0,y=0,vx=0,vy=0,s=1.1;
+        if (edge===0){x=0;y=Math.random()*this.height;vx=s;}
+        if (edge===1){x=this.width;y=Math.random()*this.height;vx=-s;}
+        if (edge===2){x=Math.random()*this.width;y=0;vy=s;}
+        if (edge===3){x=Math.random()*this.width;y=this.height;vy=-s;}
+        this.hazards.push({type:'green_ray', x,y,vx,vy,life:220,r:4,color:'#37ff37'});
+    }
+    update() {
+        this.frame++; this.winFrames--;
+        if (this.frame % 85 === 0) this.spawnTelegraphLine(true);
+        if (this.frame % 170 === 0) this.spawnGear();
+        if (this.frame % 90 === 0) this.spawnGreenRayNoWarn();
+        // 移除骨头波形弹幕
+        for (const h of this.hazards) {
+            if (h.type === 'line' || h.type === 'gear') {
+                if (h.state === 'warn') { h.timer--; if (h.timer <= 0) h.state = 'hit'; }
+                else h.life--;
+                if (h.type === 'gear') h.angle += h.spin;
+            } else if (h.type === 'green_ray') {
+                h.x += h.vx; h.y += h.vy; h.life--;
+            }
+        }
+        this.hazards = this.hazards.filter(h => h.life > 0);
+    }
+    hitPlayer(p) {
+        for (const h of this.hazards) {
+            if (h.type === 'line' && h.state === 'hit') {
+                if (h.vertical) { if (Math.abs((p.x + p.w/2) - h.pos) < h.thickness + p.w/2) return true; }
+                else if (Math.abs((p.y + p.h/2) - h.pos) < h.thickness + p.h/2) return true;
+            } else if (h.type === 'gear' && h.state === 'hit') {
+                let dx = (p.x + p.w/2) - h.x, dy = (p.y + p.h/2) - h.y;
+                if (Math.hypot(dx,dy) < h.outerRing + 2) return true;
+            } else if (h.type === 'green_ray') {
+                if (Math.abs((p.x + p.w/2) - h.x) < h.r + p.w/2 && Math.abs((p.y + p.h/2) - h.y) < h.r + p.h/2) return true;
+            }
+        }
+        return false;
+    }
+    draw(ctx) {
+        ctx.fillStyle = '#101820'; ctx.fillRect(0,0,this.width,this.height);
+        for (const h of this.hazards) {
+            if (h.type === 'line') {
+                ctx.fillStyle = (h.state === 'warn' ? (Math.floor(this.frame / 8) % 2 ? '#ff7777' : h.colorWarn) : h.colorHit);
+                if (h.vertical) ctx.fillRect(h.pos - h.thickness/2, 0, h.thickness, this.height);
+                else ctx.fillRect(0, h.pos - h.thickness/2, this.width, h.thickness);
+            } else if (h.type === 'gear') {
+                ctx.strokeStyle = (h.state === 'warn' ? (Math.floor(this.frame / 8) % 2 ? '#ff8888' : h.colorWarn) : h.colorHit);
+                ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.stroke();
+                // 外圈碰撞环
+                ctx.globalAlpha = 0.35;
+                ctx.beginPath(); ctx.arc(h.x, h.y, h.outerRing, 0, Math.PI*2); ctx.stroke();
+                ctx.globalAlpha = 1;
+                // 旋转齿
+                ctx.save();
+                ctx.translate(h.x, h.y);
+                ctx.rotate(h.angle);
+                for (let i = 0; i < 8; i++) {
+                    ctx.rotate(Math.PI / 4);
+                    ctx.fillStyle = (h.state === 'warn' ? '#ff6666' : '#66b3ff');
+                    ctx.fillRect(h.r - 1, -2, 6, 4);
+                }
+                ctx.restore();
+            } else if (h.type === 'green_ray') {
+                ctx.fillStyle = h.color; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.fill();
+            }
         }
     }
 }
@@ -472,7 +731,8 @@ class Entity {
             }
         }
         this.x += this.vx;
-        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 2, w: this.w, h: this.h - 4 });
+        // 横向碰撞使用更窄的垂直采样，降低边角“卡边回弹”问题
+        let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 3, w: this.w, h: this.h - 6 });
         for (let t of xTiles) {
             if (t.solid) {
                 let oldVx = this.vx; 
@@ -708,7 +968,7 @@ class Koopa extends Entity {
         this.applyPhysics(map); this.animTimer += 0.1;
         if (this.state === 'shell_slide') {
             for (let e of entities) {
-                if (e === this || e.dead || e.type === 'player' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
+                if (e === this || e.dead || e.type === 'player' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star' || e.type === 'golden_mario') continue;
                 if (this.intersects(e)) { e.dieFromStar(); game.gainReward(200, e.x, e.y); }
             }
         }
@@ -725,6 +985,32 @@ class Koopa extends Entity {
         if (this.state === 'star_dead') ctx.scale(1, -1); else if (this.state === 'walk' && this.vx > 0) ctx.scale(-1, 1);
         ctx.drawImage(sp, -8, -8); ctx.restore();
     }
+}
+
+class GoldenMario extends Entity {
+    constructor(x, y) { super(x, y, 12, 16); this.type = 'golden_mario'; }
+    update() {}
+    squish() {}
+    dieFromStar() {}
+    draw(ctx) { ctx.save(); ctx.filter = 'hue-rotate(35deg) saturate(250%)'; ctx.drawImage(Sprites.marioIdle, this.x, this.y); ctx.restore(); }
+}
+
+class ThrownBird extends Entity {
+    constructor(x, y, vx, vy) { super(x, y, 10, 10); this.type = 'thrown_bird'; this.vx = vx; this.vy = vy; this.life = 180; }
+    update(map, entities) {
+        this.x += this.vx; this.y += this.vy; this.life--;
+        if (this.life <= 0 || this.x < -64 || this.x > map.columns.length * TILE_SIZE + 64 || this.y < -32 || this.y > 300) { this.dead = true; return; }
+        for (let e of entities) {
+            if (e === this || e.dead || e.type === 'player' || e.type === 'golden_mario' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
+            if (this.intersects(e)) { if (e.dieFromStar) e.dieFromStar(); else e.dead = true; this.dead = true; return; }
+        }
+        const tiles = map.getIntersectingTiles({ x: this.x, y: this.y, w: this.w, h: this.h });
+        for (let t of tiles) {
+            if (t.type === 'qblock' || t.type === 'brick') { map.hitBlock(t.x, t.y, true); this.dead = true; return; }
+            if (t.solid) { this.dead = true; return; }
+        }
+    }
+    draw(ctx) { ctx.drawImage(Sprites.bird1, this.x - 3, this.y - 3); }
 }
 
 class Bird extends Entity {
@@ -1031,6 +1317,7 @@ function gameLoop(timestamp) {
 
 function startGame() {
     if(isStarted) return; initAudio(); game = new Game();
+    refreshItemPanel();
     document.getElementById('start-screen').style.display = 'none';
     isStarted = true; lastTime = performance.now(); requestAnimationFrame(gameLoop);
 }
