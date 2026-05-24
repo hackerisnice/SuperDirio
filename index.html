@@ -379,7 +379,8 @@ class Game {
         }
 
         for (let i = this.entities.length - 1; i >= 0; i--) {
-            let e = this.entities[i]; e.update(currentMap, this.entities);
+            let e = this.entities[i];
+            if (!(this.mode === 'dodge' && e === this.player)) e.update(currentMap, this.entities);
             if (e.dead) this.entities.splice(i, 1);
         }
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -505,7 +506,20 @@ class DodgeArena {
     }
     spawnTelegraphLine(fast=true) {
         const vertical = Math.random() < 0.5;
-        const pos = vertical ? (20 + Math.random() * (this.width - 40)) : (20 + Math.random() * (this.height - 40));
+        const limit = vertical ? this.width : this.height;
+        const minGap = 46;
+        let pos = 20 + Math.random() * (limit - 40);
+        let tries = 0;
+        while (tries < 12 && this.hazards.some(h =>
+            h.type === 'line' &&
+            h.vertical === vertical &&
+            (h.state === 'warn' || h.state === 'hit') &&
+            Math.abs(h.pos - pos) < minGap
+        )) {
+            pos = 20 + Math.random() * (limit - 40);
+            tries++;
+        }
+        if (tries >= 12) return;
         const delay = 180;
         this.hazards.push({type:'line', vertical, pos, state:'warn', timer:delay, life: fast ? 120 : 190, colorWarn: '#f33', colorHit: fast ? '#39f' : '#3f3', thickness: fast ? 4 : 3});
     }
@@ -529,7 +543,7 @@ class DodgeArena {
     }
     update() {
         this.frame++; this.winFrames--;
-        if (this.frame % 55 === 0) this.spawnTelegraphLine(true);
+        if (this.frame % 85 === 0) this.spawnTelegraphLine(true);
         if (this.frame % 170 === 0) this.spawnGear();
         if (this.frame % 90 === 0) this.spawnGreenRayNoWarn();
         // 移除骨头波形弹幕
