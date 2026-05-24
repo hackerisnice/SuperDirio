@@ -435,8 +435,8 @@ class Game {
             if (this.itemCooldown > 0) this.itemCooldown--;
             const nearMerchant = this.entities.find(e =>
                 e.type === 'golden_mario' &&
-                Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 20 &&
-                Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 26
+                Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
+                Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 36
             );
             if (Input.run && this.player.shootCooldown <= 0 && nearMerchant) {
                 this.toggleShop(nearMerchant); this.player.shootCooldown = 20;
@@ -564,6 +564,17 @@ class Game {
                 this.map.draw(ctx, this.cameraX);
                 this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
                 this.player.draw(ctx);
+            }
+        } else if (this.mode === 'main') {
+            const nearMerchantHint = this.entities.find(e =>
+                e.type === 'golden_mario' &&
+                Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
+                Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 36
+            );
+            if (nearMerchantHint) {
+                ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(48, 14, 160, 20);
+                ctx.fillStyle = '#ffeb3b'; ctx.font = 'bold 10px Courier New';
+                ctx.fillText('按 B/J/Z 与金色马里奥互动', 53, 27);
             }
         }
         this.particles.forEach(p => p.draw(ctx));
