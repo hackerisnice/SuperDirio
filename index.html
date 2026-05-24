@@ -1205,6 +1205,10 @@ class InfiniteMap {
                     let EnemyClass = Math.random() < 0.4 ? Koopa : Goomba;
                     this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
                 }
+                // 平地可随机刷出“金色马里奥”（友好生物）
+                if (Math.random() < 0.012) {
+                    this.game.entities.push(new GoldenMario(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
+                }
                 if (Math.random() < 0.05) {
                     let heights = [this.groundY - 2, this.groundY - 5, this.groundY - 8];
                     let by = heights[Math.floor(Math.random() * heights.length)];
