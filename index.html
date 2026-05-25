@@ -42,6 +42,7 @@
         
         #btn-b     { bottom: 8%; right: calc(4% + min(21vw, 150px) * 1.15); }
         #btn-a     { bottom: 25%; right: 4%; }
+        #btn-interact { bottom: 8%; left: 50%; transform: translateX(-50%); width: min(18vw, 120px); height: min(18vw, 120px); font-size: min(4vw, 20px); background: rgba(255, 235, 59, 0.32); border-color: rgba(255, 235, 59, 0.95); }
 
         /* UI 与 启动屏 */
         #ui-layer {
@@ -103,6 +104,7 @@
         <div class="ctrl-btn" id="btn-left">◀</div>
         <div class="ctrl-btn" id="btn-down">▼<br><small>钻管</small></div>
         <div class="ctrl-btn" id="btn-right">▶</div>
+        <div class="ctrl-btn" id="btn-interact">E<br><small>互动</small></div>
         <div class="ctrl-btn" id="btn-b">B<br><small>跑/射</small></div>
         <div class="ctrl-btn" id="btn-a">A<br><small>跳跃</small></div>
     </div>
@@ -253,7 +255,7 @@ const WEAPONS = [
     { name: 'Rocket', speed: 3, dmg: 35, cooldown: 65, color: '#ff0000', w: 6, h: 6 }
 ];
 
-const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, jumpPressed: false };
+const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, interact: false, jumpPressed: false };
 const inventory = { shell: 0, bird: 0 };
 let itemPanelOpen = false;
 function refreshItemPanel() {
@@ -276,6 +278,7 @@ document.addEventListener('keydown', e => {
     if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = true;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') { if (!Input.jump) Input.jumpPressed = true; Input.jump = true; }
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = true;
+    if (e.code === 'KeyE') Input.interact = true;
 });
 document.addEventListener('keyup', e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = false;
@@ -284,6 +287,7 @@ document.addEventListener('keyup', e => {
     if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = false;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') Input.jump = false;
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = false;
+    if (e.code === 'KeyE') Input.interact = false;
 });
 
 function bindTouch(id, keyField, isJump=false) {
@@ -299,6 +303,7 @@ function bindTouch(id, keyField, isJump=false) {
 }
 bindTouch('btn-left', 'left'); bindTouch('btn-right', 'right'); bindTouch('btn-down', 'down');
 bindTouch('btn-a', 'jump', true); bindTouch('btn-b', 'run');
+bindTouch('btn-interact', 'interact');
 
 class Game {
     constructor() { this.reset(); }
@@ -438,7 +443,7 @@ class Game {
                 Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
                 Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 36
             );
-            if (Input.run && this.player.shootCooldown <= 0 && nearMerchant) {
+            if (Input.interact && this.player.shootCooldown <= 0 && nearMerchant) {
                 this.toggleShop(nearMerchant); this.player.shootCooldown = 20;
             }
             if (this.shopOpen) this.player.invincibleTimer = Math.max(this.player.invincibleTimer, 2);
@@ -574,7 +579,7 @@ class Game {
             if (nearMerchantHint) {
                 ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(48, 14, 160, 20);
                 ctx.fillStyle = '#ffeb3b'; ctx.font = 'bold 10px Courier New';
-                ctx.fillText('按 B/J/Z 与金色马里奥互动', 53, 27);
+                ctx.fillText('按 E/中间互动键 与金色马里奥互动', 53, 27);
             }
         }
         this.particles.forEach(p => p.draw(ctx));
