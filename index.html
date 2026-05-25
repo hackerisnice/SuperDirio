@@ -1373,7 +1373,10 @@ function gameLoop(timestamp) {
 }
 
 function startGame(evt) {
-    if (evt) { evt.preventDefault?.(); evt.stopPropagation?.(); }
+    if (evt) {
+        if (typeof evt.preventDefault === 'function') evt.preventDefault();
+        if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    }
     if(isStarted) return; initAudio(); game = new Game();
     refreshItemPanel();
     document.getElementById('start-screen').style.display = 'none';
