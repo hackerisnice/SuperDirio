@@ -112,7 +112,7 @@
     <div id="start-screen" onclick="startGame()">
         <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
         <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
-        <div class="pixel-btn">START GAME</div>
+        <div class="pixel-btn" id="start-btn" onclick="startGame(event)">START GAME</div>
         <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
@@ -1372,12 +1372,15 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
-function startGame() {
+function startGame(evt) {
+    if (evt) { evt.preventDefault?.(); evt.stopPropagation?.(); }
     if(isStarted) return; initAudio(); game = new Game();
     refreshItemPanel();
     document.getElementById('start-screen').style.display = 'none';
     isStarted = true; lastTime = performance.now(); requestAnimationFrame(gameLoop);
 }
+document.getElementById('start-screen').addEventListener('touchstart', startGame, { passive: false });
+document.getElementById('start-btn').addEventListener('touchstart', startGame, { passive: false });
 ctx.fillStyle = '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 </script>
 </body>
