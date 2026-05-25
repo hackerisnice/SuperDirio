@@ -109,7 +109,7 @@
         <div class="ctrl-btn" id="btn-a">A<br><small>跳跃</small></div>
     </div>
     
-    <div id="start-screen" onclick="startGame()">
+    <div id="start-screen">
         <h1 style="color: #ffcccc; text-shadow: 4px 4px 0 #f00; font-size: 2.5em; margin: 0;">SUPER DIRIO</h1>
         <p style="color: #ffeb3b; font-weight: bold; margin-top: 5px;">ULTIMATE EDITION</p>
         <div class="pixel-btn" id="start-btn" onclick="startGame(event)">START GAME</div>
@@ -1382,7 +1382,6 @@ function startGame(evt) {
     document.getElementById('start-screen').style.display = 'none';
     isStarted = true; lastTime = performance.now(); requestAnimationFrame(gameLoop);
 }
-document.getElementById('start-screen').addEventListener('touchstart', startGame, { passive: false });
 document.getElementById('start-btn').addEventListener('touchstart', startGame, { passive: false });
 ctx.fillStyle = '#5c94fc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 </script>
