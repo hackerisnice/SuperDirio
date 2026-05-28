@@ -99,7 +99,6 @@
         <div id="shop-actions"></div>
     </div>
 
-    <!-- 钢铁布局的移动端巨型按键 -->
     <div id="mobile-controls">
         <div class="ctrl-btn" id="btn-left">◀</div>
         <div class="ctrl-btn" id="btn-down">▼<br><small>钻管</small></div>
@@ -570,7 +569,8 @@ class Game {
                 this.entities.forEach(e => { if(e !== this.player) e.draw(ctx) });
                 this.player.draw(ctx);
             }
-        } else if (this.mode === 'main') {
+            
+            // 修复点：将引发 SyntaxError 的 else if 中的内容移到这里
             const nearMerchantHint = this.entities.find(e =>
                 e.type === 'golden_mario' &&
                 Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
@@ -582,6 +582,7 @@ class Game {
                 ctx.fillText('按 E/中间互动键 与金色马里奥互动', 53, 27);
             }
         }
+        
         this.particles.forEach(p => p.draw(ctx));
         if (this.mode === 'main' && inventory.bird > 0) {
             ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([3, 2]);
