@@ -95,6 +95,7 @@
         <div id="item-list"></div>
     </div>
     <div id="shop-dialog">
+        <button id="shop-close" onclick="closeShopGlobal()" style="position:absolute; right:4px; top:4px; background:#e52521; color:#fff; border:1px solid #fff; font-weight:bold; cursor:pointer; padding:2px 6px;">X</button>
         <div id="shop-title" style="font-weight:bold;">金色马里奥：要买点啥？</div>
         <div id="shop-actions"></div>
     </div>
@@ -114,7 +115,7 @@
         <div class="pixel-btn" id="start-btn" onclick="startGame(event)">START GAME</div>
         <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
-            WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
+            WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃 | <span style="color:#ffeb3b">E 互动</span><br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span><br>
             <span style="color: #ff0000; font-weight: bold;">【更新】手机巨型虚拟按键回归，操作更爽快！</span>
         </p>
@@ -254,9 +255,11 @@ const WEAPONS = [
     { name: 'Rocket', speed: 3, dmg: 35, cooldown: 65, color: '#ff0000', w: 6, h: 6 }
 ];
 
-const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, interact: false, jumpPressed: false };
+// 新增 interactPressed 属性，实现边缘触发（按下去只判定一次）
+const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, interact: false, jumpPressed: false, interactPressed: false };
 const inventory = { shell: 0, bird: 0 };
 let itemPanelOpen = false;
+
 function refreshItemPanel() {
     const el = document.getElementById('item-list');
     if (!el) return;
@@ -268,6 +271,10 @@ function toggleItemPanel(force) {
     document.getElementById('item-panel').style.display = itemPanelOpen ? 'block' : 'none';
     refreshItemPanel();
 }
+// 全局暴露商店关闭方法，供 HTML 按键调用
+function closeShopGlobal() {
+    if (game && game.shopOpen) game.toggleShop();
+}
 
 document.addEventListener('keydown', e => {
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
@@ -277,7 +284,7 @@ document.addEventListener('keydown', e => {
     if (e.code === 'ArrowUp' || e.code === 'KeyW') Input.up = true;
     if (e.code === 'Space' || e.code === 'KeyK' || e.code === 'KeyX') { if (!Input.jump) Input.jumpPressed = true; Input.jump = true; }
     if (e.code === 'KeyJ' || e.code === 'KeyZ' || e.shiftKey) Input.run = true;
-    if (e.code === 'KeyE') Input.interact = true;
+    if (e.code === 'KeyE') { if (!Input.interact) Input.interactPressed = true; Input.interact = true; } // 注入边缘触发
 });
 document.addEventListener('keyup', e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') Input.left = false;
@@ -294,6 +301,8 @@ function bindTouch(id, keyField, isJump=false) {
     el.addEventListener('touchstart', (e) => {
         e.preventDefault(); 
         if(isJump && !Input[keyField]) Input.jumpPressed = true;
+        // 专门为 interact 做边缘触发
+        if(keyField === 'interact' && !Input[keyField]) Input.interactPressed = true;
         Input[keyField] = true; el.classList.add('pressed');
     }, {passive: false});
     el.addEventListener('touchend', (e) => {
@@ -328,7 +337,13 @@ class Game {
         this.shopOpen = !this.shopOpen;
         const dialog = document.getElementById('shop-dialog');
         dialog.style.display = this.shopOpen ? 'block' : 'none';
-        if (!this.shopOpen) return;
+        
+        // 如果关闭了，需要彻底解绑当前正在交易的商人
+        if (!this.shopOpen) {
+            this.activeMerchant = null;
+            return;
+        }
+
         const actions = document.getElementById('shop-actions');
         const opts = [
             ['变大蘑菇', 200, () => { if (!this.player.isBig) { this.player.isBig = true; this.player.h = 32; this.player.y -= 16; } }],
@@ -442,9 +457,20 @@ class Game {
                 Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
                 Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 36
             );
-            if (Input.interact && this.player.shootCooldown <= 0 && nearMerchant) {
-                this.toggleShop(nearMerchant); this.player.shootCooldown = 20;
+
+            // 修改为边缘触发：单次按下开关商店，并且不受开火冷却影响
+            if (Input.interactPressed) {
+                if (nearMerchant || this.shopOpen) {
+                    this.toggleShop(nearMerchant);
+                }
+                Input.interactPressed = false; // 消费掉这次按键事件
             }
+
+            // 如果商店正开着，但商人不知道怎么没了（或者强行超出判定），强制关店
+            if (this.shopOpen && !nearMerchant) {
+                this.toggleShop(null);
+            }
+
             if (this.shopOpen) this.player.invincibleTimer = Math.max(this.player.invincibleTimer, 2);
             if (inventory.bird > 0) {
                 if (Input.up) this.aimY = Math.max(12, this.aimY - 2);
@@ -533,7 +559,6 @@ class Game {
                 }
             } else {
                 if (this.player.x > this.cameraX + canvas.width / 2) this.cameraX = this.player.x - canvas.width / 2;
-                // 避免浮点误差导致贴近左边缘时被“瞬间吸回”
                 if (this.player.x < this.cameraX - 0.5) { this.player.x = this.cameraX; this.player.vx = 0; }
             if (this.player.y > canvas.height + 32 && !this.player.isDeadState) this.player.die();
         }
@@ -570,7 +595,6 @@ class Game {
                 this.player.draw(ctx);
             }
             
-            // 修复点：将引发 SyntaxError 的 else if 中的内容移到这里
             const nearMerchantHint = this.entities.find(e =>
                 e.type === 'golden_mario' &&
                 Math.abs((e.x + e.w / 2) - (this.player.x + this.player.w / 2)) < 42 &&
@@ -665,7 +689,6 @@ class DodgeArena {
         if (this.frame % 85 === 0) this.spawnTelegraphLine(true);
         if (this.frame % 170 === 0) this.spawnGear();
         if (this.frame % 90 === 0) this.spawnGreenRayNoWarn();
-        // 移除骨头波形弹幕
         for (const h of this.hazards) {
             if (h.type === 'line' || h.type === 'gear') {
                 if (h.state === 'warn') { h.timer--; if (h.timer <= 0) h.state = 'hit'; }
@@ -701,11 +724,9 @@ class DodgeArena {
             } else if (h.type === 'gear') {
                 ctx.strokeStyle = (h.state === 'warn' ? (Math.floor(this.frame / 8) % 2 ? '#ff8888' : h.colorWarn) : h.colorHit);
                 ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.stroke();
-                // 外圈碰撞环
                 ctx.globalAlpha = 0.35;
                 ctx.beginPath(); ctx.arc(h.x, h.y, h.outerRing, 0, Math.PI*2); ctx.stroke();
                 ctx.globalAlpha = 1;
-                // 旋转齿
                 ctx.save();
                 ctx.translate(h.x, h.y);
                 ctx.rotate(h.angle);
@@ -755,7 +776,6 @@ class Entity {
             }
         }
         this.x += this.vx;
-        // 横向碰撞使用更窄的垂直采样，降低边角“卡边回弹”问题
         let xTiles = map.getIntersectingTiles({ x: this.x, y: this.y + 3, w: this.w, h: this.h - 6 });
         for (let t of xTiles) {
             if (t.solid) {
@@ -1021,15 +1041,21 @@ class GoldenMario extends Entity {
     constructor(x, y) { super(x, y, 12, 16); this.type = 'golden_mario'; this.walkDir = Math.random() < 0.5 ? -1 : 1; this.walkTimer = 60; this.animTimer = 0; }
     update(map) {
         this.animTimer += 0.1;
-        this.walkTimer--;
-        if (this.walkTimer <= 0) {
-            this.walkTimer = 40 + Math.floor(Math.random() * 80);
-            if (Math.random() < 0.65) this.walkDir *= -1;
+        // 如果玩家正在跟你做交易，冻结移动，防止你乱跑关了商店
+        if (game && game.shopOpen && game.activeMerchant === this) {
+            this.vx = 0;
+        } else {
+            this.walkTimer--;
+            if (this.walkTimer <= 0) {
+                this.walkTimer = 40 + Math.floor(Math.random() * 80);
+                if (Math.random() < 0.65) this.walkDir *= -1;
+            }
+            this.vx = this.walkDir * 0.35;
+            this.facingRight = this.vx > 0;
         }
-        this.vx = this.walkDir * 0.35;
-        this.facingRight = this.vx > 0;
+        
         this.applyPhysics(map);
-        if (this.onGround && Math.random() < 0.004) this.vy = -3.4;
+        if (this.onGround && Math.random() < 0.004 && this.vx !== 0) this.vy = -3.4;
         if (this.x < game.cameraX - 64) this.dead = true;
     }
     onWallHit(tile, oldVx) { this.walkDir = oldVx > 0 ? -1 : 1; this.vx = this.walkDir * 0.35; }
@@ -1259,7 +1285,6 @@ class InfiniteMap {
                     let EnemyClass = Math.random() < 0.4 ? Koopa : Goomba;
                     this.game.entities.push(new EnemyClass(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
                 }
-                // 平地可随机刷出“金色马里奥”（友好生物）
                 if (Math.random() < 0.035) {
                     this.game.entities.push(new GoldenMario(x * TILE_SIZE, (this.groundY - 1) * TILE_SIZE));
                 }
