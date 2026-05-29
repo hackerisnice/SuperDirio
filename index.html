@@ -562,7 +562,7 @@ class Game {
         if (this.mode === 'main') {
             this.map.updateGeneration(this.cameraX);
             let currentDist = Math.max(0, Math.floor(this.player.x / 10));
-            if (currentDist > this.maxDist) { globalScore += (current Dist - this.maxDist); this.maxDist = currentDist; }
+            if (currentDist > this.maxDist) { globalScore += (currentDist - this.maxDist); this.maxDist = currentDist; }
             if (this.player.shootCooldown > 0) this.player.shootCooldown--;
             if (this.itemCooldown > 0) this.itemCooldown--;
             
