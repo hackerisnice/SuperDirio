@@ -119,7 +119,7 @@
         <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
-            <span style="color:#ffeb3b; font-weight:bold;">Q 键：循环切换道具 | 飞鸟状态下：在屏幕内滑动拖拽瞄准，松手直接弹射！</span><br>
+            <span style="color:#ffeb3b; font-weight:bold;">Q键切换道具 | 飞鸟状态：在屏幕左侧滑动反向控制右侧准心（防手挡视线），松手直接弹射！</span><br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span>
         </p>
     </div>
@@ -189,15 +189,6 @@ function playSound(type) {
     } catch(e){}
 }
 
-function toggleAudio(event) {
-    if (event) event.stopPropagation();
-    soundEnabled = !soundEnabled;
-    const btn = document.getElementById('audio-toggle-btn');
-    if (!btn) return;
-    btn.textContent = `音效：${soundEnabled ? '开启' : '关闭'}`;
-    btn.classList.toggle('off', !soundEnabled);
-}
-
 const C = {
     'T': 'transparent', 'R': '#e52521', 'B': '#6b8c42', 'b': '#b53120', 'S': '#f0d0b0', 'O': '#c84c0c', 'o': '#000000', 
     'W': '#ffffff', 'G': '#00a800', 'g': '#005800', 'C': '#f8d820', 'M': '#e83000', 'D': '#444444', 'Y': '#f8d820', 'y': '#c88c00'
@@ -229,7 +220,7 @@ const Sprites = {
     usedBlock: buildSprite(`OooooooooooooooO\noOOOOOOOOOOOOOOo\noOooooooooooooOo\noOoOOOOOOOOOOoOo\noOoOooooooooOoOo\noOoOoOOOOOOoOoOo\noOoOoOooooOoOoOo\noOoOoOoOOoOoOoOo\noOoOoOoOOoOoOoOo\noOoOoOooooOoOoOo\noOoOoOOOOOOoOoOo\noOoOooooooooOoOo\noOoOOOOOOOOOOoOo\noOooooooooooooOo\noOOOOOOOOOOOOOOo\nOooooooooooooooO`, 16, 16),
     ground: buildSprite(`OOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO\nooOooOooOooOooOo\nooOooOooOooOooOo\nOOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO\nooOooOooOooOooOo\nooOooOooOooOooOo\nOOOOOOOOOOOOOOOO\nOooOooOooOooOooO\nOooOooOooOooOooO\nOOOOOOOOOOOOOOOO`, 16, 16),
     pipeTL: buildSprite(`oooooooooooooooo\noGGGGGGGGGGGGGGG\noGWWGGGGGGGGGGgG\noGWGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGWWGGGGGGGGGGgG\noGWGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noGGGGGGGGGGGGGgG\noooooooooooooooo`, 16, 16),
-    pipeTR: buildSprite(`oooooooooooooooo\nGGGGGGGGGGGGGGGo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nooooooooooooooo\n`, 16, 16),
+    pipeTR: buildSprite(`oooooooooooooooo\nGGGGGGGGGGGGGGGo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\nGGGGGGGGGGGGGGgo\noooooooooooooooo`, 16, 16),
     pipeL: buildSprite(`..oooooooooooooo\n..oGGGGGGGGGGGGG\n..oGWWGGGGGGGGgG\n..oGWGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG\n..oGGGGGGGGGGGgG`, 16, 16),
     pipeR: buildSprite(`oooooooooooooo..\nGGGGGGGGGGGGGo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..\nGGGGGGGGGGGGgo..`, 16, 16),
     gPipeTL: buildSprite(`oooooooooooooooo\noYYYYYYYYYYYYYYY\noYwwYYYYYYYYYYyY\noYwYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYwwYYYYYYYYYYyY\noYwYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noYYYYYYYYYYYYYyY\noooooooooooooooo`, 16, 16),
@@ -258,17 +249,19 @@ const WEAPONS = [
     { name: 'Rocket', speed: 3, dmg: 35, cooldown: 65, color: '#ff0000', w: 6, h: 6 }
 ];
 
-// 全局输入及背包状态管理
+// 全局状态管理
 const Input = { left: false, right: false, up: false, down: false, jump: false, run: false, interact: false, jumpPressed: false, interactPressed: false };
 const inventory = { shell: 0, bird: 0 };
 const AVAILABLE_ITEMS = ['none', 'shell', 'bird'];
-let currentItemIdx = 0; // 0:空手, 1:龟壳, 2:飞鸟
+let currentItemIdx = 0; 
 let itemPanelOpen = false;
 
-// 动态追踪飞鸟的物理世界瞄准目标
-let dragAimWorldX = 0;
-let dragAimWorldY = 120;
+// 杠杆反向拖拽瞄准的核心物理量
 let isDraggingBird = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let aimAngle = 0; // 弧度角
+let aimLength = 60; // 提示虚线延伸长度
 
 function refreshItemPanel() {
     const el = document.getElementById('item-list');
@@ -295,7 +288,7 @@ function closeShopGlobal() {
 // 循环切换选择的道具
 function cycleInventoryItem() {
     currentItemIdx = (currentItemIdx + 1) % AVAILABLE_ITEMS.length;
-    // 如果切到了飞鸟但是没有库存，自动跳过
+    // 如果切到了对应的二级功能无库存，自动跳过
     if (AVAILABLE_ITEMS[currentItemIdx] === 'bird' && inventory.bird <= 0) {
         currentItemIdx = (currentItemIdx + 1) % AVAILABLE_ITEMS.length;
     }
@@ -345,65 +338,77 @@ bindTouch('btn-a', 'jump', true); bindTouch('btn-b', 'run');
 bindTouch('btn-interact', 'interact');
 bindTouch('btn-switch', 'none'); 
 
-// --- 核心注入：屏幕全域鼠标与触控滑动瞄准弹射系统 ---
-function updateAimCoords(clientX, clientY) {
-    if (!game || game.mode !== 'main') return;
+// --- 核心注入：左侧滑动 ❌ 右侧反向联动杠杆物理瞄准弹射器系统 ---
+function getCanvasTouchPos(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    // 计算点击在 Canvas 内部的相对百分比坐标
-    const relX = (clientX - rect.left) / rect.width * canvas.width;
-    const relY = (clientY - rect.top) / rect.height * canvas.height;
-    // 叠加镜头视差得到绝对世界物理坐标
-    dragAimWorldX = game.cameraX + relX;
-    dragAimWorldY = relY;
+    return {
+        x: (clientX - rect.left) / rect.width * canvas.width,
+        y: (clientY - rect.top) / rect.height * canvas.height
+    };
 }
 
 function handleDragStart(e) {
-    if (AVAILABLE_ITEMS[currentItemIdx] === 'bird' && inventory.bird > 0 && game && game.mode === 'main') {
+    if (AVAILABLE_ITEMS[currentItemIdx] !== 'bird' || inventory.bird <= 0 || !game || game.mode !== 'main') return;
+    
+    const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    const cPos = getCanvasTouchPos(clientX, clientY);
+    
+    // 强制限制只有在屏幕左半边（X < 128px 摇杆区域）拖拽才能激活飞鸟瞄准
+    if (cPos.x < 128) {
         isDraggingBird = true;
-        const pageX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-        const pageY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-        updateAimCoords(pageX, pageY);
+        dragStartX = cPos.x;
+        dragStartY = cPos.y;
+        aimAngle = game.player.facingRight ? 0 : Math.PI; // 默认方向
     }
 }
 
 function handleDragMove(e) {
-    if (isDraggingBird) {
-        const pageX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-        const pageY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-        updateAimCoords(pageX, pageY);
+    if (!isDraggingBird) return;
+    const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    const cPos = getCanvasTouchPos(clientX, clientY);
+    
+    // 计算位移差（初始点 - 当前拖拽点 = 杠杆反向推导式）
+    let dx = dragStartX - cPos.x;
+    let dy = dragStartY - cPos.y;
+    
+    if (Math.hypot(dx, dy) > 3) {
+        // 算出手指划动的反向物理夹角
+        aimAngle = Math.atan2(dy, dx);
+        aimLength = Math.min(120, Math.hypot(dx, dy) * 1.5); // 拉得越远线越长
     }
 }
 
 function handleDragEnd(e) {
-    if (isDraggingBird) {
-        isDraggingBird = false;
-        if (inventory.bird > 0 && game && game.mode === 'main') {
-            // 触发物理发射
-            inventory.bird--;
-            game.itemCooldown = 14;
-            const sx = game.player.x + (game.player.facingRight ? game.player.w : -8);
-            const sy = game.player.y + game.player.h / 2;
-            
-            const dx = dragAimWorldX - sx;
-            const dy = dragAimWorldY - sy;
-            const len = Math.hypot(dx, dy) || 1;
-            
-            game.entities.push(new ThrownBird(sx, sy, (dx / len) * 3.6, (dy / len) * 3.6));
-            playSound('shoot');
-            
-            if (inventory.bird <= 0) {
-                currentItemIdx = 0; // 用光自动切回空手
-            }
-            refreshItemPanel();
-        }
+    if (!isDraggingBird) return;
+    isDraggingBird = false;
+    
+    if (inventory.bird > 0 && game && game.mode === 'main') {
+        inventory.bird--;
+        game.itemCooldown = 15;
+        
+        // 发射原点：绑定玩家中央
+        const sx = game.player.x + (game.player.facingRight ? game.player.w : -4);
+        const sy = game.player.y + game.player.h / 2;
+        
+        // 速度分量根据反向联动夹角映射
+        const speed = 3.6;
+        const vx = Math.cos(aimAngle) * speed;
+        const vy = Math.sin(aimAngle) * speed;
+        
+        game.entities.push(new ThrownBird(sx, sy, vx, vy));
+        playSound('shoot');
+        
+        if (inventory.bird <= 0) currentItemIdx = 0; // 空了切回手掌
+        refreshItemPanel();
     }
 }
 
-// 绑定全局鼠标拖拽
+// 绑定全局手势监听
 window.addEventListener('mousedown', handleDragStart);
 window.addEventListener('mousemove', handleDragMove);
 window.addEventListener('mouseup', handleDragEnd);
-// 绑定移动端全局划动
 window.addEventListener('touchstart', handleDragStart, { passive: false });
 window.addEventListener('touchmove', handleDragMove, { passive: false });
 window.addEventListener('touchend', handleDragEnd, { passive: false });
@@ -459,11 +464,15 @@ class Game {
 
     enterMiniGame(type = 'random') {
         const miniType = type === 'random' ? (Math.random() < 0.3 ? 'dodge' : 'shootout') : type;
+        
+        // 核心备份：除了保留状态，还要连同当前手持道具索引一同备份
         this.savedMainState = {
             cameraX: this.cameraX, playerX: this.player.x, playerY: this.player.y,
             isBig: this.player.isBig, starTimer: this.player.starTimer,
+            currentItemIdx: currentItemIdx, // 📌 注入装备索引存储
             entities: this.entities.filter(e => e.type !== 'player') 
         };
+        
         this.mode = miniType; this.cameraX = 0;
         this.player.x = 20; this.player.y = 80; 
         this.player.isBig = false; this.player.h = 16; 
@@ -506,6 +515,14 @@ class Game {
         this.player.x = pipeX * TILE_SIZE + 2; 
         this.player.y = (this.map.groundY - 2) * TILE_SIZE; 
         this.player.isBig = s.isBig; this.player.h = s.isBig ? 32 : 16; this.player.starTimer = s.starTimer;
+        
+        // 📌 核心修复：还原被存储的装备栏索引，确保飞鸟道具绝不丢失
+        currentItemIdx = s.currentItemIdx; 
+        // 容错检测：如果切回来库存由于其它逻辑判定为0，归零
+        if (AVAILABLE_ITEMS[currentItemIdx] === 'bird' && inventory.bird <= 0) currentItemIdx = 0;
+        if (AVAILABLE_ITEMS[currentItemIdx] === 'shell' && inventory.shell <= 0) currentItemIdx = 0;
+        refreshItemPanel();
+
         this.player.vx = 0; this.player.vy = -8; this.player.state = 'jump'; this.player.isDeadState = false; 
         
         this.deathTimer = 0; this.entities = [this.player, this.merchant]; this.projectiles = [];
@@ -545,7 +562,7 @@ class Game {
         if (this.mode === 'main') {
             this.map.updateGeneration(this.cameraX);
             let currentDist = Math.max(0, Math.floor(this.player.x / 10));
-            if (currentDist > this.maxDist) { globalScore += (currentDist - this.maxDist); this.maxDist = currentDist; }
+            if (currentDist > this.maxDist) { globalScore += (current Dist - this.maxDist); this.maxDist = currentDist; }
             if (this.player.shootCooldown > 0) this.player.shootCooldown--;
             if (this.itemCooldown > 0) this.itemCooldown--;
             
@@ -555,7 +572,7 @@ class Game {
                 Math.abs((e.y + e.h / 2) - (this.player.y + this.player.h / 2)) < 36
             );
 
-            // 动态显示或隐藏手机端“互动键”
+            // 动态判定手机端“互动键”
             let isNearPipe = false;
             let centerCol = Math.floor((this.player.x + this.player.w / 2) / TILE_SIZE);
             let footRow = Math.floor((this.player.y + this.player.h + 1) / TILE_SIZE);
@@ -565,18 +582,17 @@ class Game {
             const btnInteractEl = document.getElementById('btn-interact');
             const heldItem = AVAILABLE_ITEMS[currentItemIdx];
             
+            // 只有在靠近商人、金管或手里拿着可敲击龟壳时才展示互动键
             if (nearMerchant || isNearPipe || heldItem === 'shell') {
                 if(btnInteractEl) btnInteractEl.style.display = 'flex';
             } else {
                 if(btnInteractEl) btnInteractEl.style.display = 'none';
             }
 
-            // 按钮事件响应
             if (Input.interactPressed) {
                 if (nearMerchant || this.shopOpen) {
                     this.toggleShop(nearMerchant);
                 } else if (heldItem === 'shell' && inventory.shell > 0 && this.itemCooldown <= 0) {
-                    // 放龟壳
                     inventory.shell--; 
                     this.itemCooldown = 14;
                     const shell = new Koopa(this.player.x + (this.player.facingRight ? 14 : -14), this.player.y);
@@ -591,7 +607,6 @@ class Game {
             if (this.shopOpen && !nearMerchant) {
                 this.toggleShop(null);
             }
-
             if (this.shopOpen) this.player.invincibleTimer = Math.max(this.player.invincibleTimer, 2);
         }
 
@@ -715,29 +730,28 @@ class Game {
         
         this.particles.forEach(p => p.draw(ctx));
         
-        // 绘制飞鸟拖拽预瞄线（完全脱离键盘控制）
+        // 渲染飞鸟的反向不遮挡预瞄辅助线
         if (this.mode === 'main' && AVAILABLE_ITEMS[currentItemIdx] === 'bird' && inventory.bird > 0) {
-            ctx.strokeStyle = isDraggingBird ? '#ff3b30' : 'rgba(255,235,59,0.7)'; 
+            ctx.strokeStyle = isDraggingBird ? '#ffeb3b' : 'rgba(255,255,255,0.4)'; 
             ctx.setLineDash([4, 2]); ctx.lineWidth = 1.5;
             ctx.beginPath(); 
+            
             const sx = this.player.x + (this.player.facingRight ? this.player.w : 0);
             const sy = this.player.y + this.player.h / 2;
             ctx.moveTo(sx, sy); 
             
-            if (isDraggingBird) {
-                ctx.lineTo(dragAimWorldX, dragAimWorldY);
-            } else {
-                // 未拖拽时默认向前水平虚线提示
-                ctx.lineTo(sx + (this.player.facingRight ? 80 : -80), sy);
-            }
+            // 通过当前计算出的真实反向弧度，向前渲染指定长度的物理延长线
+            const endX = sx + Math.cos(aimAngle) * aimLength;
+            const endY = sy + Math.sin(aimAngle) * aimLength;
+            ctx.lineTo(endX, endY);
             ctx.stroke();
             ctx.setLineDash([]);
             
-            // 绘制辅助小准星
-            if (isDraggingBird) {
-                ctx.fillStyle = '#ff3b30';
-                ctx.fillRect(dragAimWorldX - 2, dragAimWorldY - 2, 4, 4);
-            }
+            // 绘制精细落点圆环（右侧），手在左边划，右边圆圈动，互不干扰！
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.arc(endX, endY, 3, 0, Math.PI*2);
+            ctx.fill();
         }
         ctx.restore();
 
@@ -1105,7 +1119,6 @@ class BossTurtle extends Entity {
                 }
             }
         }
-        
         this.applyPhysics(map);
     }
     
