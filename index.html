@@ -149,6 +149,25 @@ let globalTime = 0;
 let soundEnabled = true;
 
 let audioCtx = null;
+
+// 补充漏掉的音效切换方法
+function toggleAudio(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('audio-toggle-btn');
+    if (soundEnabled) {
+        btn.innerText = '音效：开启';
+        btn.classList.remove('off');
+        if (!audioCtx) initAudio();
+    } else {
+        btn.innerText = '音效：关闭';
+        btn.classList.add('off');
+    }
+}
+
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 function playSound(type) {
     if (!audioCtx || !soundEnabled) return;
@@ -261,7 +280,7 @@ let isDraggingBird = false;
 let dragStartX = 0;
 let dragStartY = 0;
 let aimAngle = 0; // 弧度角
-let aimLength = 60; // 提示虚线延伸长度
+let aimLength = 200; // 固定了瞄准线长度
 
 function refreshItemPanel() {
     const el = document.getElementById('item-list');
@@ -348,6 +367,9 @@ function getCanvasTouchPos(clientX, clientY) {
 }
 
 function handleDragStart(e) {
+    // 关键修复：排除虚拟按键区域的点击和各类按钮，防止冲突
+    if (e.target && (e.target.closest('.ctrl-btn') || e.target.tagName.toLowerCase() === 'button' || e.target.closest('#mobile-controls'))) return;
+
     if (AVAILABLE_ITEMS[currentItemIdx] !== 'bird' || inventory.bird <= 0 || !game || game.mode !== 'main') return;
     
     const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
@@ -376,7 +398,8 @@ function handleDragMove(e) {
     if (Math.hypot(dx, dy) > 3) {
         // 算出手指划动的反向物理夹角
         aimAngle = Math.atan2(dy, dx);
-        aimLength = Math.min(120, Math.hypot(dx, dy) * 1.5); // 拉得越远线越长
+        // 关键修复：预瞄线不代表射击距离，变成固定的激光辅助线长度
+        aimLength = 200; 
     }
 }
 
@@ -575,7 +598,7 @@ class Game {
             // 动态判定手机端“互动键”
             let isNearPipe = false;
             let centerCol = Math.floor((this.player.x + this.player.w / 2) / TILE_SIZE);
-            let footRow = Math.floor((this.player.y + this.player.h + 1) / TILE_SIZE);
+            let footRow = Math.floor((this.player.y + this.h + 1) / TILE_SIZE);
             let tile = this.map.columns && this.map.columns[centerCol] ? this.map.columns[centerCol][footRow] : null;
             if (tile && (tile.type === 'gPipeTL' || tile.type === 'gPipeTR')) isNearPipe = true;
 
@@ -1214,10 +1237,14 @@ class GoldenMario extends Entity {
 }
 
 class ThrownBird extends Entity {
-    constructor(x, y, vx, vy) { super(x, y, 10, 10); this.type = 'thrown_bird'; this.vx = vx; this.vy = vy; this.life = 180; }
+    // 关键修复：去除了 this.life 寿命判定
+    constructor(x, y, vx, vy) { super(x, y, 10, 10); this.type = 'thrown_bird'; this.vx = vx; this.vy = vy; }
     update(map, entities) {
-        this.x += this.vx; this.y += this.vy; this.life--;
-        if (this.life <= 0 || this.x < -64 || this.x > map.columns.length * TILE_SIZE + 64 || this.y < -32 || this.y > 300) { this.dead = true; return; }
+        this.x += this.vx; this.y += this.vy; 
+        
+        // 当飞出屏幕极其远（相机外 500 像素）或撞飞上天入地才消失
+        if (this.x < game.cameraX - 64 || this.x > game.cameraX + 500 || this.y < -32 || this.y > 300) { this.dead = true; return; }
+        
         for (let e of entities) {
             if (e === this || e.dead || e.type === 'player' || e.type === 'golden_mario' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
             if (this.intersects(e)) { if (e.dieFromStar) e.dieFromStar(); else e.dead = true; this.dead = true; return; }
