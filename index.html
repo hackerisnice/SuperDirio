@@ -119,7 +119,7 @@
         <button class="audio-toggle-btn" id="audio-toggle-btn" onclick="toggleAudio(event)">音效：开启</button>
         <p style="font-size: 0.8em; margin-top: 25px; line-height: 1.6;">
             WASD 移动 | J/Z 开火/加速 | K/X/空格 跳跃<br>
-            <span style="color:#ffeb3b; font-weight:bold;">Q键切换道具 | 飞鸟状态：在屏幕左侧滑动反向控制右侧准心（防手挡视线），松手直接弹射！</span><br>
+            <span style="color:#ffeb3b; font-weight:bold;">Q键切换道具 | 飞鸟状态：在屏幕任意位置滑动反向控制准心，松手直接弹射！</span><br>
             <span style="color: #4CAF50;">需 1000 金币钻入金管 (已赠送)</span>
         </p>
     </div>
@@ -357,7 +357,7 @@ bindTouch('btn-a', 'jump', true); bindTouch('btn-b', 'run');
 bindTouch('btn-interact', 'interact');
 bindTouch('btn-switch', 'none'); 
 
-// --- 核心注入：左侧滑动 ❌ 右侧反向联动杠杆物理瞄准弹射器系统 ---
+// --- 核心注入：全屏幕滑动反向联动杠杆物理瞄准弹射器系统 ---
 function getCanvasTouchPos(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return {
@@ -367,8 +367,8 @@ function getCanvasTouchPos(clientX, clientY) {
 }
 
 function handleDragStart(e) {
-    // 关键修复：排除虚拟按键区域的点击和各类按钮，防止冲突
-    if (e.target && (e.target.closest('.ctrl-btn') || e.target.tagName.toLowerCase() === 'button' || e.target.closest('#mobile-controls'))) return;
+    // 关键修复：排除虚拟按键区域的点击和各类UI按钮，防止冲突
+    if (e.target && (e.target.closest('.ctrl-btn') || e.target.tagName.toLowerCase() === 'button')) return;
 
     if (AVAILABLE_ITEMS[currentItemIdx] !== 'bird' || inventory.bird <= 0 || !game || game.mode !== 'main') return;
     
@@ -376,13 +376,11 @@ function handleDragStart(e) {
     const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
     const cPos = getCanvasTouchPos(clientX, clientY);
     
-    // 强制限制只有在屏幕左半边（X < 128px 摇杆区域）拖拽才能激活飞鸟瞄准
-    if (cPos.x < 128) {
-        isDraggingBird = true;
-        dragStartX = cPos.x;
-        dragStartY = cPos.y;
-        aimAngle = game.player.facingRight ? 0 : Math.PI; // 默认方向
-    }
+    // 移除坐标限制，现在只要不是按在按钮上，全屏任意位置都可以发起滑动
+    isDraggingBird = true;
+    dragStartX = cPos.x;
+    dragStartY = cPos.y;
+    aimAngle = game.player.facingRight ? 0 : Math.PI; // 默认方向
 }
 
 function handleDragMove(e) {
@@ -398,8 +396,7 @@ function handleDragMove(e) {
     if (Math.hypot(dx, dy) > 3) {
         // 算出手指划动的反向物理夹角
         aimAngle = Math.atan2(dy, dx);
-        // 关键修复：预瞄线不代表射击距离，变成固定的激光辅助线长度
-        aimLength = 200; 
+        aimLength = 200; // 固定的激光辅助线长度
     }
 }
 
@@ -598,7 +595,7 @@ class Game {
             // 动态判定手机端“互动键”
             let isNearPipe = false;
             let centerCol = Math.floor((this.player.x + this.player.w / 2) / TILE_SIZE);
-            let footRow = Math.floor((this.player.y + this.h + 1) / TILE_SIZE);
+            let footRow = Math.floor((this.player.y + this.player.h + 1) / TILE_SIZE);
             let tile = this.map.columns && this.map.columns[centerCol] ? this.map.columns[centerCol][footRow] : null;
             if (tile && (tile.type === 'gPipeTL' || tile.type === 'gPipeTR')) isNearPipe = true;
 
@@ -1237,7 +1234,6 @@ class GoldenMario extends Entity {
 }
 
 class ThrownBird extends Entity {
-    // 关键修复：去除了 this.life 寿命判定
     constructor(x, y, vx, vy) { super(x, y, 10, 10); this.type = 'thrown_bird'; this.vx = vx; this.vy = vy; }
     update(map, entities) {
         this.x += this.vx; this.y += this.vy; 
