@@ -150,7 +150,6 @@ let soundEnabled = true;
 
 let audioCtx = null;
 
-// 补充漏掉的音效切换方法
 function toggleAudio(e) {
     if (e) {
         e.preventDefault();
@@ -372,11 +371,13 @@ function handleDragStart(e) {
 
     if (AVAILABLE_ITEMS[currentItemIdx] !== 'bird' || inventory.bird <= 0 || !game || game.mode !== 'main') return;
     
+    // 【核心修复】：拦截浏览器的原生滚动行为（下拉刷新等），保证手机端滑动顺畅松手
+    if (e.cancelable) e.preventDefault();
+    
     const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
     const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
     const cPos = getCanvasTouchPos(clientX, clientY);
     
-    // 移除坐标限制，现在只要不是按在按钮上，全屏任意位置都可以发起滑动
     isDraggingBird = true;
     dragStartX = cPos.x;
     dragStartY = cPos.y;
@@ -385,6 +386,9 @@ function handleDragStart(e) {
 
 function handleDragMove(e) {
     if (!isDraggingBird) return;
+    // 【核心修复】：防止滑动时带动整个网页滚动，导致触摸事件中断
+    if (e.cancelable) e.preventDefault(); 
+
     const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
     const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
     const cPos = getCanvasTouchPos(clientX, clientY);
@@ -394,7 +398,6 @@ function handleDragMove(e) {
     let dy = dragStartY - cPos.y;
     
     if (Math.hypot(dx, dy) > 3) {
-        // 算出手指划动的反向物理夹角
         aimAngle = Math.atan2(dy, dx);
         aimLength = 200; // 固定的激光辅助线长度
     }
@@ -425,13 +428,14 @@ function handleDragEnd(e) {
     }
 }
 
-// 绑定全局手势监听
+// 绑定全局手势监听，多加了一个 touchcancel 防止手机端意外打断导致鸟卡住飞不出
 window.addEventListener('mousedown', handleDragStart);
 window.addEventListener('mousemove', handleDragMove);
 window.addEventListener('mouseup', handleDragEnd);
 window.addEventListener('touchstart', handleDragStart, { passive: false });
 window.addEventListener('touchmove', handleDragMove, { passive: false });
 window.addEventListener('touchend', handleDragEnd, { passive: false });
+window.addEventListener('touchcancel', handleDragEnd, { passive: false });
 
 
 class Game {
@@ -1242,8 +1246,19 @@ class ThrownBird extends Entity {
         if (this.x < game.cameraX - 64 || this.x > game.cameraX + 500 || this.y < -32 || this.y > 300) { this.dead = true; return; }
         
         for (let e of entities) {
-            if (e === this || e.dead || e.type === 'player' || e.type === 'golden_mario' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star') continue;
-            if (this.intersects(e)) { if (e.dieFromStar) e.dieFromStar(); else e.dead = true; this.dead = true; return; }
+            // 新增排除了扔出的鸟互相碰撞，避免同时连射多发互相抵消
+            if (e === this || e.dead || e.type === 'player' || e.type === 'golden_mario' || e.type === 'coin_item' || e.type === 'mushroom' || e.type === 'star' || e.type === 'thrown_bird') continue;
+            if (this.intersects(e)) { 
+                if (e.dieFromStar) e.dieFromStar(); else e.dead = true; 
+                
+                // 【核心修复】：击杀怪物给予分数和金币奖励，并弹出提示字
+                if (game) {
+                    game.gainReward(200, e.x, e.y);
+                }
+                
+                this.dead = true; 
+                return; 
+            }
         }
         const tiles = map.getIntersectingTiles({ x: this.x, y: this.y, w: this.w, h: this.h });
         for (let t of tiles) {
