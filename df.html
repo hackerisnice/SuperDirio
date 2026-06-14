@@ -1,0 +1,1711 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>道德与法治考点通关系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            overscroll-behavior: none;
+        }
+        .gaming-font {
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+        }
+        .glass {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+        .neon-text {
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+        }
+        /* Hide scrollbars but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden antialiased select-none">
+
+    <!-- background decorative canvas -->
+    <canvas id="bg-stars" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
+
+    <!-- Top Navigation -->
+    <header class="glass sticky top-0 z-50 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center neon-glow animate-pulse">
+                <i class="fa-solid fa-graduation-cap text-lg text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-base md:text-lg tracking-wider bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent gaming-font">德法高频速记</h1>
+                <p class="text-[10px] text-slate-400 tracking-widest uppercase">Gaming Learning Platform</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <!-- Points and Streak -->
+            <div class="flex items-center bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-700 text-xs font-semibold">
+                <i class="fa-solid fa-fire text-orange-500 mr-1.5 animate-bounce"></i>
+                <span id="global-streak" class="text-orange-400 mr-3">0 连击</span>
+                <i class="fa-solid fa-trophy text-yellow-500 mr-1.5"></i>
+                <span id="global-score" class="text-yellow-400">0 分</span>
+            </div>
+            <!-- Audio toggle -->
+            <button onclick="toggleAudio()" id="audio-btn" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition">
+                <i class="fa-solid fa-volume-high text-slate-300"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow z-10 w-full max-w-6xl mx-auto p-4 flex flex-col justify-center">
+        
+        <!-- DASHBOARD (MAIN MENU) -->
+        <div id="screen-dashboard" class="space-y-6">
+            <!-- Hero banner -->
+            <div class="relative glass rounded-3xl p-6 md:p-8 overflow-hidden neon-glow flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-16 -top-16 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="space-y-4 text-center md:text-left z-10">
+                    <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">考前极速逆袭</span>
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                        把枯燥政治考点 <br class="hidden md:block">
+                        变成你的 <span class="bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">射击游戏靶子</span>！
+                    </h2>
+                    <p class="text-slate-400 max-w-md text-sm md:text-base">
+                        独家收录《道德与法治》全本 76 个最核心考点。支持打乱拼写、触屏连线、手势拖拽、以及超解压的3D射击对战模式。
+                    </p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
+                        <div class="flex items-center space-x-2 text-xs text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                            <i class="fa-solid fa-database text-indigo-400"></i>
+                            <span>76道完整考点</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                            <i class="fa-solid fa-gamepad text-pink-400"></i>
+                            <span>5种通关模式</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mini Stats / Action -->
+                <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80 w-full md:w-80 text-center space-y-4 z-10 flex flex-col justify-between">
+                    <div>
+                        <div class="text-xs text-slate-400 font-semibold mb-1">通关完成度</div>
+                        <div class="text-4xl font-black text-indigo-400 gaming-font" id="progress-percent">0%</div>
+                        <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden mt-3 border border-slate-800">
+                            <div id="progress-bar-fill" class="bg-gradient-to-r from-indigo-500 to-pink-500 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-2 flex justify-between">
+                            <span>已背：<span id="stats-passed">0</span> 题</span>
+                            <span>总计：76 题</span>
+                        </div>
+                    </div>
+                    <button onclick="startGameMode('fps')" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-crosshairs text-lg animate-spin"></i>
+                        <span>开启 FPS 射击背诵</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Mode Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Mode 1 -->
+                <div onclick="startGameMode('moxie')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-indigo-500/40 p-5 rounded-2xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition duration-300"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-keyboard text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-white group-hover:text-indigo-400 transition">考点默写</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                                打乱考点进行自主拼写或翻牌速记。包含高亮提示、自动纠错和进度记忆。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-indigo-300 transition">
+                        <span>拼写自测 & 强记</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Mode 2 -->
+                <div onclick="startGameMode('matching')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-emerald-500/40 p-5 rounded-2xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition duration-300"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-link text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-white group-hover:text-emerald-400 transition">连线配对</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                                随机抽取问题和答案左右排布。点击两端建立激光连线，完美匹配消除。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-emerald-300 transition">
+                        <span>视觉连接记忆</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Mode 3 -->
+                <div onclick="startGameMode('dragdrop')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-pink-500/40 p-5 rounded-2xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-pink-500/5 rounded-full blur-2xl group-hover:bg-pink-500/10 transition duration-300"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-arrows-to-dot text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-white group-hover:text-pink-400 transition">拖拽归类</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                                经典的政权/制度/主体拖放游戏，支持手机端单指划动及快速点击，强化概念归属。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-pink-300 transition">
+                        <span>概念逻辑训练</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Mode 4 -->
+                <div onclick="startGameMode('quiz')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-yellow-500/40 p-5 rounded-2xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition duration-300"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-white group-hover:text-yellow-400 transition">选择题竞速</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                                限时动态生成的高难度选择题。包含连击加成与错题自动归纳。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-yellow-300 transition">
+                        <span>限时竞速挑战</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAY SCREENS WRAPPER -->
+        <div id="play-container" class="hidden glass rounded-3xl p-4 md:p-6 min-h-[500px] border border-slate-800 flex flex-col justify-between relative overflow-hidden">
+            <!-- Screen Header -->
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800/80 mb-4 z-10">
+                <button onclick="exitGameMode()" class="flex items-center space-x-2 text-slate-400 hover:text-white transition bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 text-sm">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    <span>返回主单</span>
+                </button>
+                <div class="flex items-center space-x-3 text-slate-300">
+                    <span id="screen-title" class="gaming-font tracking-widest text-indigo-400 text-sm md:text-base">模式加载中</span>
+                    <span id="mode-progress-indicator" class="text-xs bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-slate-400">0/10</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Screens go here -->
+
+            <!-- MODE 1: MOXIE (考点默写) -->
+            <div id="screen-moxie" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
+                <div class="space-y-4 max-w-2xl mx-auto w-full text-center py-6">
+                    <span class="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">考点默写</span>
+                    <h2 id="moxie-question" class="text-xl md:text-2xl font-bold leading-relaxed text-white"></h2>
+                    
+                    <!-- Flashcard Mode Toggle -->
+                    <div class="pt-4 flex justify-center space-x-4">
+                        <button onclick="toggleMoxieInputMode('type')" id="btn-moxie-type" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-indigo-500 bg-indigo-600 text-white">拼写模式</button>
+                        <button onclick="toggleMoxieInputMode('card')" id="btn-moxie-card" class="px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300">翻牌卡片模式</button>
+                    </div>
+                </div>
+
+                <!-- Input area (Option A: Keyboard Typing) -->
+                <div id="moxie-typing-area" class="max-w-xl mx-auto w-full space-y-4 pb-6">
+                    <div class="relative">
+                        <input type="text" id="moxie-input" placeholder="输入背诵答案..." class="w-full bg-slate-950/80 border-2 border-slate-800 focus:border-indigo-500 text-center text-lg py-4 px-6 rounded-2xl outline-none transition text-white" onkeydown="handleMoxieKeyDown(event)">
+                        <button onclick="submitMoxieAnswer()" class="absolute right-3 top-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white px-4 py-2 rounded-xl text-xs font-bold">提交</button>
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-slate-400 px-2">
+                        <span>支持部分精准匹配</span>
+                        <button onclick="showMoxieAnswer()" class="hover:text-indigo-400 underline">不会写？查看正确答案</button>
+                    </div>
+                </div>
+
+                <!-- Input area (Option B: Flip card self evaluation) -->
+                <div id="moxie-card-area" class="hidden max-w-md mx-auto w-full flex flex-col items-center gap-6 pb-6">
+                    <div id="moxie-flip-card" onclick="flipMoxieCard()" class="w-full h-40 bg-gradient-to-br from-indigo-950/60 to-slate-900/60 rounded-2xl border border-slate-800 flex items-center justify-center p-6 text-center cursor-pointer transform transition-all duration-300 hover:scale-102 hover:border-indigo-500">
+                        <div id="moxie-card-content" class="text-slate-400 font-semibold italic text-base">点击卡片揭晓答案</div>
+                    </div>
+                    <div id="moxie-card-controls" class="flex gap-4 w-full justify-center hidden">
+                        <button onclick="evaluateCard(false)" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-4 rounded-xl transition shadow-md shadow-rose-500/10 active:scale-95 text-xs">记错了/不会</button>
+                        <button onclick="evaluateCard(true)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition shadow-md shadow-emerald-500/10 active:scale-95 text-xs">我记对了</button>
+                    </div>
+                </div>
+
+                <!-- Correct Answer Showcase Overlay (Not Modal) -->
+                <div id="moxie-feedback" class="hidden max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center space-y-2">
+                    <div id="moxie-status-text" class="text-sm font-bold">正确！</div>
+                    <div class="text-xs text-slate-400">参考答案：</div>
+                    <div id="moxie-ref-answer" class="text-lg font-bold text-white"></div>
+                    <button onclick="nextMoxieQuestion()" class="mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2 rounded-xl text-xs transition">继续下一题</button>
+                </div>
+            </div>
+
+            <!-- MODE 2: MATCHING (连线配对) -->
+            <div id="screen-matching" class="hidden flex-grow flex flex-col justify-between z-10 relative">
+                <div class="text-center text-xs text-slate-400 mb-2">依次点击“左侧考点”和“右侧正确答案”进行匹配消消乐</div>
+                <div class="flex-grow grid grid-cols-2 gap-4 md:gap-10 relative max-h-[400px] overflow-y-auto no-scrollbar p-2">
+                    <!-- Left side Questions -->
+                    <div id="matching-left" class="space-y-3 flex flex-col justify-center"></div>
+                    <!-- Right side Answers -->
+                    <div id="matching-right" class="space-y-3 flex flex-col justify-center"></div>
+                    
+                    <!-- SVG Overlay for laser lines -->
+                    <svg id="matching-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></svg>
+                </div>
+                <div class="flex justify-between items-center pt-4 border-t border-slate-800/40 text-xs text-slate-400">
+                    <span>剩余未匹配：<span id="matching-remain">0</span> 对</span>
+                    <button onclick="reloadMatching()" class="text-indigo-400 hover:underline"><i class="fa-solid fa-arrows-rotate mr-1"></i>重新加载这一组</button>
+                </div>
+            </div>
+
+            <!-- MODE 3: DRAG & DROP (拖拽归类) -->
+            <div id="screen-dragdrop" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
+                <div class="text-center text-xs text-slate-400">将上方核心名词卡片，点击或拖拽放入下方正确的政体、地位或保障容器中！</div>
+                
+                <!-- Draggable Items -->
+                <div id="dragdrop-items" class="flex flex-wrap justify-center gap-3 py-4 min-h-[80px]">
+                    <!-- Generated Dynamically -->
+                </div>
+
+                <!-- Drop Zones / Targets -->
+                <div id="dragdrop-zones" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Target Boxes Generated Dynamically -->
+                </div>
+
+                <div class="flex justify-end pt-2 border-t border-slate-800/40">
+                    <button onclick="checkDragDropResult()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2 rounded-xl text-xs transition">确认核对</button>
+                </div>
+            </div>
+
+            <!-- MODE 4: MCQ QUIZ (选择题竞速) -->
+            <div id="screen-quiz" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
+                <div class="space-y-3 max-w-2xl mx-auto w-full text-center py-4">
+                    <span class="text-xs bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full border border-yellow-500/30">选择题竞速</span>
+                    <h2 id="quiz-question" class="text-lg md:text-xl font-bold leading-relaxed text-white"></h2>
+                </div>
+
+                <!-- MCQ Options -->
+                <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto w-full pb-6">
+                    <!-- Buttons Generated Dynamically -->
+                </div>
+
+                <!-- Floating point indicator -->
+                <div id="quiz-points-added" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 text-2xl font-black text-yellow-400 gaming-font"></div>
+            </div>
+
+            <!-- MODE 5: FPS SHOOTING (射击挑战) -->
+            <div id="screen-fps" class="hidden flex-grow flex flex-col justify-between gap-4 z-10 p-0 relative h-[500px]">
+                <!-- Game Canvas -->
+                <div class="relative w-full h-[450px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden cursor-crosshair">
+                    <!-- Instruction Overlay before start -->
+                    <div id="fps-intro" class="absolute inset-0 bg-slate-950/90 z-30 flex flex-col items-center justify-center p-6 text-center space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-2xl animate-bounce">
+                            <i class="fa-solid fa-crosshairs"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-white gaming-font tracking-widest text-shadow-neon">射击战场模式</h3>
+                        <p class="text-slate-400 text-xs max-w-xs leading-relaxed">
+                            题目会显示在上方。空中将会有携带答案的能量球漂浮，控制鼠标（或直接在手机上轻触）瞄准并射击正确答案！
+                        </p>
+                        <div class="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 p-2 rounded-lg">
+                            击中正确答案：+100 分 | 击中错误：扣除生命值。击碎背景可以连射。
+                        </div>
+                        <button onclick="startFPSGame()" class="bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-black py-2 px-6 rounded-xl text-xs tracking-wider transition active:scale-95">
+                            开始对决
+                        </button>
+                    </div>
+
+                    <!-- HUD (Head-Up Display) -->
+                    <div class="absolute top-0 left-0 w-full p-3 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent z-20 pointer-events-none">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-1">
+                                <i class="fa-solid fa-heart text-rose-500 animate-pulse text-sm"></i>
+                                <div class="w-20 bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                                    <div id="fps-health-fill" class="bg-rose-500 h-full w-full transition-all duration-300"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">FPS得分</div>
+                            <div id="fps-score" class="text-lg font-black text-yellow-400 gaming-font">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Question Bar -->
+                    <div class="absolute top-12 left-2 right-2 p-2 bg-slate-900/95 border border-slate-800/80 rounded-xl z-20 text-center text-xs md:text-sm font-bold text-indigo-300 pointer-events-none" id="fps-hud-question">
+                        点击下方按钮开启游戏
+                    </div>
+
+                    <!-- Gun Canvas Overlay -->
+                    <canvas id="fps-canvas" class="w-full h-full block"></canvas>
+                </div>
+            </div>
+
+            <!-- Screen Footer Stats -->
+            <div class="flex justify-between items-center pt-4 border-t border-slate-800/80 mt-4 z-10 text-xs text-slate-500">
+                <span id="game-status-text">祝你背诵通关！</span>
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>状态在线</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Global Custom Modal / Dialog -->
+    <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="glass max-w-sm w-full p-6 rounded-3xl border border-slate-800 text-center space-y-4 shadow-2xl">
+            <div id="modal-icon-container" class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-3xl">
+                <!-- Icon via JS -->
+            </div>
+            <h3 id="modal-title" class="text-xl font-bold text-white leading-tight">通知</h3>
+            <p id="modal-message" class="text-slate-400 text-xs leading-relaxed"></p>
+            <button onclick="closeCustomModal()" id="modal-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition">好的</button>
+        </div>
+    </div>
+
+    <!-- Page Footer -->
+    <footer class="py-4 text-center text-[10px] text-slate-600 border-t border-slate-900/80 glass z-10">
+        <p>© 2026 道德与法治高频速记关卡通关平台. Powered by High-Fidelity Canvas System.</p>
+    </footer>
+
+    <!-- Audio Synthesis Utility & Game Logic Scripts -->
+    <script>
+        // --- COMPLETE 76 QUESTIONS DATABASE ---
+        const ALL_QUESTIONS = [
+            { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "政权/领导" },
+            { id: 2, q: "中国特色社会主义的本质要求和重要保障？", a: "共同富裕全面依法治国", cat: "保障/要求", subQ: ["本质要求", "重要保障"], subA: ["共同富裕", "全面依法治国"] },
+            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "人民当家作主全过程人民民主", cat: "民主", subQ: ["本质特征", "本质属性"], subA: ["人民当家作主", "全过程人民民主"] },
+            { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "民主" },
+            { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度；专家咨询制度；重大事项社会公示制度；社会听证制度", cat: "民主" },
+            { id: 6, q: "国家社会主义民主政治建设的基础？", a: "基层群众自治制度", cat: "民主" },
+            { id: 7, q: "人民掌握国家政权、行使权力的根本途径？", a: "人民代表大会制度", cat: "民主/政体" },
+            { id: 8, q: "我国的根本政治制度？", a: "人民代表大会制度", cat: "制度" },
+            { id: 9, q: "基本政治制度？", a: "中国共产党领导的多党合作和政治协商制度；民族区域自治制度；基层群众自治制度", cat: "制度" },
+            { id: 10, q: "我国的基本国情？", a: "正处于社会主义初级阶段", cat: "国情" },
+            { id: 11, q: "基本经济制度中哪些部分体现社会主义性质？", a: "公有制；按劳分配", cat: "经济" },
+            { id: 12, q: "社会主义市场经济包括？", a: "公有制经济和非公有制经济", cat: "经济" },
+            { id: 13, q: "公有制经济地位？", a: "主体地位", cat: "经济" },
+            { id: 14, q: "非公有制经济地位？", a: "重要组成部分", cat: "经济" },
+            { id: 15, q: "国有经济地位？", a: "主导地位", cat: "经济" },
+            { id: 16, q: "资源配置中起决定性作用的是？", a: "市场", cat: "经济" },
+            { id: 17, q: "谁领导立法？", a: "党", cat: "国家机构/宪法" },
+            { id: 18, q: "谁依法行政？", a: "政府", cat: "国家机构/宪法" },
+            { id: 19, q: "谁向法院提起公诉？", a: "检察院", cat: "国家机构" },
+            { id: 20, q: "谁来设置国家机构？", a: "宪法", cat: "国家机构/宪法" },
+            { id: 21, q: "谁监督宪法实施？", a: "全国人大及其常委会", cat: "宪法" },
+            { id: 22, q: "宪法的核心价值追求？", a: "规范国家权力运行以保障公民权利", cat: "宪法" },
+            { id: 23, q: "国家根本活动准则？", a: "宪法", cat: "宪法" },
+            { id: 24, q: "宪法 3 大原则？", a: "国家一切权力属于人民；国家尊重和保障人权；民主集中制", cat: "宪法" },
+            { id: 25, q: "立法活动的基本要求？", a: "尊重和保障人权", cat: "宪法" },
+            { id: 26, q: "我国最高权力机关？", a: "全国人民代表大会", cat: "国家机构" },
+            { id: 27, q: "国家行政机关？", a: "人民政府", cat: "国家机构" },
+            { id: 28, q: "行使国家司法权的司法机关包括？", a: "人民法院和人民检察院", cat: "国家机构" },
+            { id: 29, q: "监察机关的首要职能是？", a: "监督", cat: "国家机构" },
+            { id: 30, q: "捍卫公平正义的最后一道防线？", a: "司法", cat: "法治" },
+            { id: 31, q: "中国自信、民族自信根本所在？", a: "四个自信", cat: "精神/文化" },
+            { id: 32, q: "推动发展的第一动力？", a: "创新", cat: "发展" },
+            { id: 33, q: "民族振兴、社会进步的基石？", a: "教育", cat: "发展" },
+            { id: 34, q: "民族精神的核心？", a: "爱国主义", cat: "精神" },
+            { id: 35, q: "时代精神的核心？", a: "改革创新", cat: "精神" },
+            { id: 36, q: "最基本、最持久、最深沉的力量？", a: "文化自信", cat: "文化" },
+            { id: 37, q: "国家和民族的灵魂？", a: "文化", cat: "文化" },
+            { id: 38, q: "中国精神包括哪些？", a: "民族精神和时代精神", cat: "精神" },
+            { id: 39, q: "社会主义核心价值观个人层面倡导？", a: "爱国、敬业、诚信、友善", cat: "价值观" },
+            { id: 40, q: "法律和道德的关系？", a: "法律和道德相辅相成，相互促进", cat: "法治/德法" },
+            { id: 41, q: "我国新型民族关系是？", a: "平等团结互助和谐", cat: "统一/民族" },
+            { id: 42, q: "解决台湾问题的基本方针？", a: "和平统一、一国两制", cat: "统一" },
+            { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由", cat: "权利" },
+            { id: 44, q: "依法行政的核心是？", a: "规范政府的行政权", cat: "法治" },
+            { id: 45, q: "特权是贬义还是中性？", a: "贬义，反对特权", cat: "法治" },
+            { id: 46, q: "时代的主题是？", a: "和平与发展", cat: "发展" },
+            { id: 47, q: "公民获得物质帮助的条件？", a: "年老、疾病、丧失劳动能力", cat: "权利" },
+            { id: 48, q: "法治属于社会主义核心价值观哪个层面？", a: "社会层面", cat: "价值观" }
+        ];
+
+        // --- GAME STATE ---
+        let currentMode = 'dashboard';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let streak = 0;
+        let playList = [];
+        let completedIds = JSON.parse(localStorage.getItem('politics_completed_ids') || '[]');
+        let isMoxieInputType = 'type'; // 'type' or 'card'
+        let cardFlipped = false;
+        let audioEnabled = true;
+
+        // Audio Context for synthesizing clean procedural gaming sounds
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSynthSound(type) {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'shoot') {
+                    // Quick pitch drop (Laser sweep)
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'hit_correct') {
+                    // Satisfying retro high chime chord
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'hit_wrong') {
+                    // Sad retro buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(80, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'explosion') {
+                    // Simulated noise explosion
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(60, now);
+                    osc.frequency.linearRampToValueAtTime(10, now + 0.25);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audio-btn');
+            if (audioEnabled) {
+                btn.innerHTML = `<i class="fa-solid fa-volume-high text-slate-300"></i>`;
+                showToast("fa-volume-high", "音效开启", "复古合成音效已激活", "bg-emerald-500/20 text-emerald-300");
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500"></i>`;
+                showToast("fa-volume-xmark", "音效关闭", "静音模式", "bg-slate-800/80 text-slate-400");
+            }
+        }
+
+        // --- BACKGROUND GRAPHICS ---
+        function drawBackgroundStars() {
+            const canvas = document.getElementById('bg-stars');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                initStars();
+            }
+
+            function initStars() {
+                stars = [];
+                const count = Math.floor(window.innerWidth / 15);
+                for(let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 1.5 + 0.5,
+                        opacity: Math.random(),
+                        speed: Math.random() * 0.02 + 0.005
+                    });
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                stars.forEach(star => {
+                    star.opacity += star.speed;
+                    if(star.opacity > 1 || star.opacity < 0) star.speed = -star.speed;
+                    ctx.fillStyle = `rgba(129, 140, 248, ${Math.max(0, star.opacity)})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            animate();
+        }
+
+        // --- DASHBOARD AND PROGRESS LOGIC ---
+        function updateProgressStats() {
+            const progressPercent = Math.round((completedIds.length / ALL_QUESTIONS.length) * 100);
+            document.getElementById('progress-percent').innerText = `${progressPercent}%`;
+            document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+            document.getElementById('stats-passed').innerText = completedIds.length;
+        }
+
+        // Shuffle utility
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        // Global Custom Modal Dialog (Custom replacement of alert())
+        function showCustomModal(icon, title, msg, isSuccess = true) {
+            const modal = document.getElementById('custom-modal');
+            const iconContainer = document.getElementById('modal-icon-container');
+            const mTitle = document.getElementById('modal-title');
+            const mMsg = document.getElementById('modal-message');
+            
+            iconContainer.className = `w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-3xl ${isSuccess ? 'bg-indigo-500/10 text-indigo-400' : 'bg-rose-500/10 text-rose-400'}`;
+            iconContainer.innerHTML = `<i class="${icon}"></i>`;
+            mTitle.innerText = title;
+            mMsg.innerText = msg;
+            modal.classList.remove('hidden');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // Elegant floating toasts
+        function showToast(icon, title, text, styleClasses) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 ${styleClasses} px-4 py-3 rounded-2xl border border-slate-700/50 flex items-center space-x-3 z-50 shadow-lg pointer-events-none transform translate-y-10 opacity-0 transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="${icon}"></i>
+                <div>
+                    <h4 class="font-bold text-xs">${title}</h4>
+                    <p class="text-[10px] opacity-80">${text}</p>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Score systems
+        function addScore(points) {
+            score += points;
+            document.getElementById('global-score').innerText = `${score} 分`;
+        }
+
+        function addStreak() {
+            streak++;
+            document.getElementById('global-streak').innerText = `${streak} 连击`;
+        }
+
+        function breakStreak() {
+            streak = 0;
+            document.getElementById('global-streak').innerText = `0 连击`;
+        }
+
+        // --- GAME CONTROLLERS ---
+        function startGameMode(mode) {
+            currentMode = mode;
+            document.getElementById('screen-dashboard').classList.add('hidden');
+            document.getElementById('play-container').classList.remove('hidden');
+            
+            // Hide all sub-screens
+            document.getElementById('screen-moxie').classList.add('hidden');
+            document.getElementById('screen-matching').classList.add('hidden');
+            document.getElementById('screen-dragdrop').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-fps').classList.add('hidden');
+
+            // Select 10 random questions for active session
+            playList = shuffleArray(ALL_QUESTIONS).slice(0, 10);
+            currentQuestionIndex = 0;
+
+            const modeTitles = {
+                'moxie': '考点自主默写',
+                'matching': '激光连线对决',
+                'dragdrop': '概念拖拽归类',
+                'quiz': '限时选择竞速',
+                'fps': '第一人称射击战场'
+            };
+            document.getElementById('screen-title').innerText = modeTitles[mode] || '';
+
+            // Initialize correct screens
+            if (mode === 'moxie') {
+                document.getElementById('screen-moxie').classList.remove('hidden');
+                initMoxieQuestion();
+            } else if (mode === 'matching') {
+                document.getElementById('screen-matching').classList.remove('hidden');
+                initMatchingGame();
+            } else if (mode === 'dragdrop') {
+                document.getElementById('screen-dragdrop').classList.remove('hidden');
+                initDragDropGame();
+            } else if (mode === 'quiz') {
+                document.getElementById('screen-quiz').classList.remove('hidden');
+                initQuizQuestion();
+            } else if (mode === 'fps') {
+                document.getElementById('screen-fps').classList.remove('hidden');
+                document.getElementById('fps-intro').classList.remove('hidden');
+                document.getElementById('fps-hud-question').innerText = "点击下方开启战场模式";
+            }
+            updateIndicator();
+        }
+
+        function updateIndicator() {
+            document.getElementById('mode-progress-indicator').innerText = `${currentQuestionIndex + 1}/${playList.length}`;
+        }
+
+        function exitGameMode() {
+            currentMode = 'dashboard';
+            document.getElementById('play-container').classList.add('hidden');
+            document.getElementById('screen-dashboard').classList.remove('hidden');
+            updateProgressStats();
+            stopFPSGameLoop();
+        }
+
+        function markQuestionCompleted(qId) {
+            if (!completedIds.includes(qId)) {
+                completedIds.push(qId);
+                localStorage.setItem('politics_completed_ids', JSON.stringify(completedIds));
+            }
+            updateProgressStats();
+        }
+
+        // --- MODE 1: MOXIE (MORTAL WRITING & CARDS) ---
+        function initMoxieQuestion() {
+            if (currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `这一批 ${playList.length} 个高频默写考点，你已经圆满掌握！奖励 200 积分。`);
+                addScore(200);
+                exitGameMode();
+                return;
+            }
+            updateIndicator();
+            const currentItem = playList[currentQuestionIndex];
+            document.getElementById('moxie-question').innerText = currentItem.q;
+            document.getElementById('moxie-input').value = "";
+            document.getElementById('moxie-feedback').classList.add('hidden');
+            document.getElementById('moxie-card-controls').classList.add('hidden');
+            cardFlipped = false;
+            
+            if (isMoxieInputType === 'type') {
+                document.getElementById('moxie-typing-area').classList.remove('hidden');
+                document.getElementById('moxie-card-area').classList.add('hidden');
+            } else {
+                document.getElementById('moxie-typing-area').classList.add('hidden');
+                document.getElementById('moxie-card-area').classList.remove('hidden');
+                document.getElementById('moxie-flip-card').innerHTML = `<div class="text-slate-400 font-semibold italic text-sm">点击卡片 翻转展现答案</div>`;
+            }
+        }
+
+        function toggleMoxieInputMode(mode) {
+            isMoxieInputType = mode;
+            const btnType = document.getElementById('btn-moxie-type');
+            const btnCard = document.getElementById('btn-moxie-card');
+            
+            if (mode === 'type') {
+                btnType.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-indigo-500 bg-indigo-600 text-white";
+                btnCard.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
+            } else {
+                btnCard.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-indigo-500 bg-indigo-600 text-white";
+                btnType.className = "px-4 py-1.5 rounded-xl text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
+            }
+            initMoxieQuestion();
+        }
+
+        function handleMoxieKeyDown(e) {
+            if (e.key === 'Enter') submitMoxieAnswer();
+        }
+
+        function submitMoxieAnswer() {
+            const userInput = document.getElementById('moxie-input').value.trim();
+            if (!userInput) return;
+            const currentItem = playList[currentQuestionIndex];
+            const answer = currentItem.a;
+
+            // Simple text fuzzy matcher (check if key words overlap)
+            let isCorrect = false;
+            const matchCount = Array.from(userInput).filter(char => answer.includes(char)).length;
+            const threshold = Math.min(answer.length * 0.45, 4); // Need at least 45% characters matches
+            
+            if (userInput === answer || (userInput.length > 2 && matchCount >= threshold)) {
+                isCorrect = true;
+            }
+
+            showMoxieFeedback(isCorrect);
+        }
+
+        function showMoxieAnswer() {
+            showMoxieFeedback(false);
+        }
+
+        function showMoxieFeedback(isCorrect) {
+            const currentItem = playList[currentQuestionIndex];
+            const feedbackBox = document.getElementById('moxie-feedback');
+            const statusText = document.getElementById('moxie-status-text');
+            const refAnswer = document.getElementById('moxie-ref-answer');
+            
+            feedbackBox.classList.remove('hidden');
+            refAnswer.innerText = currentItem.a;
+
+            if (isCorrect) {
+                statusText.innerText = "🎉 极佳！精准命中考点！";
+                statusText.className = "text-sm font-black text-emerald-400";
+                addScore(50);
+                addStreak();
+                playSynthSound('hit_correct');
+                markQuestionCompleted(currentItem.id);
+            } else {
+                statusText.innerText = "💡 别气馁，考点强化记忆：";
+                statusText.className = "text-sm font-black text-indigo-400";
+                breakStreak();
+                playSynthSound('hit_wrong');
+            }
+        }
+
+        function flipMoxieCard() {
+            if (cardFlipped) return;
+            const currentItem = playList[currentQuestionIndex];
+            const card = document.getElementById('moxie-flip-card');
+            card.innerHTML = `<div class="text-white font-bold text-lg leading-relaxed">${currentItem.a}</div>`;
+            document.getElementById('moxie-card-controls').classList.remove('hidden');
+            cardFlipped = true;
+        }
+
+        function evaluateCard(isCorrect) {
+            const currentItem = playList[currentQuestionIndex];
+            if (isCorrect) {
+                addScore(40);
+                addStreak();
+                playSynthSound('hit_correct');
+                markQuestionCompleted(currentItem.id);
+                showToast("fa-circle-check", "掌握考点", "+40 积分", "bg-emerald-500/20 text-emerald-300");
+            } else {
+                breakStreak();
+                playSynthSound('hit_wrong');
+                showToast("fa-circle-xmark", "需要巩固", "加油，继续背诵", "bg-rose-500/20 text-rose-300");
+            }
+            nextMoxieQuestion();
+        }
+
+        function nextMoxieQuestion() {
+            currentQuestionIndex++;
+            initMoxieQuestion();
+        }
+
+
+        // --- MODE 2: MATCHING GAME (激光连线) ---
+        let selectedMatchingLeft = null;
+        let selectedMatchingRight = null;
+        let matchedPairsCount = 0;
+        let matchingSubset = [];
+
+        function initMatchingGame() {
+            const leftContainer = document.getElementById('matching-left');
+            const rightContainer = document.getElementById('matching-right');
+            const svg = document.getElementById('matching-svg');
+            
+            leftContainer.innerHTML = "";
+            rightContainer.innerHTML = "";
+            svg.innerHTML = "";
+            
+            selectedMatchingLeft = null;
+            selectedMatchingRight = null;
+
+            // Select 5 questions from subset
+            matchingSubset = shuffleArray(playList).slice(0, 5);
+            matchedPairsCount = 0;
+            document.getElementById('matching-remain').innerText = matchingSubset.length;
+
+            const shuffledLeft = shuffleArray(matchingSubset);
+            const shuffledRight = shuffleArray(matchingSubset);
+
+            shuffledLeft.forEach((item, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-xs text-slate-200 border border-slate-800 p-3.5 rounded-xl transition-all duration-300 active:scale-98 flex items-center justify-between";
+                btn.id = `match-left-${item.id}`;
+                btn.innerHTML = `
+                    <span class="max-w-[90%]">${item.q}</span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 inline-block shrink-0 ml-1"></span>
+                `;
+                btn.onclick = () => selectMatchingNode(item.id, 'left');
+                leftContainer.appendChild(btn);
+            });
+
+            shuffledRight.forEach((item, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-xs text-slate-200 border border-slate-800 p-3.5 rounded-xl transition-all duration-300 active:scale-98 flex items-center justify-between";
+                btn.id = `match-right-${item.id}`;
+                btn.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 inline-block shrink-0 mr-1"></span>
+                    <span class="max-w-[90%] text-right ml-auto">${item.a}</span>
+                `;
+                btn.onclick = () => selectMatchingNode(item.id, 'right');
+                rightContainer.appendChild(btn);
+            });
+        }
+
+        function selectMatchingNode(id, side) {
+            playSynthSound('shoot');
+            if (side === 'left') {
+                if (selectedMatchingLeft) {
+                    document.getElementById(`match-left-${selectedMatchingLeft}`).classList.remove('border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+                }
+                selectedMatchingLeft = id;
+                document.getElementById(`match-left-${id}`).classList.add('border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+            } else {
+                if (selectedMatchingRight) {
+                    document.getElementById(`match-right-${selectedMatchingRight}`).classList.remove('border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+                }
+                selectedMatchingRight = id;
+                document.getElementById(`match-right-${id}`).classList.add('border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+            }
+
+            if (selectedMatchingLeft !== null && selectedMatchingRight !== null) {
+                // Check Match
+                if (selectedMatchingLeft === selectedMatchingRight) {
+                    // Match Success!
+                    playSynthSound('hit_correct');
+                    const lid = selectedMatchingLeft;
+                    const leftBtn = document.getElementById(`match-left-${lid}`);
+                    const rightBtn = document.getElementById(`match-right-${lid}`);
+
+                    leftBtn.className = "w-full text-left bg-emerald-950/30 text-emerald-400 border border-emerald-500/40 p-3.5 rounded-xl transition-all duration-300 pointer-events-none flex items-center justify-between opacity-60";
+                    rightBtn.className = "w-full text-left bg-emerald-950/30 text-emerald-400 border border-emerald-500/40 p-3.5 rounded-xl transition-all duration-300 pointer-events-none flex items-center justify-between opacity-60";
+                    
+                    // Draw dynamic SVG beam
+                    drawMatchingLine(lid);
+
+                    matchedPairsCount++;
+                    document.getElementById('matching-remain').innerText = matchingSubset.length - matchedPairsCount;
+                    
+                    addScore(25);
+                    addStreak();
+                    markQuestionCompleted(lid);
+
+                    if (matchedPairsCount >= matchingSubset.length) {
+                        setTimeout(() => {
+                            showCustomModal('fa-wand-magic-sparkles text-emerald-400', '通关成功！', '完美的连线消除！你已经消除了本组所有考点对。');
+                            nextMatchingGroup();
+                        }, 500);
+                    }
+                } else {
+                    // Match Failed
+                    playSynthSound('hit_wrong');
+                    const leftBtn = document.getElementById(`match-left-${selectedMatchingLeft}`);
+                    const rightBtn = document.getElementById(`match-right-${selectedMatchingRight}`);
+                    
+                    leftBtn.classList.add('animate-shake', 'border-rose-500');
+                    rightBtn.classList.add('animate-shake', 'border-rose-500');
+                    breakStreak();
+
+                    setTimeout(() => {
+                        leftBtn.classList.remove('animate-shake', 'border-rose-500', 'border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+                        rightBtn.classList.remove('animate-shake', 'border-rose-500', 'border-indigo-500', 'bg-indigo-950/40', 'scale-102');
+                    }, 500);
+                }
+                selectedMatchingLeft = null;
+                selectedMatchingRight = null;
+            }
+        }
+
+        function drawMatchingLine(id) {
+            const leftDot = document.querySelector(`#match-left-${id} span:last-child`);
+            const rightDot = document.querySelector(`#match-right-${id} span:first-child`);
+            const svg = document.getElementById('matching-svg');
+            
+            if(!leftDot || !rightDot) return;
+
+            const rectLeft = leftDot.getBoundingClientRect();
+            const rectRight = rightDot.getBoundingClientRect();
+            const containerRect = svg.getBoundingClientRect();
+
+            const x1 = rectLeft.left + rectLeft.width / 2 - containerRect.left;
+            const y1 = rectLeft.top + rectLeft.height / 2 - containerRect.top;
+            const x2 = rectRight.left + rectRight.width / 2 - containerRect.left;
+            const y2 = rectRight.top + rectRight.height / 2 - containerRect.top;
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x1);
+            line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("stroke", "#10b981");
+            line.setAttribute("stroke-width", "3");
+            line.setAttribute("stroke-dasharray", "4,4");
+            line.setAttribute("class", "animate-pulse");
+
+            svg.appendChild(line);
+        }
+
+        function nextMatchingGroup() {
+            currentQuestionIndex += 5;
+            if (currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-award text-yellow-400', '全部通关！', '你已成功解决所有激光连线题！积分+100。');
+                addScore(100);
+                exitGameMode();
+            } else {
+                initMatchingGame();
+            }
+        }
+
+        function reloadMatching() {
+            initMatchingGame();
+        }
+
+
+        // --- MODE 3: DRAG & DROP GAME (拖拽与点击归类) ---
+        let dragDropAnswers = [];
+        let dragDropZonesConfig = [
+            { id: 'zone-pol', name: '政治/民主制度', keywords: ['制度', '政治', '民主', '协商', '人民代表大会', '基层群众自治'] },
+            { id: 'zone-eco', name: '基本经济制度', keywords: ['市场', '公有制', '非公有制', '分配', '经济', '主体', '主导'] },
+            { id: 'zone-con', name: '宪法核心价值', keywords: ['宪法', '一切权力属于人民', '尊重和保障人权', '规范国家权力', '司法'] },
+            { id: 'zone-spr', name: '中国精神文化', keywords: ['精神', '文化', '爱国主义', '改革创新', '道德', '核心价值观'] }
+        ];
+        let activeSelectedCardId = null;
+
+        function initDragDropGame() {
+            const itemsContainer = document.getElementById('dragdrop-items');
+            const zonesContainer = document.getElementById('dragdrop-zones');
+            
+            itemsContainer.innerHTML = "";
+            zonesContainer.innerHTML = "";
+            activeSelectedCardId = null;
+
+            // Pick 6 random cards with keywords that can fit roughly
+            const shuffledSet = shuffleArray(ALL_QUESTIONS).slice(0, 6);
+            
+            shuffledSet.forEach((item, index) => {
+                // Determine appropriate target zone based on keywords
+                let targetZone = 'zone-pol'; // Default fallback
+                for (const zone of dragDropZonesConfig) {
+                    const matches = zone.keywords.some(kw => item.q.includes(kw) || item.a.includes(kw) || (item.cat && item.cat.includes(kw)));
+                    if (matches) {
+                        targetZone = zone.id;
+                        break;
+                    }
+                }
+                
+                const card = document.createElement('div');
+                card.id = `dd-card-${item.id}`;
+                card.className = "bg-slate-900 border border-slate-800 hover:border-indigo-500/80 hover:bg-slate-800/80 px-4 py-2 rounded-xl text-xs font-semibold text-white cursor-pointer active:scale-95 transition-all duration-200 select-none shadow-md";
+                card.innerText = item.a;
+                card.draggable = true;
+                card.dataset.targetZone = targetZone;
+                card.dataset.id = item.id;
+
+                // Touch-Friendly Selection Click
+                card.onclick = () => selectDragCard(item.id);
+
+                // Desktop drag and drop bindings
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                    card.classList.add('opacity-40');
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('opacity-40');
+                });
+
+                itemsContainer.appendChild(card);
+            });
+
+            // Create target Zones
+            dragDropZonesConfig.forEach(zone => {
+                const box = document.createElement('div');
+                box.className = "bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-indigo-500/40 p-4 rounded-2xl flex flex-col justify-start min-h-[140px] transition-colors relative";
+                box.id = zone.id;
+                box.innerHTML = `
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 border-b border-slate-900 pb-1.5">${zone.name}</div>
+                    <div class="space-y-2 flex-grow flex flex-col justify-start items-center" id="${zone.id}-content"></div>
+                `;
+
+                // Handle desktop dropping
+                box.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    box.classList.add('border-indigo-500/60', 'bg-indigo-950/10');
+                });
+                box.addEventListener('dragleave', () => {
+                    box.classList.remove('border-indigo-500/60', 'bg-indigo-950/10');
+                });
+                box.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('border-indigo-500/60', 'bg-indigo-950/10');
+                    const cardId = e.dataTransfer.getData('text/plain');
+                    dropCardInZone(cardId, zone.id);
+                });
+
+                // Handle touch selection landing
+                box.onclick = () => {
+                    if (activeSelectedCardId) {
+                        dropCardInZone(activeSelectedCardId, zone.id);
+                        activeSelectedCardId = null;
+                    }
+                };
+
+                zonesContainer.appendChild(box);
+            });
+        }
+
+        function selectDragCard(cardId) {
+            playSynthSound('shoot');
+            if (activeSelectedCardId) {
+                document.getElementById(`dd-card-${activeSelectedCardId}`).classList.remove('border-pink-500', 'bg-pink-950/20');
+            }
+            activeSelectedCardId = cardId;
+            document.getElementById(`dd-card-${cardId}`).classList.add('border-pink-500', 'bg-pink-950/20');
+            showToast("fa-arrows-to-dot", "已选中卡片", "现在轻触下方的归类槽即可放入", "bg-pink-500/20 text-pink-300");
+        }
+
+        function dropCardInZone(cardId, zoneId) {
+            const card = document.getElementById(`dd-card-${cardId}`);
+            if (!card) return;
+            
+            const destContent = document.getElementById(`${zoneId}-content`);
+            
+            // Remove highlighting
+            card.classList.remove('border-pink-500', 'bg-pink-950/20');
+            card.classList.add('scale-95');
+
+            // Move node inside target area
+            destContent.appendChild(card);
+            playSynthSound('explosion');
+        }
+
+        function checkDragDropResult() {
+            let correctCount = 0;
+            let totalPlaced = 0;
+
+            dragDropZonesConfig.forEach(zone => {
+                const zoneContent = document.getElementById(`${zone.id}-content`);
+                const cards = zoneContent.querySelectorAll('[id^="dd-card-"]');
+                
+                cards.forEach(card => {
+                    totalPlaced++;
+                    const targetZone = card.dataset.targetZone;
+                    if (targetZone === zone.id) {
+                        card.className = "bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 px-3 py-1.5 rounded-lg text-xs w-full text-center";
+                        correctCount++;
+                        markQuestionCompleted(parseInt(card.dataset.id));
+                    } else {
+                        card.className = "bg-rose-950/40 border border-rose-500/50 text-rose-400 px-3 py-1.5 rounded-lg text-xs w-full text-center animate-shake";
+                        // Put back to list on error after 1 second
+                        setTimeout(() => {
+                            card.className = "bg-slate-900 border border-slate-800 hover:border-indigo-500/80 hover:bg-slate-800/80 px-4 py-2 rounded-xl text-xs font-semibold text-white cursor-pointer active:scale-95 transition-all duration-200";
+                            document.getElementById('dragdrop-items').appendChild(card);
+                        }, 1200);
+                    }
+                });
+            });
+
+            if (totalPlaced === 0) {
+                showCustomModal('fa-triangle-exclamation text-rose-400', '槽位空空', '请将卡片拖入或点击对应的归类盒子后再进行核对！', false);
+                return;
+            }
+
+            if (correctCount === 6) {
+                playSynthSound('hit_correct');
+                addScore(150);
+                addStreak();
+                showCustomModal('fa-shield-halved text-emerald-400', '归类大师！', '全对！你成功理清了国家核心机制、民主制度、基本经济和文化精神的关系！');
+                setTimeout(() => {
+                    initDragDropGame();
+                }, 2000);
+            } else {
+                playSynthSound('hit_wrong');
+                breakStreak();
+                showToast("fa-circle-xmark", "核对完成", `已校准：其中有 ${correctCount} 张分对。错误的已放回重置。`, "bg-rose-500/20 text-rose-300");
+            }
+        }
+
+
+        // --- MODE 4: MCQ QUIZ (选择题挑战) ---
+        function initQuizQuestion() {
+            if (currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-medal text-yellow-400', '竞速挑战完成！', `大捷！你在选择题速记竞速中全通！额外赠送 150 积分！`);
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+            updateIndicator();
+
+            const currentItem = playList[currentQuestionIndex];
+            document.getElementById('quiz-question').innerText = currentItem.q;
+
+            // Generate MCQ Options
+            // Select 3 random incorrect answers from ALL_QUESTIONS (excluding correct answer)
+            const distractors = shuffleArray(ALL_QUESTIONS)
+                .filter(item => item.a !== currentItem.a)
+                .slice(0, 3)
+                .map(item => item.a);
+
+            const options = shuffleArray([currentItem.a, ...distractors]);
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = "";
+
+            options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-850 hover:border-indigo-500/60 text-slate-200 border border-slate-800 p-5 rounded-2xl transition duration-200 active:scale-98 flex items-center space-x-3";
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-full bg-slate-950 flex items-center justify-center font-bold text-xs border border-slate-800 shrink-0 text-slate-400 select-none">${String.fromCharCode(65 + idx)}</span>
+                    <span class="text-sm font-semibold">${opt}</span>
+                `;
+                btn.onclick = () => selectQuizOption(opt, currentItem.a, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectQuizOption(selected, correct, btnNode) {
+            const allButtons = document.getElementById('quiz-options').children;
+            
+            // Disable further clicks
+            Array.from(allButtons).forEach(btn => btn.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                // Correct!
+                playSynthSound('hit_correct');
+                addScore(30 + streak * 5);
+                addStreak();
+                btnNode.className = "w-full text-left bg-emerald-950/40 text-emerald-300 border-2 border-emerald-500 p-5 rounded-2xl transition duration-200 flex items-center space-x-3 shadow-md shadow-emerald-500/10";
+                
+                // Float points addition
+                const ptsFloat = document.getElementById('quiz-points-added');
+                ptsFloat.innerText = `+${30 + streak * 5} pts`;
+                ptsFloat.classList.remove('hidden');
+                ptsFloat.className = "absolute top-4 left-1/2 transform -translate-x-1/2 text-2xl font-black text-yellow-400 gaming-font animate-bounce";
+                
+                markQuestionCompleted(playList[currentQuestionIndex].id);
+
+                setTimeout(() => {
+                    ptsFloat.classList.add('hidden');
+                    currentQuestionIndex++;
+                    initQuizQuestion();
+                }, 1000);
+            } else {
+                // Wrong!
+                playSynthSound('hit_wrong');
+                breakStreak();
+                btnNode.className = "w-full text-left bg-rose-950/40 text-rose-300 border-2 border-rose-500 p-5 rounded-2xl transition duration-200 flex items-center space-x-3 shadow-md shadow-rose-500/10 animate-shake";
+                
+                // Highlight correct button
+                Array.from(allButtons).forEach(btn => {
+                    if (btn.querySelector('span:last-child').innerText === correct) {
+                        btn.className = "w-full text-left bg-emerald-950/40 text-emerald-300 border border-emerald-500/50 p-5 rounded-2xl transition duration-200 flex items-center space-x-3";
+                    }
+                });
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    initQuizQuestion();
+                }, 2000);
+            }
+        }
+
+
+        // --- MODE 5: FPS SHOOTING GAME (射击挑战) ---
+        let fpsCanvas, fpsCtx;
+        let fpsGameActive = false;
+        let fpsAnimationId = null;
+        let fpsTargets = [];
+        let fpsScoreVal = 0;
+        let fpsHealth = 100;
+        let fpsCurrentItem = null;
+        let particles = [];
+        let mouseX = 200, mouseY = 200;
+        let gunRecoil = 0;
+        let crosshairScale = 1.0;
+
+        function startFPSGame() {
+            document.getElementById('fps-intro').classList.add('hidden');
+            fpsCanvas = document.getElementById('fps-canvas');
+            fpsCtx = fpsCanvas.getContext('2d');
+            
+            // Handle Responsive Canvas
+            fpsCanvas.width = fpsCanvas.parentElement.clientWidth;
+            fpsCanvas.height = fpsCanvas.parentElement.clientHeight;
+
+            // Controls listeners
+            fpsCanvas.addEventListener('mousemove', (e) => {
+                const rect = fpsCanvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+            });
+
+            fpsCanvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    const rect = fpsCanvas.getBoundingClientRect();
+                    mouseX = e.touches[0].clientX - rect.left;
+                    mouseY = e.touches[0].clientY - rect.top;
+                }
+            });
+
+            fpsCanvas.addEventListener('mousedown', triggerShoot);
+            fpsCanvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    const rect = fpsCanvas.getBoundingClientRect();
+                    mouseX = e.touches[0].clientX - rect.left;
+                    mouseY = e.touches[0].clientY - rect.top;
+                    triggerShoot(e);
+                }
+            });
+
+            fpsGameActive = true;
+            fpsScoreVal = 0;
+            fpsHealth = 100;
+            fpsTargets = [];
+            particles = [];
+            document.getElementById('fps-score').innerText = "0";
+            updateFPSHealthBar();
+
+            // Load first question
+            currentQuestionIndex = 0;
+            loadNextFPSQuestion();
+
+            // Run game animation loop
+            runFPSLoop();
+        }
+
+        function stopFPSGameLoop() {
+            fpsGameActive = false;
+            if (fpsAnimationId) {
+                cancelAnimationFrame(fpsAnimationId);
+                fpsAnimationId = null;
+            }
+        }
+
+        function updateFPSHealthBar() {
+            document.getElementById('fps-health-fill').style.width = `${fpsHealth}%`;
+        }
+
+        function loadNextFPSQuestion() {
+            if (currentQuestionIndex >= playList.length) {
+                stopFPSGameLoop();
+                showCustomModal('fa-circle-check text-emerald-400', '战绩彪炳！', `你成功完成了 FPS 射击背诵挑战！FPS 总得分：${fpsScoreVal}！`, true);
+                addScore(fpsScoreVal);
+                exitGameMode();
+                return;
+            }
+            updateIndicator();
+
+            fpsCurrentItem = playList[currentQuestionIndex];
+            document.getElementById('fps-hud-question').innerText = `目标问题：${fpsCurrentItem.q}`;
+
+            // Generate 3 float targets (1 Correct, 2 Shuffled Distractors)
+            fpsTargets = [];
+
+            const distractors = shuffleArray(ALL_QUESTIONS)
+                .filter(item => item.a !== fpsCurrentItem.a)
+                .slice(0, 2)
+                .map(item => item.a);
+
+            const options = shuffleArray([fpsCurrentItem.a, ...distractors]);
+
+            options.forEach((opt, idx) => {
+                const targetSpacing = fpsCanvas.width / 3;
+                fpsTargets.push({
+                    x: targetSpacing * idx + (targetSpacing / 2) + (Math.random() * 40 - 20),
+                    y: Math.random() * 80 + 100, // Safe floating height
+                    vx: Math.random() * 1.6 - 0.8,
+                    vy: Math.random() * 0.8 - 0.4,
+                    r: 55,
+                    text: opt,
+                    isCorrect: (opt === fpsCurrentItem.a),
+                    color: opt === fpsCurrentItem.a ? '#6366f1' : '#ec4899', // Indigo for correct target, Pink for wrong
+                    opacity: 1.0,
+                    scale: 1.0
+                });
+            });
+        }
+
+        function triggerShoot(e) {
+            if (!fpsGameActive) return;
+            e.preventDefault();
+
+            // Trigger Retro synthesized laser sound
+            playSynthSound('shoot');
+
+            gunRecoil = 25; // Create physical gun kickback
+            crosshairScale = 1.4;
+
+            // Check collision with floating targets
+            let hitTargetIndex = -1;
+            for (let i = 0; i < fpsTargets.length; i++) {
+                const target = fpsTargets[i];
+                const dx = mouseX - target.x;
+                const dy = mouseY - target.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= target.r) {
+                    hitTargetIndex = i;
+                    break;
+                }
+            }
+
+            if (hitTargetIndex !== -1) {
+                const hit = fpsTargets[hitTargetIndex];
+                
+                // Explode particles
+                createTargetParticles(hit.x, hit.y, hit.color);
+                playSynthSound('explosion');
+
+                if (hit.isCorrect) {
+                    // Correct shoot
+                    fpsScoreVal += 100;
+                    document.getElementById('fps-score').innerText = fpsScoreVal;
+                    showToast("fa-circle-check", "精准命中！", "获得 100 分", "bg-emerald-500/20 text-emerald-300");
+                    playSynthSound('hit_correct');
+                    markQuestionCompleted(fpsCurrentItem.id);
+
+                    // Transition to next question
+                    fpsTargets = []; // Clear current targets
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        loadNextFPSQuestion();
+                    }, 500);
+                } else {
+                    // Wrong shoot
+                    fpsHealth -= 35;
+                    if (fpsHealth <= 0) fpsHealth = 0;
+                    updateFPSHealthBar();
+                    playSynthSound('hit_wrong');
+                    showToast("fa-circle-xmark", "射中错误答案", "扣除生命值！", "bg-rose-500/20 text-rose-300");
+
+                    if (fpsHealth <= 0) {
+                        stopFPSGameLoop();
+                        showCustomModal('fa-circle-xmark text-rose-400', '战败归来', '生命值耗尽，回去多看几遍考点速记再来吧！', false);
+                        exitGameMode();
+                    }
+                }
+            } else {
+                // Shoot background: Spawn little impact particle sparks
+                createImpactSparks(mouseX, mouseY);
+            }
+        }
+
+        function createTargetParticles(x, y, color) {
+            const count = 30;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    r: Math.random() * 4 + 2,
+                    color: color,
+                    life: 1.0,
+                    decay: Math.random() * 0.03 + 0.015
+                });
+            }
+        }
+
+        function createImpactSparks(x, y) {
+            const count = 8;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    r: Math.random() * 2 + 1,
+                    color: '#fcd34d', // Yellow sparks
+                    life: 1.0,
+                    decay: 0.05
+                });
+            }
+        }
+
+        // --- THE RENDER LOOP OF FPS MODE ---
+        function runFPSLoop() {
+            if (!fpsGameActive) return;
+
+            // Clear frame
+            fpsCtx.fillStyle = '#020617';
+            fpsCtx.fillRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+
+            // Draw a futuristic grid backdrop on canvas
+            drawFurturisticGrid();
+
+            // Render particles
+            particles.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                
+                fpsCtx.fillStyle = p.color;
+                fpsCtx.globalAlpha = p.life;
+                fpsCtx.beginPath();
+                fpsCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                fpsCtx.fill();
+                fpsCtx.globalAlpha = 1.0;
+
+                if (p.life <= 0) particles.splice(idx, 1);
+            });
+
+            // Update & Draw targets
+            fpsTargets.forEach((target, idx) => {
+                target.x += target.vx;
+                target.y += target.vy;
+
+                // Wall collisions bouncy physics
+                if (target.x - target.r <= 0 || target.x + target.r >= fpsCanvas.width) {
+                    target.vx = -target.vx;
+                }
+                if (target.y - target.r <= 40 || target.y + target.r >= fpsCanvas.height - 120) {
+                    target.vy = -target.vy;
+                }
+
+                // Draw Target Glow / Aura
+                const grad = fpsCtx.createRadialGradient(target.x, target.y, 5, target.x, target.y, target.r);
+                grad.addColorStop(0, '#1e293b');
+                grad.addColorStop(0.7, '#0f172a');
+                grad.addColorStop(1, target.color);
+
+                fpsCtx.shadowColor = target.color;
+                fpsCtx.shadowBlur = 15;
+
+                fpsCtx.fillStyle = grad;
+                fpsCtx.beginPath();
+                fpsCtx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+                fpsCtx.fill();
+
+                fpsCtx.lineWidth = 2.5;
+                fpsCtx.strokeStyle = target.color;
+                fpsCtx.stroke();
+
+                fpsCtx.shadowBlur = 0; // Reset shadow
+
+                // Outer decorative dashed tech ring
+                fpsCtx.strokeStyle = 'rgba(255,255,255,0.15)';
+                fpsCtx.lineWidth = 1;
+                fpsCtx.setLineDash([5, 5]);
+                fpsCtx.beginPath();
+                fpsCtx.arc(target.x, target.y, target.r + 10, 0, Math.PI * 2);
+                fpsCtx.stroke();
+                fpsCtx.setLineDash([]); // Reset dashed
+
+                // Render Wrapped Text on Floating board
+                fpsCtx.fillStyle = '#f8fafc';
+                fpsCtx.font = "bold 11px sans-serif";
+                fpsCtx.textAlign = "center";
+                fpsCtx.textBaseline = "middle";
+                wrapCanvasText(fpsCtx, target.text, target.x, target.y, target.r * 1.5, 14);
+            });
+
+            // Draw Gun rendering (3D-like perspective weapon projecting from bottom center)
+            drawGunArm();
+
+            // Draw Crosshair
+            drawFPSCrosshair();
+
+            fpsAnimationId = requestAnimationFrame(runFPSLoop);
+        }
+
+        function drawFurturisticGrid() {
+            fpsCtx.strokeStyle = 'rgba(15, 23, 42, 0.4)';
+            fpsCtx.lineWidth = 1.5;
+            const size = 40;
+            for (let x = 0; x < fpsCanvas.width; x += size) {
+                fpsCtx.beginPath();
+                fpsCtx.moveTo(x, 0);
+                fpsCtx.lineTo(x, fpsCanvas.height);
+                fpsCtx.stroke();
+            }
+            for (let y = 0; y < fpsCanvas.height; y += size) {
+                fpsCtx.beginPath();
+                fpsCtx.moveTo(0, y);
+                fpsCtx.lineTo(fpsCanvas.width, y);
+                fpsCtx.stroke();
+            }
+        }
+
+        function drawGunArm() {
+            const centerX = fpsCanvas.width / 2;
+            const centerY = fpsCanvas.height;
+            
+            // weapon aims slightly toward the target/cursor
+            const aimDX = mouseX - centerX;
+            const aimDY = mouseY - centerY;
+            const angle = Math.atan2(aimDY, aimDX) + Math.PI/2;
+
+            fpsCtx.save();
+            fpsCtx.translate(centerX, centerY);
+            fpsCtx.rotate(angle * 0.4); // Dampen rotating speed to look heavy
+
+            // Recoil offset animation
+            if (gunRecoil > 0) gunRecoil -= 2.5;
+
+            // Draw Gun Body Base with rich metallic gradient
+            const gunGrad = fpsCtx.createLinearGradient(-25, -gunRecoil, 25, -gunRecoil);
+            gunGrad.addColorStop(0, '#312e81'); // indigo-900
+            gunGrad.addColorStop(0.5, '#4f46e5'); // indigo-600
+            gunGrad.addColorStop(1, '#1e1b4b');
+
+            fpsCtx.fillStyle = gunGrad;
+            fpsCtx.beginPath();
+            fpsCtx.moveTo(-18, 20);
+            fpsCtx.lineTo(-12, -90 + gunRecoil);
+            fpsCtx.lineTo(12, -90 + gunRecoil);
+            fpsCtx.lineTo(18, 20);
+            fpsCtx.closePath();
+            fpsCtx.fill();
+
+            // Neon glowing weapon core rail
+            fpsCtx.shadowColor = '#fb7185';
+            fpsCtx.shadowBlur = 10;
+            fpsCtx.fillStyle = '#f43f5e';
+            fpsCtx.fillRect(-3, -80 + gunRecoil, 6, 60);
+            fpsCtx.shadowBlur = 0;
+
+            // Gun tip/muzzle
+            fpsCtx.fillStyle = '#0f172a';
+            fpsCtx.fillRect(-7, -98 + gunRecoil, 14, 10);
+
+            // Trigger flash
+            if (gunRecoil > 15) {
+                const flashGrad = fpsCtx.createRadialGradient(0, -100 + gunRecoil, 2, 0, -100 + gunRecoil, 25);
+                flashGrad.addColorStop(0, '#ffffff');
+                flashGrad.addColorStop(0.3, '#fb7185');
+                flashGrad.addColorStop(1, 'transparent');
+                fpsCtx.fillStyle = flashGrad;
+                fpsCtx.beginPath();
+                fpsCtx.arc(0, -100 + gunRecoil, 25, 0, Math.PI*2);
+                fpsCtx.fill();
+            }
+
+            fpsCtx.restore();
+        }
+
+        function drawFPSCrosshair() {
+            if (crosshairScale > 1.0) crosshairScale -= 0.05;
+
+            fpsCtx.save();
+            fpsCtx.translate(mouseX, mouseY);
+            fpsCtx.scale(crosshairScale, crosshairScale);
+
+            // Draw Outer Ring
+            fpsCtx.strokeStyle = '#ec4899';
+            fpsCtx.lineWidth = 1.5;
+            fpsCtx.beginPath();
+            fpsCtx.arc(0, 0, 14, 0, Math.PI * 2);
+            fpsCtx.stroke();
+
+            // Center Point
+            fpsCtx.fillStyle = '#ec4899';
+            fpsCtx.beginPath();
+            fpsCtx.arc(0, 0, 2.5, 0, Math.PI * 2);
+            fpsCtx.fill();
+
+            // Crosshair ticks
+            fpsCtx.lineWidth = 1.5;
+            const tLen = 6;
+            const tGap = 5;
+            const ticks = [
+                {x1: -tLen - tGap, y1: 0, x2: -tGap, y2: 0},
+                {x1: tGap, y1: 0, x2: tLen + tGap, y2: 0},
+                {x1: 0, y1: -tLen - tGap, x2: 0, y2: -tGap},
+                {x1: 0, y1: tGap, x2: 0, y2: tLen + tGap}
+            ];
+
+            ticks.forEach(t => {
+                fpsCtx.beginPath();
+                fpsCtx.moveTo(t.x1, t.y1);
+                fpsCtx.lineTo(t.x2, t.y2);
+                fpsCtx.stroke();
+            });
+
+            fpsCtx.restore();
+        }
+
+        // Word wrapper helper inside floating target circle
+        function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let line = '';
+            let lines = [];
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n];
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n];
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            // Offset to vertically align block perfectly
+            const totalHeight = lines.length * lineHeight;
+            let startY = y - (totalHeight / 2) + (lineHeight / 2);
+
+            for (let i = 0; i < lines.length; i++) {
+                context.fillText(lines[i], x, startY);
+                startY += lineHeight;
+            }
+        }
+
+
+        // --- LIFE CYCLE START ---
+        window.addEventListener('DOMContentLoaded', () => {
+            drawBackgroundStars();
+            updateProgressStats();
+        });
+    </script>
+</body>
+</html>
+
+```
