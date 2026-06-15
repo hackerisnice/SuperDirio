@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>道德与法治考点通关系统</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -57,12 +54,9 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden antialiased select-none">
 
-    <!-- background decorative canvas -->
     <canvas id="bg-stars" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
 
-    <!-- Top Navigation -->
     <header class="glass sticky top-0 z-50 px-4 py-3 border-b border-slate-800/80 flex justify-between items-center">
-        <!-- Interactive Database Switcher Trigger -->
         <div class="flex items-center space-x-3 cursor-pointer group bg-slate-900/40 hover:bg-slate-850/60 p-1.5 px-3 rounded-2xl border border-transparent hover:border-cyan-500/20 transition-all duration-300" onclick="showDatabaseSwitcher()">
             <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center neon-glow animate-pulse shrink-0">
                 <i class="fa-solid fa-graduation-cap text-lg text-white"></i>
@@ -77,26 +71,21 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <!-- Points and Streak -->
             <div class="flex items-center bg-slate-950/80 px-2.5 py-1 rounded-full border border-slate-800 text-xs font-semibold">
                 <i class="fa-solid fa-fire text-orange-500 mr-1 animate-bounce"></i>
                 <span id="global-streak" class="text-orange-400 mr-2">0 连击</span>
                 <i class="fa-solid fa-trophy text-yellow-500 mr-1"></i>
                 <span id="global-score" class="text-yellow-400">0 分</span>
             </div>
-            <!-- Audio toggle -->
             <button onclick="toggleAudio()" id="audio-btn" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition">
                 <i class="fa-solid fa-volume-high text-slate-300 text-xs"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="flex-grow z-10 w-full max-w-6xl mx-auto p-4 flex flex-col justify-center">
         
-        <!-- DASHBOARD (MAIN MENU) -->
         <div id="screen-dashboard" class="space-y-6">
-            <!-- Hero banner -->
             <div class="relative glass rounded-3xl p-6 md:p-8 overflow-hidden neon-glow flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -left-16 -top-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -121,7 +110,6 @@
                     </div>
                 </div>
 
-                <!-- Live stats box -->
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 w-full md:w-80 text-center space-y-4 z-10">
                     <div>
                         <div class="text-xs text-slate-400 font-semibold mb-1">熟背通关进度 (已熟记考点)</div>
@@ -134,7 +122,6 @@
                             <span>未解锁：<span id="stats-remaining" class="text-slate-500">76</span> 道</span>
                         </div>
                     </div>
-                    <!-- Frequency threshold stats -->
                     <div class="border-t border-slate-900 pt-3 text-left">
                         <div class="flex justify-between items-center text-xs text-slate-400">
                             <span>模式防重复池统计</span>
@@ -158,9 +145,7 @@
                 </div>
             </div>
 
-            <!-- Game Mode Cards Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Mode 1 -->
                 <div onclick="startGameMode('moxie')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-cyan-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition duration-300"></div>
                     <div class="space-y-3">
@@ -180,7 +165,6 @@
                     </div>
                 </div>
 
-                <!-- Mode 2 -->
                 <div onclick="startGameMode('matching')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-emerald-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition duration-300"></div>
                     <div class="space-y-3">
@@ -200,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- Mode 3 -->
                 <div onclick="startGameMode('dragdrop')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-indigo-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition duration-300"></div>
                     <div class="space-y-3">
@@ -220,7 +203,6 @@
                     </div>
                 </div>
 
-                <!-- Mode 4 -->
                 <div onclick="startGameMode('quiz')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-yellow-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition duration-300"></div>
                     <div class="space-y-3">
@@ -240,7 +222,6 @@
                     </div>
                 </div>
 
-                <!-- Mode 5 -->
                 <div onclick="startGameMode('fps')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-pink-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-pink-500/5 rounded-full blur-2xl group-hover:bg-pink-500/10 transition duration-300"></div>
                     <div class="space-y-3">
@@ -260,9 +241,7 @@
                     </div>
                 </div>
 
-                <!-- Mode 6: Locked Pinball Mode -->
                 <div id="card-pinball-locked" onclick="tryUnlockPinball()" class="relative group cursor-pointer glass p-4 rounded-xl border border-slate-800/60 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px]">
-                    <!-- Locking Overlay -->
                     <div id="pinball-lock-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-3 text-center space-y-2">
                         <div class="w-9 h-9 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-500">
                             <i class="fa-solid fa-lock text-sm"></i>
@@ -293,9 +272,7 @@
             </div>
         </div>
 
-        <!-- PLAY SCREENS WRAPPER -->
         <div id="play-container" class="hidden glass rounded-3xl p-4 md:p-6 min-h-[500px] border border-slate-800 flex flex-col justify-between relative overflow-hidden">
-            <!-- Screen Header -->
             <div class="flex justify-between items-center pb-4 border-b border-slate-800/80 mb-4 z-10">
                 <button onclick="exitGameMode()" class="flex items-center space-x-2 text-slate-400 hover:text-white transition bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -307,7 +284,6 @@
                 </div>
             </div>
 
-            <!-- MODE 1: MOXIE (考点默写) -->
             <div id="screen-moxie" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
                 <div class="space-y-4 max-w-2xl mx-auto w-full text-center py-4">
                     <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 font-semibold">模式 A · 考点默写</span>
@@ -319,7 +295,6 @@
                     </div>
                 </div>
 
-                <!-- Input area (Option A: Keyboard Typing) -->
                 <div id="moxie-typing-area" class="max-w-xl mx-auto w-full space-y-4 pb-6">
                     <div class="relative">
                         <input type="text" id="moxie-input" placeholder="请在这里输入背诵答案..." class="w-full bg-slate-950/80 border border-slate-800 focus:border-cyan-500 text-center text-sm py-3 px-4 pr-24 rounded-xl outline-none transition text-white" onkeydown="handleMoxieKeyDown(event)">
@@ -331,7 +306,6 @@
                     </div>
                 </div>
 
-                <!-- Input area (Option B: Flip card self evaluation) -->
                 <div id="moxie-card-area" class="hidden max-w-md mx-auto w-full flex flex-col items-center gap-4 pb-6">
                     <div id="moxie-flip-card" onclick="flipMoxieCard()" class="w-full h-36 bg-gradient-to-br from-slate-900/60 to-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-center p-5 text-center cursor-pointer transform transition-all duration-300 hover:border-cyan-500">
                         <div id="moxie-card-content" class="text-slate-400 font-semibold italic text-xs">点击卡片 展现标准答案</div>
@@ -342,7 +316,6 @@
                     </div>
                 </div>
 
-                <!-- Correct Answer Showcase Overlay (Not Modal) -->
                 <div id="moxie-feedback" class="hidden max-w-xl mx-auto w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center space-y-2">
                     <div id="moxie-status-text" class="text-sm font-bold">正确！</div>
                     <div class="text-[10px] text-slate-500">标准参考答案：</div>
@@ -351,16 +324,12 @@
                 </div>
             </div>
 
-            <!-- MODE 2: MATCHING (连线配对) -->
             <div id="screen-matching" class="hidden flex-grow flex flex-col justify-between z-10 relative">
                 <div class="text-center text-[11px] text-slate-500 mb-2">点击“左侧提问”后，再点击“右侧对应答案”进行配对连线消除</div>
                 <div class="flex-grow grid grid-cols-2 gap-4 md:gap-8 relative max-h-[350px] overflow-y-auto custom-scroll p-2">
-                    <!-- Left side Questions -->
                     <div id="matching-left" class="space-y-2 flex flex-col justify-center"></div>
-                    <!-- Right side Answers -->
                     <div id="matching-right" class="space-y-2 flex flex-col justify-center"></div>
                     
-                    <!-- SVG Overlay for laser lines -->
                     <svg id="matching-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></svg>
                 </div>
                 <div class="flex justify-between items-center pt-4 border-t border-slate-800/60 text-[11px] text-slate-500">
@@ -369,46 +338,34 @@
                 </div>
             </div>
 
-            <!-- MODE 3: DRAG & DROP (拖拽归类) -->
             <div id="screen-dragdrop" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
                 <div class="text-center text-[11px] text-slate-500">轻触上方卡片（可点击选中或拖动），归纳到下方正确的分类容器中：</div>
                 
-                <!-- Draggable Items -->
                 <div id="dragdrop-items" class="flex flex-wrap justify-center gap-2 py-2 min-h-[70px]">
-                    <!-- Generated Dynamically -->
-                </div>
+                    </div>
 
-                <!-- Drop Zones / Targets -->
                 <div id="dragdrop-zones" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <!-- Target Boxes Generated Dynamically -->
-                </div>
+                    </div>
 
                 <div class="flex justify-end pt-2 border-t border-slate-800/40">
                     <button onclick="checkDragDropResult()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition">核对归类卡片</button>
                 </div>
             </div>
 
-            <!-- MODE 4: MCQ QUIZ (选择题竞速) -->
             <div id="screen-quiz" class="hidden flex-grow flex flex-col justify-between gap-4 z-10">
                 <div class="space-y-3 max-w-2xl mx-auto w-full text-center py-2">
                     <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full border border-yellow-500/30 font-semibold">模式 D · 单项选择竞速</span>
                     <h2 id="quiz-question" class="text-base md:text-lg font-bold leading-relaxed text-white"></h2>
                 </div>
 
-                <!-- MCQ Options -->
                 <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto w-full pb-4">
-                    <!-- Buttons Generated Dynamically -->
-                </div>
+                    </div>
 
-                <!-- Floating point indicator -->
                 <div id="quiz-points-added" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 text-xl font-black text-yellow-400 gaming-font"></div>
             </div>
 
-            <!-- MODE 5: FPS SHOOTING (射击挑战) -->
             <div id="screen-fps" class="hidden flex-grow flex flex-col justify-between gap-4 z-10 p-0 relative h-[450px]">
-                <!-- Game Canvas -->
                 <div class="relative w-full h-[400px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden cursor-crosshair">
-                    <!-- Instruction Overlay before start -->
                     <div id="fps-intro" class="absolute inset-0 bg-slate-950/95 z-30 flex flex-col items-center justify-center p-6 text-center space-y-3">
                         <div class="w-14 h-14 rounded-full bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 text-xl animate-bounce">
                             <i class="fa-solid fa-crosshairs"></i>
@@ -425,7 +382,6 @@
                         </button>
                     </div>
 
-                    <!-- HUD (Head-Up Display) -->
                     <div class="absolute top-0 left-0 w-full p-2 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent z-20 pointer-events-none">
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-heart text-pink-500 animate-pulse text-xs"></i>
@@ -438,20 +394,16 @@
                         </div>
                     </div>
 
-                    <!-- Question Bar -->
                     <div class="absolute top-10 left-2 right-2 p-2 bg-slate-900/95 border border-slate-800 rounded-xl z-20 text-center text-xs font-semibold text-cyan-300 pointer-events-none" id="fps-hud-question">
                         点击下方开启射击
                     </div>
 
-                    <!-- Gun Canvas Overlay -->
                     <canvas id="fps-canvas" class="w-full h-full block"></canvas>
                 </div>
             </div>
 
-            <!-- MODE 6: PINBALL SCREEN -->
             <div id="screen-pinball" class="hidden flex-grow flex flex-col justify-between gap-4 z-10 p-0 relative h-[450px]">
                 <div class="relative w-full h-[400px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden">
-                    <!-- HUD -->
                     <div class="absolute top-0 left-0 w-full p-2 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent z-20 pointer-events-none">
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-heart text-yellow-500 text-xs animate-bounce"></i>
@@ -462,7 +414,6 @@
                         </div>
                     </div>
 
-                    <!-- Game Question Bar -->
                     <div class="absolute top-9 left-2 right-2 p-1.5 bg-slate-900/95 border border-slate-800 rounded-xl z-20 text-center text-[11px] font-semibold text-cyan-300 pointer-events-none" id="pinball-hud-question">
                         加载试题中...
                     </div>
@@ -471,7 +422,6 @@
                 </div>
             </div>
 
-            <!-- Screen Footer Stats -->
             <div class="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 z-10 text-[10px] text-slate-500">
                 <span id="game-status-text">安全模式：已开启针对当前题库核心考点的防重复出现保护。</span>
                 <div class="flex items-center space-x-1">
@@ -482,10 +432,8 @@
         </div>
     </main>
 
-    <!-- ANDROID STYLE DATABASE SWITCHER MODAL -->
     <div id="db-switcher-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300">
-            <!-- Modal Header -->
             <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
                 <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-lg">
                     <i class="fa-solid fa-database"></i>
@@ -496,9 +444,7 @@
                 </div>
             </div>
 
-            <!-- Selection Options (Android Radio Card Style) -->
             <div class="space-y-3">
-                <!-- Option 1: 76 High Freq Points -->
                 <div id="db-opt-high_freq" onclick="selectDatabase('high_freq')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-cyan-500 bg-slate-950/80 cursor-pointer transition">
                     <div class="flex items-center space-x-3.5 pr-2">
                         <div class="text-cyan-400 text-lg shrink-0">
@@ -514,7 +460,6 @@
                     </div>
                 </div>
 
-                <!-- Option 2: Core Viewpoint Points -->
                 <div id="db-opt-core_viewpoint" onclick="selectDatabase('core_viewpoint')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-slate-800 hover:border-cyan-500/50 bg-slate-950/50 hover:bg-slate-950 cursor-pointer transition">
                     <div class="flex items-center space-x-3.5 pr-2">
                         <div class="text-emerald-400 text-lg shrink-0">
@@ -531,7 +476,6 @@
                 </div>
             </div>
 
-            <!-- Actions -->
             <div class="flex justify-end pt-2">
                 <button onclick="closeDatabaseSwitcher()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2 rounded-xl text-xs transition active:scale-95">
                     取消
@@ -540,7 +484,6 @@
         </div>
     </div>
 
-    <!-- Global Custom Modal / Dialog -->
     <div id="custom-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
         <div class="glass max-w-sm w-full p-6 rounded-2xl border border-slate-800 text-center space-y-4 shadow-2xl">
             <div id="modal-icon-container" class="w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl"></div>
@@ -550,13 +493,112 @@
         </div>
     </div>
 
-    <!-- Page Footer -->
     <footer class="py-3 text-center text-[10px] text-slate-600 border-t border-slate-900/80 glass z-10">
         <p>© 2026 道德与法治高保真双库防重复通关平台.</p>
     </footer>
 
-    <!-- Audio Synthesis Utility & Game Logic Scripts -->
     <script>
+        // --- CORE AUDIO & UTILITY FUNCTIONS (修复新增部分) ---
+        let audioCtx = null;
+        let audioEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx && window.AudioContext) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audio-btn');
+            if (btn) {
+                if (audioEnabled) {
+                    btn.innerHTML = '<i class="fa-solid fa-volume-high text-slate-300 text-xs"></i>';
+                    btn.classList.remove('bg-slate-800/80', 'text-slate-500');
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-volume-xmark text-slate-500 text-xs"></i>';
+                    btn.classList.add('bg-slate-800/80', 'text-slate-500');
+                }
+            }
+        }
+
+        function playSynthSound(type) {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'shoot') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'hit_correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'hit_wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } else if (type === 'explosion') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch(e) { console.log("Audio API not supported/allowed yet"); }
+        }
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function drawBackgroundStars() {
+            const canvas = document.getElementById('bg-stars');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 150; i++) {
+                ctx.beginPath();
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const r = Math.random() * 1.5;
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.6 + 0.1})`;
+                ctx.fill();
+            }
+        }
+
         // --- SAFE STANDALONE SANDBOXED LOCAL STORAGE ---
         const SafeStorage = {
             memoryStore: {},
@@ -715,7 +757,7 @@
             { id: 130, q: "尊重自由平等的价值指引？", a: "尊重自由平等是践行社会主义核心价值观、树立平等法治观的内在要求", cat: "法治观念与宪法实施" },
             { id: 131, q: "如何维护社会公平正义？", a: "积极做有公平正义感的人；坚持依法治国，打击违法犯罪；调节社会分配，促进共同富裕", cat: "法治观念与宪法实施" },
             { id: 132, q: "如何理解“坚持我国的政治和经济制度”？", a: "制度支撑保障；坚持基本经济制度与社会主义市场经济；坚持人民代表大会制度；民族区域自治、基层群众自治与多党合作", cat: "国家发展与政治制度" },
-            { id: 133, q: "我国国家机构行使权力的本质？", a: "国家机关依法行使职权，遵循民主集中制原则；为人民服务、对人民负责、维护人民利益，坚持以人民为中心", cat: "国家发展与政治制度" },
+            { id: 133, q: "我国国家机构行使权力的本质？", a: "国家机关依法行使职权，遵循民主集中制原则；为人民服务、对人民负责、维护人民利益，坚持简以人民为中心", cat: "国家发展与政治制度" },
             { id: 134, q: "“踏上强国之路”的历史结论与方向？", a: "坚持改革开放和全面深化改革；坚持以人民为中心，共享发展成果，缓解主要矛盾，实现共同富裕，维护正义", cat: "国家发展与政治制度" },
             { id: 135, q: "“坚持创新驱动发展”的战略部署？", a: "实施科教兴国、人才强国与创新驱动发展战略；发扬实干与改革创新精神，建设创新强国", cat: "科教兴国与创新" },
             { id: 136, q: "如何追求民主价值？", a: "发展全过程人民民主（社会主义民主是新型民主）；保障人民当家作主，协商民主，积极参与并增强民主意识", cat: "全过程人民民主" },
@@ -746,7 +788,6 @@
         let isMoxieInputType = 'type'; 
         let cardFlipped = false;
         let hasAnsweredCurrent = false; 
-        let audioEnabled = true;
 
         // --- CORE FUNCTIONS (FULLY DEFINED TO PREVENT CRASHES) ---
         function getActiveQuestions() {
@@ -887,7 +928,7 @@
             }
         }
 
-        // --- BACKGROUND STARS ---
+        // --- BACKGROUND STARS & PROGRESS---
         function updateProgressStats() {
             const currentPool = getActiveQuestions();
             const totalQuestions = currentPool.length;
