@@ -63,7 +63,7 @@
     <!-- Top Navigation -->
     <header class="glass sticky top-0 z-50 px-4 py-3 border-b border-slate-800/80 flex justify-between items-center">
         <!-- Interactive Database Switcher Trigger -->
-        <div class="flex items-center space-x-3 cursor-pointer group bg-slate-900/40 hover:bg-slate-800/60 p-1.5 px-3 rounded-2xl border border-transparent hover:border-cyan-500/20 transition-all duration-300" onclick="showDatabaseSwitcher()">
+        <div class="flex items-center space-x-3 cursor-pointer group bg-slate-900/40 hover:bg-slate-850/60 p-1.5 px-3 rounded-2xl border border-transparent hover:border-cyan-500/20 transition-all duration-300" onclick="showDatabaseSwitcher()">
             <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center neon-glow animate-pulse shrink-0">
                 <i class="fa-solid fa-graduation-cap text-lg text-white"></i>
             </div>
@@ -107,7 +107,7 @@
                         全能冲刺 <span id="hero-db-main-title" class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">76 考点速记</span>
                     </h2>
                     <p class="text-slate-400 max-w-lg text-xs md:text-sm leading-relaxed">
-                        系统严密监测每个知识点在当前模式的练习次数。**确保每个考点在单一背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保高频自测效率。
+                        系统严密监测每个知识点在不同模式的练习次数。**确保每个考点在单一背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保高频自测效率。
                     </p>
                     <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-1">
                         <div class="flex items-center space-x-1.5 text-[11px] text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
@@ -419,7 +419,7 @@
 
             <!-- Screen Footer Stats -->
             <div class="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 z-10 text-[10px] text-slate-500">
-                <span id="game-status-text">安全模式：已开启针对 76 考点的防重复出现 3 次限定保护。</span>
+                <span id="game-status-text">安全模式：已开启针对德法核心考点的防重复出现 3 次限定保护。</span>
                 <div class="flex items-center space-x-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
                     <span>状态在线</span>
@@ -445,7 +445,7 @@
             <!-- Selection Options (Android Radio Card Style) -->
             <div class="space-y-3">
                 <!-- Option 1: 76 High Freq Points -->
-                <div id="db-opt-high_freq" onclick="selectDatabase('high_freq')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-slate-800 hover:border-cyan-500/50 bg-slate-950/50 hover:bg-slate-950 cursor-pointer transition">
+                <div id="db-opt-high_freq" onclick="selectDatabase('high_freq')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-cyan-500 bg-slate-950/80 cursor-pointer transition">
                     <div class="flex items-center space-x-3.5 pr-2">
                         <div class="text-cyan-400 text-lg shrink-0">
                             <i class="fa-solid fa-list-check"></i>
@@ -467,8 +467,8 @@
                             <i class="fa-solid fa-circle-nodes"></i>
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-slate-100">第三部分：核心观点及关联考点（45题）</h4>
-                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级政治重点。包含心理健康、道德修养、总体国家安全及法治实施。</p>
+                            <h4 class="text-sm font-bold text-slate-100">核心观点及关联考点（45题）</h4>
+                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级德法重点。包含心理健康、道德修养、总体国家安全及法治实施。</p>
                         </div>
                     </div>
                     <div id="db-opt-indicator-core_viewpoint" class="w-5 h-5 rounded-full border-2 border-slate-850 flex items-center justify-center shrink-0">
@@ -510,7 +510,7 @@
             { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "全过程人民民主" },
             { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "全过程人民民主" },
             { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度、专家咨询制度、重大事项社会公示制度、社会听证制度", cat: "全过程人民民主" },
-            { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和社会管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "全过程人民民主" },
+            { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "全过程人民民主" },
             { id: 7, q: "人民掌握国家政权、行使权力的根本途径？", a: "人民代表大会制度", cat: "党与根本制度" },
             { id: 8, q: "我国的根本政治制度？", a: "人民代表大会制度", cat: "党与根本制度" },
             { id: 9, q: "我国的基本政治制度？", a: "中国共产党领导的多党合作和政治协商制度、民族区域自治制度、基层群众自治制度", cat: "党与根本制度" },
@@ -567,7 +567,7 @@
             { id: 60, q: "我国“五位一体”总体布局指什么？", a: "经济建设、政治建设、文化建设、社会建设、生态文明建设", cat: "精神文明与文化" },
             { id: 61, q: "高质量发展的五大新发展理念？", a: "创新、协调、绿色、开放、共享", cat: "基本经济与市场" },
             { id: 62, q: "人民政协的性质、主要职能与两大主题？", a: "性质：中国人民爱国统一战线组织；职能：政治协商、民主监督、参政议政；主题：团结 and 民主", cat: "党与根本制度" },
-            { id: 63, q: "居民委员会和村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "全过程人民民主" },
+            { id: 63, q: "居民委员会 and 村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "全过程人民民主" },
             { id: 64, q: "自由的含义？平等的两层含义与表现？特权性质？", a: "自由是法律范围内的自由；平等是同等对待、不同情况区别对待，表现为权利/机会/规则公平；特权是贬义并坚决反对", cat: "法治与司法公正" },
             { id: 65, q: "公平和正义的价值表现是什么？", a: "公平：权利公平、机会公平、规则公平；正义：权利和义务的平等", cat: "法治与司法公正" },
             { id: 66, q: "中国特色社会主义建设中带有“中心”字眼的两大固定搭配？", a: "经济建设为中心；以人民为中心", cat: "基本经济与市场" },
@@ -632,24 +632,41 @@
             { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展机遇和成果，推动全球共同繁荣", cat: "世界舞台与外交" }
         ];
 
-        // --- ACTIVE DATABASE CONFIGURATION ---
+        // --- GAME & SYSTEM GLOBAL STATE ---
+        let currentMode = 'dashboard';
         let currentDatabase = 'high_freq'; // 'high_freq' or 'core_viewpoint'
+        let currentQuestionIndex = 0; 
+        let sessionCompletedCount = 0; 
+        let score = 0;
+        let streak = 0;
+        let playList = [];
+        
+        let completedIds = [];
+        let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {} };
+        
+        let isMoxieInputType = 'type'; 
+        let cardFlipped = false;
+        let hasAnsweredCurrent = false; 
+        let audioEnabled = true;
 
-        function getActiveDatabasePool() {
+        // Dynamic database pool fetcher
+        function getActiveQuestions() {
             return currentDatabase === 'high_freq' ? HIGH_FREQ_QUESTIONS : CORE_VIEWPOINT_QUESTIONS;
         }
 
-        // Helper to retrieve saved database variables
+        // Segregated LocalStorage Key builders to avoid dirty data crash
         function getLocalStorageKeys() {
             return {
-                completed: `politics_completed_ids_${currentDatabase}`,
-                shown: `politics_shown_counts_v5_${currentDatabase}`
+                completed: `politics_completed_ids_v6_${currentDatabase}`,
+                shown: `politics_shown_counts_v6_${currentDatabase}_${currentMode}`
             };
         }
 
-        // Load active arrays safely
+        // Synchronize and load dynamic database state safely
         function syncDatabaseState() {
             const keys = getLocalStorageKeys();
+            
+            // 1. Load completed progress
             try {
                 completedIds = JSON.parse(localStorage.getItem(keys.completed) || '[]');
                 if (!Array.isArray(completedIds)) completedIds = [];
@@ -657,6 +674,7 @@
                 completedIds = [];
             }
 
+            // 2. Load mode-specific shown counts to sandbox memory
             try {
                 const raw = localStorage.getItem(keys.shown);
                 if (raw) {
@@ -668,33 +686,31 @@
                 shownCounts[currentMode] = {};
             }
 
-            // Sync visual header titles
+            // 3. Update Text and visual headers
             const headerTitle = document.getElementById('header-db-title');
             const headerSub = document.getElementById('header-db-sub');
             const heroTitle = document.getElementById('hero-db-main-title');
             const heroTotal = document.getElementById('hero-stat-total');
 
-            if (currentDatabase === 'high_freq') {
-                if (headerTitle) headerTitle.innerText = "德法 76 考点通关";
-                if (headerSub) headerSub.innerText = "76 Core Knowledge Points Base";
-                if (heroTitle) heroTitle.innerText = "76 考点速记";
-                if (heroTotal) heroTotal.innerHTML = `<i class="fa-solid fa-layer-group text-cyan-400"></i> <span>76 道全量高保真题库</span>`;
-            } else {
-                if (headerTitle) headerTitle.innerText = "德法核心观点通关";
-                if (headerSub) headerSub.innerText = "45 Core Viewpoints Base";
-                if (heroTitle) heroTitle.innerText = "45 核心观点关联";
-                if (heroTotal) heroTotal.innerHTML = `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
+            const isHighFreq = currentDatabase === 'high_freq';
+
+            if (headerTitle) headerTitle.innerText = isHighFreq ? "德法 76 考点通关" : "德法核心观点通关";
+            if (headerSub) headerSub.innerText = isHighFreq ? "76 Core Knowledge Points Base" : "45 Core Viewpoints Base";
+            if (heroTitle) heroTitle.innerText = isHighFreq ? "76 考点速记" : "45 核心观点关联";
+            if (heroTotal) {
+                heroTotal.innerHTML = isHighFreq 
+                    ? `<i class="fa-solid fa-layer-group text-cyan-400"></i> <span>76 道全量高保真题库</span>`
+                    : `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
             }
 
             updateProgressStats();
         }
 
-        // Switcher Modals
+        // Open and Render Switcher modal
         function showDatabaseSwitcher() {
             playSynthSound('shoot');
             const switcher = document.getElementById('db-switcher-modal');
             if (switcher) {
-                // Pre-highlight active choices
                 const highFreqCard = document.getElementById('db-opt-high_freq');
                 const coreViewpointCard = document.getElementById('db-opt-core_viewpoint');
                 const highFreqInd = document.getElementById('db-opt-indicator-high_freq');
@@ -713,42 +729,154 @@
                 }
 
                 switcher.classList.remove('hidden');
+                switcher.classList.add('flex');
             }
         }
 
         function closeDatabaseSwitcher() {
             const switcher = document.getElementById('db-switcher-modal');
-            if (switcher) switcher.classList.add('hidden');
+            if (switcher) {
+                switcher.classList.remove('flex');
+                switcher.classList.add('hidden');
+            }
         }
 
         function selectDatabase(dbKey) {
             playSynthSound('hit_correct');
             currentDatabase = dbKey;
             closeDatabaseSwitcher();
+            
+            // Clean active progress before swap
             syncDatabaseState();
             
             showToast(
                 dbKey === 'high_freq' ? "fa-list-check text-cyan-400" : "fa-circle-nodes text-emerald-400",
                 "题库加载成功",
-                dbKey === 'high_freq' ? "已载入 76 道高频考点常识" : "已载入 45 道第三部分核心观点",
+                dbKey === 'high_freq' ? "已载入 76 道高频考点常识" : "已载入 45 道全新核心观点",
                 dbKey === 'high_freq' ? "bg-cyan-500/20 text-cyan-300" : "bg-emerald-500/20 text-emerald-300"
             );
             
-            // If actively playing, return to dashboard to reload lists safely
             if (currentMode !== 'dashboard') {
                 exitGameMode();
             }
         }
 
-        // --- PROGRESS & SYSTEM LOGIC ---
-        let sessionCompletedCount = 0; 
-        let score = 0;
-        let streak = 0;
-        let playList = [];
-        let hasAnsweredCurrent = false; 
-        let audioEnabled = true;
+        // --- CANVAS BACKGROUND STARS ---
+        function drawBackgroundStars() {
+            const canvas = document.getElementById('bg-stars');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                stars = [];
+                const count = Math.floor(window.innerWidth / 12);
+                for(let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 1.3 + 0.4,
+                        opacity: Math.random(),
+                        speed: Math.random() * 0.01 + 0.003
+                    });
+                }
+            }
 
-        // Sound Synthesis 
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                stars.forEach(star => {
+                    star.opacity += star.speed;
+                    if(star.opacity > 1 || star.opacity < 0) star.speed = -star.speed;
+                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.max(0, star.opacity)})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            animate();
+        }
+
+        // --- PROGRESS STATS ---
+        function updateProgressStats() {
+            const currentPool = getActiveQuestions();
+            const totalQuestions = currentPool.length;
+            const completedCount = completedIds.length;
+            const progressPercent = totalQuestions > 0 ? Math.round((completedCount / totalQuestions) * 100) : 0;
+            
+            const progressPercentElem = document.getElementById('progress-percent');
+            if (progressPercentElem) progressPercentElem.innerText = `${progressPercent}%`;
+            
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            if (progressBarFill) progressBarFill.style.width = `${progressPercent}%`;
+            
+            const statsPassed = document.getElementById('stats-passed');
+            if (statsPassed) statsPassed.innerText = completedCount;
+            
+            const statsRemaining = document.getElementById('stats-remaining');
+            if (statsRemaining) statsRemaining.innerText = totalQuestions - completedCount;
+
+            let fresh = 0;
+            let reviewing = 0;
+            let exhausted = 0;
+
+            // Aggregated real learning statistics over all 5 learning modes
+            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps'];
+            const aggregatedCounts = {};
+            
+            currentPool.forEach(q => {
+                aggregatedCounts[q.id] = 0;
+                modesList.forEach(m => {
+                    try {
+                        const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
+                        const raw = localStorage.getItem(modeKey);
+                        if (raw) {
+                            const parsed = JSON.parse(raw);
+                            if (parsed && parsed[q.id]) {
+                                aggregatedCounts[q.id] += parsed[q.id];
+                            }
+                        }
+                    } catch(e) {}
+                });
+
+                const count = aggregatedCounts[q.id];
+                if (count === 0) fresh++;
+                else if (count < 3) reviewing++;
+                else exhausted++;
+            });
+
+            const freqFresh = document.getElementById('freq-fresh');
+            if (freqFresh) freqFresh.innerText = fresh;
+            
+            const freqReviewing = document.getElementById('freq-reviewing');
+            if (freqReviewing) freqReviewing.innerText = reviewing;
+            
+            const freqExhausted = document.getElementById('freq-exhausted');
+            if (freqExhausted) freqExhausted.innerText = exhausted;
+        }
+
+        function resetFrequencyHistory(showModal = false) {
+            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps'];
+            modesList.forEach(m => {
+                try {
+                    const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
+                    localStorage.removeItem(modeKey);
+                    shownCounts[m] = {};
+                } catch(e) {}
+            });
+            
+            updateProgressStats();
+            if (showModal) {
+                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', `已清空当前题库在所有背诵方式下的记忆出现频次记录。`, true);
+            }
+        }
+
+        // --- AUDIO ENGINE ---
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -805,133 +933,22 @@
             }
         }
 
-        function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            const btn = document.getElementById('audio-btn');
-            if (audioEnabled) {
-                if (btn) btn.innerHTML = `<i class="fa-solid fa-volume-high text-slate-300 text-xs"></i>`;
-                showToast("fa-volume-high", "音效开启", "复古电音已启用", "bg-cyan-500/20 text-cyan-300");
-            } else {
-                if (btn) btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500 text-xs"></i>`;
-                showToast("fa-volume-xmark", "音效静音", "静音模式已生效", "bg-slate-800/80 text-slate-400");
-            }
-        }
-
-        // --- PROGRESS STATS ---
-        function updateProgressStats() {
-            const currentPool = getActiveDatabasePool();
-            const totalQuestions = currentPool.length;
-            const completedCount = completedIds.length;
-            const progressPercent = totalQuestions > 0 ? Math.round((completedCount / totalQuestions) * 100) : 0;
-            
-            const progressPercentElem = document.getElementById('progress-percent');
-            if (progressPercentElem) progressPercentElem.innerText = `${progressPercent}%`;
-            
-            const progressBarFill = document.getElementById('progress-bar-fill');
-            if (progressBarFill) progressBarFill.style.width = `${progressPercent}%`;
-            
-            const statsPassed = document.getElementById('stats-passed');
-            if (statsPassed) statsPassed.innerText = completedCount;
-            
-            const statsRemaining = document.getElementById('stats-remaining');
-            if (statsRemaining) statsRemaining.innerText = totalQuestions - completedCount;
-
-            let fresh = 0;
-            let reviewing = 0;
-            let exhausted = 0;
-
-            const modeCounts = shownCounts[currentMode] || {};
-
-            currentPool.forEach(q => {
-                const count = modeCounts[q.id] || 0;
-                if (count === 0) fresh++;
-                else if (count < 3) reviewing++;
-                else exhausted++;
-            });
-
-            const freqFresh = document.getElementById('freq-fresh');
-            if (freqFresh) freqFresh.innerText = fresh;
-            
-            const freqReviewing = document.getElementById('freq-reviewing');
-            if (freqReviewing) freqReviewing.innerText = reviewing;
-            
-            const freqExhausted = document.getElementById('freq-exhausted');
-            if (freqExhausted) freqExhausted.innerText = exhausted;
-        }
-
-        function showCustomModal(icon, title, msg, isSuccess = true) {
-            const modal = document.getElementById('custom-modal');
-            const iconContainer = document.getElementById('modal-icon-container');
-            const mTitle = document.getElementById('modal-title');
-            const mMsg = document.getElementById('modal-message');
-            
-            if (iconContainer && mTitle && mMsg && modal) {
-                iconContainer.className = `w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl ${isSuccess ? 'bg-cyan-500/10 text-cyan-400' : 'bg-rose-500/10 text-rose-400'}`;
-                iconContainer.innerHTML = `<i class="${icon}"></i>`;
-                mTitle.innerText = title;
-                mMsg.innerText = msg;
-                modal.classList.remove('hidden');
-            }
-        }
-
-        function closeCustomModal() {
-            const modal = document.getElementById('custom-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function addScore(points) {
-            score += points;
-            const scoreVal = document.getElementById('global-score');
-            if (scoreVal) scoreVal.innerText = `${score} 分`;
-        }
-
-        function addStreak() {
-            streak++;
-            const streakVal = document.getElementById('global-streak');
-            if (streakVal) streakVal.innerText = `${streak} 连击`;
-        }
-
-        function breakStreak() {
-            streak = 0;
-            const streakVal = document.getElementById('global-streak');
-            if (streakVal) streakVal.innerText = `0 连击`;
-        }
-
-        function updateIndicator() {
-            const indicator = document.getElementById('mode-progress-indicator');
-            if (indicator) {
-                indicator.innerHTML = `已通关: <span class="text-cyan-400 font-extrabold text-xs">${sessionCompletedCount}</span> / 10`;
-            }
-        }
-
-        function trackOccurrence(qId) {
-            if (!shownCounts[currentMode]) {
-                shownCounts[currentMode] = {};
-            }
-            shownCounts[currentMode][qId] = (shownCounts[currentMode][qId] || 0) + 1;
-            try {
-                const keys = getLocalStorageKeys();
-                localStorage.setItem(keys.shown, JSON.stringify(shownCounts[currentMode]));
-            } catch(e) {}
-            updateProgressStats();
-        }
-
-        // --- GAME CONTROLLERS ---
+        // --- GAME SYSTEM ---
         function startGameMode(mode) {
             currentMode = mode;
-            syncDatabaseState();
+            syncDatabaseState(); 
 
-            const currentPool = getActiveDatabasePool();
+            const currentPool = getActiveQuestions();
             const modeTracker = shownCounts[mode] || {};
             let availablePool = currentPool.filter(q => (modeTracker[q.id] || 0) < 3);
 
             if (availablePool.length < 10) {
-                showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `由于所剩新考点不足 10 道，系统已自动重置本题库下的频次记录以保证畅玩复习！`, true);
-                shownCounts[mode] = {};
+                showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `由于本模式下未满 3 次练习的考点不足 10 道，系统已自动重置该分类下的频次记录以保证流畅学习！`, true);
                 try {
                     const keys = getLocalStorageKeys();
-                    localStorage.setItem(keys.shown, JSON.stringify(shownCounts[mode]));
+                    localStorage.removeItem(keys.shown);
                 } catch(e) {}
+                shownCounts[mode] = {};
                 availablePool = currentPool;
             }
 
@@ -984,33 +1001,10 @@
             updateProgressStats();
         }
 
-        function exitGameMode() {
-            currentMode = 'dashboard';
-            const playContainer = document.getElementById('play-container');
-            const dashboard = document.getElementById('screen-dashboard');
-            if (playContainer && dashboard) {
-                playContainer.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-            }
-            updateProgressStats();
-            stopFPSGameLoop();
-        }
-
-        function markQuestionCompleted(qId) {
-            if (!completedIds.includes(qId)) {
-                completedIds.push(qId);
-                try {
-                    const keys = getLocalStorageKeys();
-                    localStorage.setItem(keys.completed, JSON.stringify(completedIds));
-                } catch(e) {}
-            }
-            updateProgressStats();
-        }
-
-        // --- MODE 1: MOXIE ---
+        // --- MODE 1: MOXIE (WRITING) ---
         function initMoxieQuestion() {
             if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成本轮 10 道默写测验！学分累积+200。`);
+                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成 10 道默写测验！学分累积+200。`);
                 addScore(200);
                 exitGameMode();
                 return;
@@ -1035,25 +1029,6 @@
                 document.getElementById('moxie-card-area').classList.remove('hidden');
                 document.getElementById('moxie-flip-card').innerHTML = `<div class="text-slate-400 font-semibold italic text-[11px]">轻触翻面 显现正确答案</div>`;
             }
-        }
-
-        function toggleMoxieInputMode(mode) {
-            isMoxieInputType = mode;
-            const btnType = document.getElementById('btn-moxie-type');
-            const btnCard = document.getElementById('btn-moxie-card');
-            
-            if (mode === 'type') {
-                btnType.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white";
-                btnCard.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
-            } else {
-                btnCard.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white";
-                btnType.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
-            }
-            initMoxieQuestion();
-        }
-
-        function handleMoxieKeyDown(e) {
-            if (e.key === 'Enter') submitMoxieAnswer();
         }
 
         function submitMoxieAnswer() {
@@ -1095,14 +1070,14 @@
             refAnswer.innerText = currentItem.a;
 
             if (isCorrect) {
-                statusText.innerText = "🎉 回答正确！关键词高度重合。";
+                statusText.innerText = "🎉 回答正确！关键词高匹配度。";
                 statusText.className = "text-xs font-black text-emerald-400";
                 addScore(50);
                 addStreak();
                 playSynthSound('hit_correct');
                 markQuestionCompleted(currentItem.id);
             } else {
-                statusText.innerText = "💡 别急，考点标准规范答案：";
+                statusText.innerText = "💡 别气馁，考点标准规范答案：";
                 statusText.className = "text-xs font-black text-cyan-400";
                 breakStreak();
                 playSynthSound('hit_wrong');
@@ -1317,10 +1292,9 @@
             zonesContainer.innerHTML = "";
             activeSelectedCardId = null;
 
-            // Render batch of next 6 items
             dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
             if (dragDropSubset.length === 0) {
-                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！卡片全部分类准确。');
+                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
                 addScore(150);
                 exitGameMode();
                 return;
@@ -1508,7 +1482,7 @@
 
             document.getElementById('quiz-question').innerText = currentItem.q;
 
-            const pool = getActiveDatabasePool();
+            const pool = getActiveQuestions();
             const distractors = shuffleArray(pool)
                 .filter(item => item.a !== currentItem.a)
                 .slice(0, 3)
@@ -1678,7 +1652,7 @@
 
             fpsTargets = [];
 
-            const pool = getActiveDatabasePool();
+            const pool = getActiveQuestions();
             const distractors = shuffleArray(pool)
                 .filter(item => item.a !== fpsCurrentItem.a)
                 .slice(0, 2)
