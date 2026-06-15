@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>道德与法治 76 考点通关系统</title>
+    <title>道德与法治考点通关系统</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -62,15 +62,20 @@
 
     <!-- Top Navigation -->
     <header class="glass sticky top-0 z-50 px-4 py-3 border-b border-slate-800/80 flex justify-between items-center">
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="exitGameMode()">
-            <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center neon-glow animate-pulse">
+        <!-- Interactive Database Switcher Trigger -->
+        <div class="flex items-center space-x-3 cursor-pointer group bg-slate-900/40 hover:bg-slate-800/60 p-1.5 px-3 rounded-2xl border border-transparent hover:border-cyan-500/20 transition-all duration-300" onclick="showDatabaseSwitcher()">
+            <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center neon-glow animate-pulse shrink-0">
                 <i class="fa-solid fa-graduation-cap text-lg text-white"></i>
             </div>
             <div>
-                <h1 class="font-black text-base md:text-lg tracking-wider bg-gradient-to-r from-cyan-400 via-teal-400 to-indigo-400 bg-clip-text text-transparent gaming-font">德法 76 考点通关</h1>
-                <p class="text-[9px] text-slate-400 tracking-widest uppercase">76 Core Knowledge Points Base</p>
+                <div class="flex items-center space-x-1.5">
+                    <h1 id="header-db-title" class="font-black text-sm md:text-base tracking-wider bg-gradient-to-r from-cyan-400 via-teal-400 to-indigo-400 bg-clip-text text-transparent gaming-font">德法 76 考点通关</h1>
+                    <span class="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded-md font-semibold border border-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-slate-950 transition-colors">切换▼</span>
+                </div>
+                <p id="header-db-sub" class="text-[9px] text-slate-400 tracking-widest uppercase">76 Core Knowledge Points Base</p>
             </div>
         </div>
+
         <div class="flex items-center space-x-3">
             <!-- Points and Streak -->
             <div class="flex items-center bg-slate-950/80 px-2.5 py-1 rounded-full border border-slate-800 text-xs font-semibold">
@@ -99,15 +104,15 @@
                 <div class="space-y-4 text-center md:text-left z-10">
                     <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">高频防重复过滤机制</span>
                     <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                        全能冲刺 <span class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">76 考点速记</span>
+                        全能冲刺 <span id="hero-db-main-title" class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">76 考点速记</span>
                     </h2>
                     <p class="text-slate-400 max-w-lg text-xs md:text-sm leading-relaxed">
-                        系统严密监测每个知识点在不同模式的练习次数。**确保每个考点在单一背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保高频自测效率。
+                        系统严密监测每个知识点在当前模式的练习次数。**确保每个考点在单一背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保高频自测效率。
                     </p>
                     <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-1">
                         <div class="flex items-center space-x-1.5 text-[11px] text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
                             <i class="fa-solid fa-layer-group text-cyan-400"></i>
-                            <span>76 道全量高保真题库</span>
+                            <span id="hero-stat-total">76 道全量高保真题库</span>
                         </div>
                         <div class="flex items-center space-x-1.5 text-[11px] text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
                             <i class="fa-solid fa-arrows-spin text-teal-400"></i>
@@ -423,6 +428,64 @@
         </div>
     </main>
 
+    <!-- ANDROID STYLE DATABASE SWITCHER MODAL -->
+    <div id="db-switcher-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-lg">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-white leading-tight">选择目标复习题库</h3>
+                    <p class="text-[10px] text-slate-500">动态切换并加载各版高频核心知识点</p>
+                </div>
+            </div>
+
+            <!-- Selection Options (Android Radio Card Style) -->
+            <div class="space-y-3">
+                <!-- Option 1: 76 High Freq Points -->
+                <div id="db-opt-high_freq" onclick="selectDatabase('high_freq')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-slate-800 hover:border-cyan-500/50 bg-slate-950/50 hover:bg-slate-950 cursor-pointer transition">
+                    <div class="flex items-center space-x-3.5 pr-2">
+                        <div class="text-cyan-400 text-lg shrink-0">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-100">高频考点速记（第1-76题）</h4>
+                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">高频易混政治常识、主干基本制度。全面涵盖根本和基本政治/经济体系。</p>
+                        </div>
+                    </div>
+                    <div id="db-opt-indicator-high_freq" class="w-5 h-5 rounded-full border-2 border-cyan-500 flex items-center justify-center shrink-0">
+                        <div class="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>
+                    </div>
+                </div>
+
+                <!-- Option 2: Core Viewpoint Points -->
+                <div id="db-opt-core_viewpoint" onclick="selectDatabase('core_viewpoint')" class="relative flex items-center justify-between p-4 rounded-2xl border-2 border-slate-800 hover:border-cyan-500/50 bg-slate-950/50 hover:bg-slate-950 cursor-pointer transition">
+                    <div class="flex items-center space-x-3.5 pr-2">
+                        <div class="text-emerald-400 text-lg shrink-0">
+                            <i class="fa-solid fa-circle-nodes"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-100">第三部分：核心观点及关联考点（45题）</h4>
+                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级政治重点。包含心理健康、道德修养、总体国家安全及法治实施。</p>
+                        </div>
+                    </div>
+                    <div id="db-opt-indicator-core_viewpoint" class="w-5 h-5 rounded-full border-2 border-slate-850 flex items-center justify-center shrink-0">
+                        <div class="w-2.5 h-2.5 rounded-full bg-transparent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end pt-2">
+                <button onclick="closeDatabaseSwitcher()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2 rounded-xl text-xs transition active:scale-95">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Global Custom Modal / Dialog -->
     <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
         <div class="glass max-w-sm w-full p-6 rounded-2xl border border-slate-800 text-center space-y-4 shadow-2xl">
@@ -435,13 +498,13 @@
 
     <!-- Page Footer -->
     <footer class="py-3 text-center text-[10px] text-slate-600 border-t border-slate-900/80 glass z-10">
-        <p>© 2026 道德与法治 76 考点高精度自测试卷防重训练平台.</p>
+        <p>© 2026 道德与法治高保真双库防重复通关平台.</p>
     </footer>
 
     <!-- Audio Synthesis Utility & Game Logic Scripts -->
     <script>
-        // --- COMPLETE 76 QUESTIONS FULL HIGH-FIDELITY DATABASE (METICULOUSLY MANUALLY CLASSIFIED) ---
-        const ALL_QUESTIONS = [
+        // --- POOL A: HIGH FREQUENCY POINTS (76 Questions) ---
+        const HIGH_FREQ_QUESTIONS = [
             { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "党与根本制度" },
             { id: 2, q: "中国特色社会主义的本质要求 and 重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "法治与司法公正" },
             { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "全过程人民民主" },
@@ -486,7 +549,7 @@
             { id: 42, q: "自由和法治的关系？", a: "法治标定了自由的界限，法治也是自由的保障", cat: "法治与司法公正" },
             { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由权", cat: "公民权利与义务" },
             { id: 44, q: "社会经济与文化教育权利包括哪些？", a: "劳动权、财产权、物质帮助权、受教育权、文化权利", cat: "公民权利与义务" },
-            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利和自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
+            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利 and 自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
             { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一和民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
             { id: 47, q: "既是公民基本权利又是基本义务的有哪些？", a: "劳动和受教育", cat: "公民权利与义务" },
             { id: 48, q: "我国解决民族问题的基本原则和基本制度是什么？新型民族关系是什么？", a: "三方针是平等、团结、繁荣；基本制度是民族区域自治制度；关系是平等团结互助和谐", cat: "民族团结与统一" },
@@ -510,7 +573,7 @@
             { id: 66, q: "中国特色社会主义建设中带有“中心”字眼的两大固定搭配？", a: "经济建设为中心；以人民为中心", cat: "基本经济与市场" },
             { id: 67, q: "有哪些监督主体和对应的监督职责（权）？", a: "公民拥有监督权、人大行使监督权、监察委履行监督首要职责、检察院作为法律监督机关、政协开展民主监督", cat: "全过程人民民主" },
             { id: 68, q: "当今时代的主题？", a: "和平与发展", cat: "世界舞台与外交" },
-            { id: 69, q: "国际竞争的实质是什么？", a: "以经济 and 科技实力为基础的综合国力的较量", cat: "基本经济与市场" },
+            { id: 69, q: "国际竞争的实质是什么？", a: "以经济 and 科技实力为基础 of 综合国力的较量", cat: "基本经济与市场" },
             { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益的集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
             { id: 71, q: "国家利益、人民利益、集体利益、个人利益的关系？", a: "根本利益上是一致的", cat: "民族团结与统一" },
             { id: 72, q: "社会秩序和社会规则谁保障谁？", a: "社会规则保障社会秩序", cat: "基本经济与市场" },
@@ -520,38 +583,168 @@
             { id: 76, q: "诚信在民事活动中是什么法律原则？", a: "民法的基本原则", cat: "法治与司法公正" }
         ];
 
-        // --- GAME & ANTI-REPETITION STATE ---
-        let currentMode = 'dashboard';
-        let currentQuestionIndex = 0; 
+        // --- POOL B: CORE VIEWPOINTS AND ASSOCIATED KNOWLEDGE POINTS (45 Questions Extracted From Image 3 & 4) ---
+        const CORE_VIEWPOINT_QUESTIONS = [
+            { id: 101, q: "正确认识自己的核心目的及方法？", a: "学会接纳、欣赏自己；努力做更好的自己", cat: "心理健康与健全人格" },
+            { id: 102, q: "养护精神、活出生命精彩的途径？", a: "守望精神家园；传承中华优秀传统文化；积极承担社会责任，实现生命价值", cat: "心理健康与健全人格" },
+            { id: 103, q: "面对挫折的心理准则？", a: "发扬自强不息的民族精神", cat: "心理健康与健全人格" },
+            { id: 104, q: "如何对待青春期矛盾心理？", a: "正确认识自己，主动进行自我调节", cat: "心理健康与健全人格" },
+            { id: 105, q: "发展独立思维、培养批判精神的要求？", a: "批判性思维是一把双刃剑；响应国家创新驱动发展战略，发扬批判精神，开发创造潜力", cat: "心理健康与健全人格" },
+            { id: 106, q: "如何做情绪情感的主人？", a: "合理调节情绪；以恰当方式表达情绪；传递情感正能量", cat: "心理健康与健全人格" },
+            { id: 107, q: "“行己有耻，止于至善”的精神本质？", a: "弘扬中华传统美德；践行社会主义核心价值观；勇于担当责任；活出生命的精彩", cat: "道德修养与社会交往" },
+            { id: 108, q: "责任与角色的辩证要求？", a: "自觉承担责任，做负责任的人；服务社会；活出生命精彩；向着“止于至善”奋斗", cat: "道德修养与社会交往" },
+            { id: 109, q: "社会交往中“讲道德”的表现？", a: "尊重他人、关爱他人；以礼待人；诚实守信；弘扬中华美德", cat: "道德修养与社会交往" },
+            { id: 110, q: "让友谊之树常青的核心要素？", a: "正确与同学/朋友交往；友谊要有原则；遵守社会规则与规则底线", cat: "道德修养与社会交往" },
+            { id: 111, q: "正确与老师交往的基本要求？", a: "尊重老师；正确对待老师的表扬和批评；传承尊师美德；勇于批判创新", cat: "道德修养与社会交往" },
+            { id: 112, q: "孝敬父母和长辈，构建和谐家庭？", a: "自觉承担家庭责任；传承敬老家风与美德；培养独立与批判思维", cat: "道德修养与社会交往" },
+            { id: 113, q: "网络交往与理性利用互联网的要求？", a: "传播网络正能量；遵守网络和法治规则；做守法、负责任的网民", cat: "道德修养与社会交往" },
+            { id: 114, q: "坚持集体主义与共建集体的关系？", a: "处理个人利益与集体要求的关系；维护集体利益，对集体负责；因为个人与集体利益根本一致", cat: "道德修养与社会交往" },
+            { id: 115, q: "养成亲社会行为对个人的终极要求？", a: "积极承担社会责任，奉献社会；追求止于至善的崇高道德境界", cat: "道德修养与社会交往" },
+            { id: 116, q: "服务社会的具体表现？", a: "参加公益活动，不言代价与回报；热心服务社会，实现生命价值；迈向止于至善", cat: "道德修养与社会交往" },
+            { id: 117, q: "维护社会秩序 and 遵守规则的底线？", a: "自觉守法；恪守道德；维护公平正义；践行行己有耻", cat: "道德修养与社会交往" },
+            { id: 118, q: "坚持国家利益至上的多维意义？", a: "维护国家利益；理清个人与国家利益关系（根本一致）；国家人民利益统一；发扬爱国爱国主义精神", cat: "国家利益与国家发展" },
+            { id: 119, q: "树立总体国家安全观的基本职责？", a: "维护国家安全、国家荣誉与国家利益；承担时代责任，为祖国成就深感自豪", cat: "国家利益与国家发展" },
+            { id: 120, q: "关心国家发展的精神支撑？", a: "对国家发展充满必胜信心；弘扬和培育以爱国主义为核心的民族精神", cat: "国家利益与国家发展" },
+            { id: 121, q: "培养劳动意识，发扬实干精神？", a: "认识劳动光荣的意义；履行基本劳动义务；弘扬爱岗敬业精神；传承实干美德", cat: "国家利益与国家发展" },
+            { id: 122, q: "做好职业准备，弘扬敬业精神？", a: "自觉承担职业责任；弘扬爱岗敬业；在劳动和奉献中养成亲社会行为", cat: "国家利益与国家发展" },
+            { id: 123, q: "“法律在身边”的法治精髓？", a: "体现法律的特征；体现法律具有规范和保护作用；坚定不移地坚持全面依法治国", cat: "法治观念与宪法实施" },
+            { id: 124, q: "“法律伴我们成长”的要求？", a: "未成年人拥有法律的特殊保护；我们要加强自我保护；树立法治意识，学会依法办事", cat: "法治观念与宪法实施" },
+            { id: 125, q: "如何做一个“守法公民”？", a: "树立法治意识，依法办事；敢于并善于同违法犯罪作斗争；行使权利，履行义务，维护公平正义", cat: "法治观念与宪法实施" },
+            { id: 126, q: "维护宪法权威的核心观点？", a: "宪法是治国安邦的总章程；国家一切权力属于人民；尊重人权；规范国家权力以保障民权", cat: "法治观念与宪法实施" },
+            { id: 127, q: "保障宪法实施的本质要求？", a: "宪法是国家的根本法，具有最高法律效力；坚持依宪治国；加强宪法监督；增强宪法意识", cat: "法治观念与宪法实施" },
+            { id: 128, q: "如何理解“宪法保障公民基本权利”？", a: "公民在法律规定范围内依法行使基本权利；公民必须增强权利意识，依法维权", cat: "法治观念与宪法实施" },
+            { id: 129, q: "如何理解“宪法规定公民基本义务”？", a: "公民必须依法履行宪法规定的基本义务；增强义务观念；坚持权利和义务的统一", cat: "法治观念与宪法实施" },
+            { id: 130, q: "尊重自由平等的价值指引？", a: "尊重自由平等是践行社会主义核心价值观、树立平等法治观的内在要求", cat: "法治观念与宪法实施" },
+            { id: 131, q: "如何维护社会公平正义？", a: "积极做有公平正义感的人；坚持依法治国，打击违法犯罪；调节社会分配，促进共同富裕", cat: "法治观念与宪法实施" },
+            { id: 132, q: "如何理解“坚持我国的政治和经济制度”？", a: "制度支撑保障；坚持基本经济制度与社会主义市场经济；坚持人民代表大会制度；民族区域自治、基层群众自治与多党合作", cat: "国家发展与政治制度" },
+            { id: 133, q: "我国国家机构行使权力的本质？", a: "国家机关依法行使职权，遵循民主集中制原则；为人民服务、对人民负责、维护人民利益，坚持以人民为中心", cat: "国家发展与政治制度" },
+            { id: 134, q: "“踏上强国之路”的历史结论与方向？", a: "坚持改革开放和全面深化改革；坚持以人民为中心，共享发展成果，缓解主要矛盾，实现共同富裕，维护正义", cat: "国家发展与政治制度" },
+            { id: 135, q: "“坚持创新驱动发展”的战略部署？", a: "实施科教兴国、人才强国与创新驱动发展战略；发扬实干与改革创新精神，建设创新强国", cat: "科教兴国与创新" },
+            { id: 136, q: "如何追求民主价值？", a: "发展全过程人民民主（社会主义民主是新型民主）；保障人民当家作主，协商民主，积极参与并增强民主意识", cat: "全过程人民民主" },
+            { id: 137, q: "如何“建设法治中国”？", a: "坚持科学立法、严格执法、公正司法、全民守法；政府行政权受法律规范；捍卫社会公平正义", cat: "法治观念与宪法实施" },
+            { id: 138, q: "如何“守望精神家园”？", a: "传承中华优秀传统文化；坚定文化自信；弘扬民族和时代精神，践行社会主义核心价值观，守护文化安全", cat: "精神文明与文化" },
+            { id: 139, q: "如何“建设美丽中国”？", a: "坚持绿色发展道路与生态文明建设；贯彻保护环境与节约资源的基本国策；坚持计划生育", cat: "国家利益与国家发展" },
+            { id: 140, q: "“坚持中华一家亲”的政治要求？", a: "维护民族团结与祖国统一；践行平等、团结、繁荣方针；实行一国两制；捍卫国家利益安全", cat: "民族团结与统一" },
+            { id: 141, q: "如何共圆中华民族伟大复兴的“中国梦”？", a: "做自信的中国人；走中国道路，凝聚中国力量，发扬中国精神；坚持五大新发展理念", cat: "国家利益与国家发展" },
+            { id: 142, q: "如何理解“同住地球村”的机遇与特征？", a: "积极面对经济全球化与世界开放；共享文化多样性，交流互鉴；提高中华文化的国际影响力", cat: "世界舞台与外交" },
+            { id: 143, q: "如何理解“构建人类命运共同体”？", a: "致力于维护世界和平与发展；在世界多极化格局中，坚持合作共赢、互利互惠、共同发展", cat: "世界舞台与外交" },
+            { id: 144, q: "如何理解“中国与世界紧相连”？", a: "中国是一个负责任的大国，彰显中国担当，贡献中国智慧与中国方案", cat: "世界舞台与外交" },
+            { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展机遇和成果，推动全球共同繁荣", cat: "世界舞台与外交" }
+        ];
+
+        // --- ACTIVE DATABASE CONFIGURATION ---
+        let currentDatabase = 'high_freq'; // 'high_freq' or 'core_viewpoint'
+
+        function getActiveDatabasePool() {
+            return currentDatabase === 'high_freq' ? HIGH_FREQ_QUESTIONS : CORE_VIEWPOINT_QUESTIONS;
+        }
+
+        // Helper to retrieve saved database variables
+        function getLocalStorageKeys() {
+            return {
+                completed: `politics_completed_ids_${currentDatabase}`,
+                shown: `politics_shown_counts_v5_${currentDatabase}`
+            };
+        }
+
+        // Load active arrays safely
+        function syncDatabaseState() {
+            const keys = getLocalStorageKeys();
+            try {
+                completedIds = JSON.parse(localStorage.getItem(keys.completed) || '[]');
+                if (!Array.isArray(completedIds)) completedIds = [];
+            } catch(e) {
+                completedIds = [];
+            }
+
+            try {
+                const raw = localStorage.getItem(keys.shown);
+                if (raw) {
+                    shownCounts[currentMode] = JSON.parse(raw);
+                } else {
+                    shownCounts[currentMode] = {};
+                }
+            } catch(e) {
+                shownCounts[currentMode] = {};
+            }
+
+            // Sync visual header titles
+            const headerTitle = document.getElementById('header-db-title');
+            const headerSub = document.getElementById('header-db-sub');
+            const heroTitle = document.getElementById('hero-db-main-title');
+            const heroTotal = document.getElementById('hero-stat-total');
+
+            if (currentDatabase === 'high_freq') {
+                if (headerTitle) headerTitle.innerText = "德法 76 考点通关";
+                if (headerSub) headerSub.innerText = "76 Core Knowledge Points Base";
+                if (heroTitle) heroTitle.innerText = "76 考点速记";
+                if (heroTotal) heroTotal.innerHTML = `<i class="fa-solid fa-layer-group text-cyan-400"></i> <span>76 道全量高保真题库</span>`;
+            } else {
+                if (headerTitle) headerTitle.innerText = "德法核心观点通关";
+                if (headerSub) headerSub.innerText = "45 Core Viewpoints Base";
+                if (heroTitle) heroTitle.innerText = "45 核心观点关联";
+                if (heroTotal) heroTotal.innerHTML = `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
+            }
+
+            updateProgressStats();
+        }
+
+        // Switcher Modals
+        function showDatabaseSwitcher() {
+            playSynthSound('shoot');
+            const switcher = document.getElementById('db-switcher-modal');
+            if (switcher) {
+                // Pre-highlight active choices
+                const highFreqCard = document.getElementById('db-opt-high_freq');
+                const coreViewpointCard = document.getElementById('db-opt-core_viewpoint');
+                const highFreqInd = document.getElementById('db-opt-indicator-high_freq');
+                const coreViewpointInd = document.getElementById('db-opt-indicator-core_viewpoint');
+
+                if (currentDatabase === 'high_freq') {
+                    if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-cyan-500 bg-slate-950/80 cursor-pointer transition";
+                    if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
+                    if (highFreqInd) highFreqInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>`;
+                    if (coreViewpointInd) coreViewpointInd.innerHTML = ``;
+                } else {
+                    if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
+                    if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-emerald-500 bg-slate-950/80 cursor-pointer transition";
+                    if (highFreqInd) highFreqInd.innerHTML = ``;
+                    if (coreViewpointInd) coreViewpointInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>`;
+                }
+
+                switcher.classList.remove('hidden');
+            }
+        }
+
+        function closeDatabaseSwitcher() {
+            const switcher = document.getElementById('db-switcher-modal');
+            if (switcher) switcher.classList.add('hidden');
+        }
+
+        function selectDatabase(dbKey) {
+            playSynthSound('hit_correct');
+            currentDatabase = dbKey;
+            closeDatabaseSwitcher();
+            syncDatabaseState();
+            
+            showToast(
+                dbKey === 'high_freq' ? "fa-list-check text-cyan-400" : "fa-circle-nodes text-emerald-400",
+                "题库加载成功",
+                dbKey === 'high_freq' ? "已载入 76 道高频考点常识" : "已载入 45 道第三部分核心观点",
+                dbKey === 'high_freq' ? "bg-cyan-500/20 text-cyan-300" : "bg-emerald-500/20 text-emerald-300"
+            );
+            
+            // If actively playing, return to dashboard to reload lists safely
+            if (currentMode !== 'dashboard') {
+                exitGameMode();
+            }
+        }
+
+        // --- PROGRESS & SYSTEM LOGIC ---
         let sessionCompletedCount = 0; 
         let score = 0;
         let streak = 0;
         let playList = [];
-        
-        // Anti-Crash LocalStorage Loaders
-        let completedIds = [];
-        try {
-            completedIds = JSON.parse(localStorage.getItem('politics_completed_ids') || '[]');
-            if (!Array.isArray(completedIds)) completedIds = [];
-        } catch(e) {
-            completedIds = [];
-        }
-
-        let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {} };
-        try {
-            const raw = localStorage.getItem('politics_shown_counts_v5');
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === 'object' && parsed.moxie) {
-                    shownCounts = parsed;
-                }
-            }
-        } catch(e) {
-            shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {} };
-        }
-        
-        let isMoxieInputType = 'type'; 
-        let cardFlipped = false;
         let hasAnsweredCurrent = false; 
         let audioEnabled = true;
 
@@ -616,58 +809,18 @@
             audioEnabled = !audioEnabled;
             const btn = document.getElementById('audio-btn');
             if (audioEnabled) {
-                btn.innerHTML = `<i class="fa-solid fa-volume-high text-slate-300 text-xs"></i>`;
+                if (btn) btn.innerHTML = `<i class="fa-solid fa-volume-high text-slate-300 text-xs"></i>`;
                 showToast("fa-volume-high", "音效开启", "复古电音已启用", "bg-cyan-500/20 text-cyan-300");
             } else {
-                btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500 text-xs"></i>`;
+                if (btn) btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500 text-xs"></i>`;
                 showToast("fa-volume-xmark", "音效静音", "静音模式已生效", "bg-slate-800/80 text-slate-400");
             }
         }
 
-        // --- CANVAS BACKGROUND STARS ---
-        function drawBackgroundStars() {
-            const canvas = document.getElementById('bg-stars');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let stars = [];
-            
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                stars = [];
-                const count = Math.floor(window.innerWidth / 12);
-                for(let i = 0; i < count; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        r: Math.random() * 1.3 + 0.4,
-                        opacity: Math.random(),
-                        speed: Math.random() * 0.01 + 0.003
-                    });
-                }
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                stars.forEach(star => {
-                    star.opacity += star.speed;
-                    if(star.opacity > 1 || star.opacity < 0) star.speed = -star.speed;
-                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.max(0, star.opacity)})`;
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                requestAnimationFrame(animate);
-            }
-
-            window.addEventListener('resize', resize);
-            resize();
-            animate();
-        }
-
-        // --- DASHBOARD AND PROGRESS LOGIC ---
+        // --- PROGRESS STATS ---
         function updateProgressStats() {
-            const totalQuestions = ALL_QUESTIONS.length;
+            const currentPool = getActiveDatabasePool();
+            const totalQuestions = currentPool.length;
             const completedCount = completedIds.length;
             const progressPercent = totalQuestions > 0 ? Math.round((completedCount / totalQuestions) * 100) : 0;
             
@@ -687,10 +840,9 @@
             let reviewing = 0;
             let exhausted = 0;
 
-            const currentModeKey = (currentMode !== 'dashboard' && currentMode) ? currentMode : 'moxie';
-            const modeCounts = shownCounts[currentModeKey] || {};
+            const modeCounts = shownCounts[currentMode] || {};
 
-            ALL_QUESTIONS.forEach(q => {
+            currentPool.forEach(q => {
                 const count = modeCounts[q.id] || 0;
                 if (count === 0) fresh++;
                 else if (count < 3) reviewing++;
@@ -705,27 +857,6 @@
             
             const freqExhausted = document.getElementById('freq-exhausted');
             if (freqExhausted) freqExhausted.innerText = exhausted;
-        }
-
-        function resetFrequencyHistory(showModal = false) {
-            const currentModeKey = currentMode !== 'dashboard' ? currentMode : 'moxie';
-            shownCounts[currentModeKey] = {};
-            try {
-                localStorage.setItem('politics_shown_counts_v5', JSON.stringify(shownCounts));
-            } catch(e) {}
-            updateProgressStats();
-            if (showModal) {
-                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', `已清空「${currentModeKey}」模式下的所有考点出现频次记录。`, true);
-            }
-        }
-
-        function shuffleArray(array) {
-            const newArr = [...array];
-            for (let i = newArr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            }
-            return newArr;
         }
 
         function showCustomModal(icon, title, msg, isSuccess = true) {
@@ -746,26 +877,6 @@
         function closeCustomModal() {
             const modal = document.getElementById('custom-modal');
             if (modal) modal.classList.add('hidden');
-        }
-
-        function showToast(icon, title, text, styleClasses) {
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-4 right-4 ${styleClasses} px-3.5 py-2.5 rounded-xl border border-slate-700/40 flex items-center space-x-2 z-50 shadow-lg pointer-events-none transform translate-y-8 opacity-0 transition-all duration-300 text-xs`;
-            toast.innerHTML = `
-                <i class="${icon}"></i>
-                <div>
-                    <h4 class="font-bold">${title}</h4>
-                    <p class="text-[10px] opacity-75">${text}</p>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.remove('translate-y-8', 'opacity-0');
-            }, 10);
-            setTimeout(() => {
-                toast.classList.add('translate-y-8', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 2500);
         }
 
         function addScore(points) {
@@ -799,7 +910,8 @@
             }
             shownCounts[currentMode][qId] = (shownCounts[currentMode][qId] || 0) + 1;
             try {
-                localStorage.setItem('politics_shown_counts_v5', JSON.stringify(shownCounts));
+                const keys = getLocalStorageKeys();
+                localStorage.setItem(keys.shown, JSON.stringify(shownCounts[currentMode]));
             } catch(e) {}
             updateProgressStats();
         }
@@ -807,20 +919,20 @@
         // --- GAME CONTROLLERS ---
         function startGameMode(mode) {
             currentMode = mode;
-            
-            if (!shownCounts[mode]) {
-                shownCounts[mode] = {};
-            }
-            const modeTracker = shownCounts[mode];
-            let availablePool = ALL_QUESTIONS.filter(q => (modeTracker[q.id] || 0) < 3);
+            syncDatabaseState();
+
+            const currentPool = getActiveDatabasePool();
+            const modeTracker = shownCounts[mode] || {};
+            let availablePool = currentPool.filter(q => (modeTracker[q.id] || 0) < 3);
 
             if (availablePool.length < 10) {
-                showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `您已完成该模式大部分考点，系统现已为您重置该背诵方式的重复池！`, true);
+                showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `由于所剩新考点不足 10 道，系统已自动重置本题库下的频次记录以保证畅玩复习！`, true);
                 shownCounts[mode] = {};
                 try {
-                    localStorage.setItem('politics_shown_counts_v5', JSON.stringify(shownCounts));
+                    const keys = getLocalStorageKeys();
+                    localStorage.setItem(keys.shown, JSON.stringify(shownCounts[mode]));
                 } catch(e) {}
-                availablePool = ALL_QUESTIONS;
+                availablePool = currentPool;
             }
 
             document.getElementById('screen-dashboard').classList.add('hidden');
@@ -888,7 +1000,8 @@
             if (!completedIds.includes(qId)) {
                 completedIds.push(qId);
                 try {
-                    localStorage.setItem('politics_completed_ids', JSON.stringify(completedIds));
+                    const keys = getLocalStorageKeys();
+                    localStorage.setItem(keys.completed, JSON.stringify(completedIds));
                 } catch(e) {}
             }
             updateProgressStats();
@@ -897,7 +1010,7 @@
         // --- MODE 1: MOXIE ---
         function initMoxieQuestion() {
             if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成 10 道默写测验！学分累积+200。`);
+                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成本轮 10 道默写测验！学分累积+200。`);
                 addScore(200);
                 exitGameMode();
                 return;
@@ -982,14 +1095,14 @@
             refAnswer.innerText = currentItem.a;
 
             if (isCorrect) {
-                statusText.innerText = "🎉 回答正确！关键词高匹配度。";
+                statusText.innerText = "🎉 回答正确！关键词高度重合。";
                 statusText.className = "text-xs font-black text-emerald-400";
                 addScore(50);
                 addStreak();
                 playSynthSound('hit_correct');
                 markQuestionCompleted(currentItem.id);
             } else {
-                statusText.innerText = "💡 别气馁，考点标准规范答案：";
+                statusText.innerText = "💡 别急，考点标准规范答案：";
                 statusText.className = "text-xs font-black text-cyan-400";
                 breakStreak();
                 playSynthSound('hit_wrong');
@@ -1204,9 +1317,10 @@
             zonesContainer.innerHTML = "";
             activeSelectedCardId = null;
 
+            // Render batch of next 6 items
             dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
             if (dragDropSubset.length === 0) {
-                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
+                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！卡片全部分类准确。');
                 addScore(150);
                 exitGameMode();
                 return;
@@ -1394,7 +1508,8 @@
 
             document.getElementById('quiz-question').innerText = currentItem.q;
 
-            const distractors = shuffleArray(ALL_QUESTIONS)
+            const pool = getActiveDatabasePool();
+            const distractors = shuffleArray(pool)
                 .filter(item => item.a !== currentItem.a)
                 .slice(0, 3)
                 .map(item => item.a);
@@ -1563,7 +1678,8 @@
 
             fpsTargets = [];
 
-            const distractors = shuffleArray(ALL_QUESTIONS)
+            const pool = getActiveDatabasePool();
+            const distractors = shuffleArray(pool)
                 .filter(item => item.a !== fpsCurrentItem.a)
                 .slice(0, 2)
                 .map(item => item.a);
@@ -1872,7 +1988,7 @@
         // --- LIFE CYCLE INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             drawBackgroundStars();
-            updateProgressStats();
+            syncDatabaseState(); // Initialize first active pool
         });
     </script>
 </body>
