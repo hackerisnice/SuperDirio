@@ -159,7 +159,7 @@
             </div>
 
             <!-- Game Mode Cards Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Mode 1 -->
                 <div onclick="startGameMode('moxie')" class="group cursor-pointer glass hover:bg-slate-900/50 hover:border-cyan-500/40 p-4 rounded-xl transition duration-300 relative overflow-hidden flex flex-col justify-between border border-slate-800/60">
                     <div class="absolute top-0 right-0 w-20 h-20 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition duration-300"></div>
@@ -256,6 +256,37 @@
                     </div>
                     <div class="mt-4 flex items-center justify-between text-[11px] font-semibold text-slate-400 group-hover:text-pink-300 transition">
                         <span>射击气球速记</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- NEW Mode 6: Locked Pinball Mode -->
+                <div id="card-pinball-locked" onclick="tryUnlockPinball()" class="relative group cursor-pointer glass p-4 rounded-xl border border-slate-800/60 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px]">
+                    <!-- Locking Overlay -->
+                    <div id="pinball-lock-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-3 text-center space-y-2">
+                        <div class="w-9 h-9 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-500">
+                            <i class="fa-solid fa-lock text-sm"></i>
+                        </div>
+                        <div class="text-[11px] text-yellow-500 font-bold">1000 积分限定解锁</div>
+                        <div class="w-32 bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                            <div id="pinball-unlock-progress" class="bg-yellow-500 h-full w-0 transition-all duration-300"></div>
+                        </div>
+                        <div class="text-[9px] text-slate-500">玩其他模式可快速赚积分</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-bowling-ball text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm text-white group-hover:text-yellow-400 transition">蓄力激光弹球</h3>
+                            <p class="text-slate-400 text-[11px] mt-1 leading-relaxed">
+                                聚能激光弹球玩法。滑动挡板反弹，击碎政治标准砖块，高分神器！
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between text-[11px] font-semibold text-slate-400 group-hover:text-yellow-300 transition">
+                        <span>高能蓄力打击</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </div>
                 </div>
@@ -417,6 +448,29 @@
                 </div>
             </div>
 
+            <!-- NEW MODE 6: PINBALL SCREEN -->
+            <div id="screen-pinball" class="hidden flex-grow flex flex-col justify-between gap-4 z-10 p-0 relative h-[450px]">
+                <div class="relative w-full h-[400px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden">
+                    <!-- HUD -->
+                    <div class="absolute top-0 left-0 w-full p-2 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent z-20 pointer-events-none">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-heart text-yellow-500 text-xs"></i>
+                            <div class="text-xs text-slate-300 font-bold">LIVES: <span id="pinball-lives">3</span></div>
+                        </div>
+                        <div class="text-right">
+                            <div id="pinball-hud-score" class="text-xs font-black text-yellow-400 gaming-font">当前得分: 0</div>
+                        </div>
+                    </div>
+
+                    <!-- Game Question Bar -->
+                    <div class="absolute top-9 left-2 right-2 p-1.5 bg-slate-900/95 border border-slate-800 rounded-xl z-20 text-center text-[11px] font-semibold text-cyan-300 pointer-events-none" id="pinball-hud-question">
+                        加载试题中...
+                    </div>
+
+                    <canvas id="pinball-canvas" class="w-full h-full block"></canvas>
+                </div>
+            </div>
+
             <!-- Screen Footer Stats -->
             <div class="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 z-10 text-[10px] text-slate-500">
                 <span id="game-status-text">安全模式：已开启针对德法核心考点的防重复出现 3 次限定保护。</span>
@@ -468,7 +522,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-100">核心观点及关联考点（45题）</h4>
-                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级德法重点。包含心理健康、道德修养、总体国家安全及法治实施。</p>
+                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级德法重点。包含心理健康、道德修修养、总体国家安全及法治实施。</p>
                         </div>
                     </div>
                     <div id="db-opt-indicator-core_viewpoint" class="w-5 h-5 rounded-full border-2 border-slate-850 flex items-center justify-center shrink-0">
@@ -528,7 +582,7 @@
             { id: 21, q: "谁监督宪法实施？谁在区域内保障宪法实施？谁有权解释宪法法律？监督有什么意义？", a: "全国人大及其常委会监督；地方人大及其常委会保障；全国人大常委会解释；具有基础性意义", cat: "宪法权威与监督" },
             { id: 22, q: "宪法核心内容？宪法的核心价值追求？", a: "核心内容是基本权利和基本义务；核心价值是规范国家权力运行以保障公民权利", cat: "宪法权威与监督" },
             { id: 23, q: "我国的根本活动准则？一切组织 and 个人的行为准则？", a: "根本活动准则是宪法；行为准则是宪法、法律、道德、纪律规章", cat: "宪法权威与监督" },
-            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重和保障人权、民主集中制原则", cat: "宪法权威与监督" },
+            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重 and 保障人权、民主集中制原则", cat: "宪法权威与监督" },
             { id: 25, q: "立法活动的基本要求？", a: "尊重和保障人权", cat: "宪法权威与监督" },
             { id: 26, q: "权力机关？最高权力机关？各自地位？", a: "权力机关：人民代表大会（主导地位）；最高权力机关：全国人民代表大会（最高地位）", cat: "党与根本制度" },
             { id: 27, q: "行政机关？最高行政机关？行政机关与权力机关的关系？", a: "行政机关：人民政府；最高行政机关：国务院；关系：政府是人大的执行机关，由人大产生，对人大负责，受人大监督", cat: "党与根本制度" },
@@ -574,7 +628,7 @@
             { id: 67, q: "有哪些监督主体和对应的监督职责（权）？", a: "公民拥有监督权、人大行使监督权、监察委履行监督首要职责、检察院作为法律监督机关、政协开展民主监督", cat: "全过程人民民主" },
             { id: 68, q: "当今时代的主题？", a: "和平与发展", cat: "世界舞台与外交" },
             { id: 69, q: "国际竞争的实质是什么？", a: "以经济 and 科技实力为基础 of 综合国力的较量", cat: "基本经济与市场" },
-            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益的集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
+            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益 of 集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
             { id: 71, q: "国家利益、人民利益、集体利益、个人利益的关系？", a: "根本利益上是一致的", cat: "民族团结与统一" },
             { id: 72, q: "社会秩序和社会规则谁保障谁？", a: "社会规则保障社会秩序", cat: "基本经济与市场" },
             { id: 73, q: "谁有权向法院提起公诉？", a: "人民检察院", cat: "法治与司法公正" },
@@ -583,7 +637,7 @@
             { id: 76, q: "诚信在民事活动中是什么法律原则？", a: "民法的基本原则", cat: "法治与司法公正" }
         ];
 
-        // --- POOL B: CORE VIEWPOINTS AND ASSOCIATED KNOWLEDGE POINTS (45 Questions Extracted From Image 3 & 4) ---
+        // --- POOL B: CORE VIEWPOINTS AND ASSOCIATED KNOWLEDGE POINTS (45 Questions) ---
         const CORE_VIEWPOINT_QUESTIONS = [
             { id: 101, q: "正确认识自己的核心目的及方法？", a: "学会接纳、欣赏自己；努力做更好的自己", cat: "心理健康与健全人格" },
             { id: 102, q: "养护精神、活出生命精彩的途径？", a: "守望精神家园；传承中华优秀传统文化；积极承担社会责任，实现生命价值", cat: "心理健康与健全人格" },
@@ -634,27 +688,40 @@
 
         // --- GAME & SYSTEM GLOBAL STATE ---
         let currentMode = 'dashboard';
-        let currentDatabase = 'high_freq'; // 'high_freq' or 'core_viewpoint'
+        let currentDatabase = 'high_freq'; 
         let currentQuestionIndex = 0; 
         let sessionCompletedCount = 0; 
-        let score = 0;
-        let streak = 0;
-        let playList = [];
         
+        // Anti-crash scoreboard loaded on bootstrap from localStorage
+        let score = parseInt(localStorage.getItem('politics_score_v6') || '0');
+        let streak = parseInt(localStorage.getItem('politics_streak_v6') || '0');
+        
+        let playList = [];
         let completedIds = [];
-        let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {} };
+        
+        // Foo-proof shown counts structure
+        let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
         
         let isMoxieInputType = 'type'; 
         let cardFlipped = false;
         let hasAnsweredCurrent = false; 
         let audioEnabled = true;
 
-        // Dynamic database pool fetcher
+        // Retrieve shown tracker safely under any conditions
+        function getModeTracker(modeName) {
+            if (!shownCounts) {
+                shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
+            }
+            if (!shownCounts[modeName] || typeof shownCounts[modeName] !== 'object') {
+                shownCounts[modeName] = {};
+            }
+            return shownCounts[modeName];
+        }
+
         function getActiveQuestions() {
             return currentDatabase === 'high_freq' ? HIGH_FREQ_QUESTIONS : CORE_VIEWPOINT_QUESTIONS;
         }
 
-        // Segregated LocalStorage Key builders to avoid dirty data crash
         function getLocalStorageKeys() {
             return {
                 completed: `politics_completed_ids_v6_${currentDatabase}`,
@@ -662,11 +729,10 @@
             };
         }
 
-        // Synchronize and load dynamic database state safely
         function syncDatabaseState() {
             const keys = getLocalStorageKeys();
             
-            // 1. Load completed progress
+            // Sync completed items
             try {
                 completedIds = JSON.parse(localStorage.getItem(keys.completed) || '[]');
                 if (!Array.isArray(completedIds)) completedIds = [];
@@ -674,7 +740,7 @@
                 completedIds = [];
             }
 
-            // 2. Load mode-specific shown counts to sandbox memory
+            // Sync shown occurrences inside sandboxed memory
             try {
                 const raw = localStorage.getItem(keys.shown);
                 if (raw) {
@@ -686,7 +752,7 @@
                 shownCounts[currentMode] = {};
             }
 
-            // 3. Update Text and visual headers
+            // Interface text bindings
             const headerTitle = document.getElementById('header-db-title');
             const headerSub = document.getElementById('header-db-sub');
             const heroTitle = document.getElementById('hero-db-main-title');
@@ -703,10 +769,47 @@
                     : `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
             }
 
+            // Update UI Score displays
+            const gScore = document.getElementById('global-score');
+            const gStreak = document.getElementById('global-streak');
+            if (gScore) gScore.innerText = `${score} 分`;
+            if (gStreak) gStreak.innerText = `${streak} 连击`;
+
             updateProgressStats();
+            updatePinballLockState();
         }
 
-        // Open and Render Switcher modal
+        // --- PUSH DYNAMIC LOCK COVER ON PINBALL ---
+        function updatePinballLockState() {
+            const progressFill = document.getElementById('pinball-unlock-progress');
+            const overlay = document.getElementById('pinball-lock-overlay');
+            const card = document.getElementById('card-pinball-locked');
+
+            if (score >= 1000) {
+                if (overlay) overlay.classList.add('hidden');
+                if (card) {
+                    card.className = "relative group cursor-pointer glass p-4 rounded-xl border border-yellow-500/50 hover:border-yellow-400 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px] neon-glow bg-slate-900/30";
+                }
+            } else {
+                if (overlay) overlay.classList.remove('hidden');
+                if (card) {
+                    card.className = "relative group cursor-not-allowed glass p-4 rounded-xl border border-slate-800/60 overflow-hidden flex flex-col justify-between min-h-[160px] opacity-75";
+                }
+                const percentage = Math.min((score / 1000) * 100, 100);
+                if (progressFill) progressFill.style.width = `${percentage}%`;
+            }
+        }
+
+        function tryUnlockPinball() {
+            if (score >= 1000) {
+                startGameMode('pinball');
+            } else {
+                playSynthSound('hit_wrong');
+                showCustomModal('fa-lock text-yellow-500', '模式锁定中', `蓄力激光弹球模式将在您的全局积分达到 1000 分时自动开启！（当前积分：${score}）`, false);
+            }
+        }
+
+        // Switcher logic
         function showDatabaseSwitcher() {
             playSynthSound('shoot');
             const switcher = document.getElementById('db-switcher-modal');
@@ -745,9 +848,7 @@
             playSynthSound('hit_correct');
             currentDatabase = dbKey;
             closeDatabaseSwitcher();
-            
-            // Clean active progress before swap
-            syncDatabaseState();
+            syncDatabaseState(); 
             
             showToast(
                 dbKey === 'high_freq' ? "fa-list-check text-cyan-400" : "fa-circle-nodes text-emerald-400",
@@ -761,48 +862,7 @@
             }
         }
 
-        // --- CANVAS BACKGROUND STARS ---
-        function drawBackgroundStars() {
-            const canvas = document.getElementById('bg-stars');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let stars = [];
-            
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                stars = [];
-                const count = Math.floor(window.innerWidth / 12);
-                for(let i = 0; i < count; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        r: Math.random() * 1.3 + 0.4,
-                        opacity: Math.random(),
-                        speed: Math.random() * 0.01 + 0.003
-                    });
-                }
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                stars.forEach(star => {
-                    star.opacity += star.speed;
-                    if(star.opacity > 1 || star.opacity < 0) star.speed = -star.speed;
-                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.max(0, star.opacity)})`;
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                requestAnimationFrame(animate);
-            }
-
-            window.addEventListener('resize', resize);
-            resize();
-            animate();
-        }
-
-        // --- PROGRESS STATS ---
+        // --- BACKGROUND STARS ---
         function updateProgressStats() {
             const currentPool = getActiveQuestions();
             const totalQuestions = currentPool.length;
@@ -825,8 +885,7 @@
             let reviewing = 0;
             let exhausted = 0;
 
-            // Aggregated real learning statistics over all 5 learning modes
-            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps'];
+            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'];
             const aggregatedCounts = {};
             
             currentPool.forEach(q => {
@@ -861,7 +920,7 @@
         }
 
         function resetFrequencyHistory(showModal = false) {
-            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps'];
+            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'];
             modesList.forEach(m => {
                 try {
                     const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
@@ -876,70 +935,41 @@
             }
         }
 
-        // --- AUDIO ENGINE ---
-        let audioCtx = null;
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+        // --- SCORE persistent setters ---
+        function saveGlobalScores() {
+            localStorage.setItem('politics_score_v6', score.toString());
+            localStorage.setItem('politics_streak_v6', streak.toString());
         }
 
-        function playSynthSound(type) {
-            if (!audioEnabled) return;
-            try {
-                initAudio();
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'shoot') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(750, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.12);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-                    osc.start(now);
-                    osc.stop(now + 0.12);
-                } else if (type === 'hit_correct') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(440, now); 
-                    osc.frequency.setValueAtTime(554.37, now + 0.08); 
-                    osc.frequency.setValueAtTime(659.25, now + 0.15); 
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
-                    osc.start(now);
-                    osc.stop(now + 0.28);
-                } else if (type === 'hit_wrong') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(160, now);
-                    osc.frequency.linearRampToValueAtTime(70, now + 0.35);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                } else if (type === 'explosion') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(50, now);
-                    osc.frequency.linearRampToValueAtTime(5, now + 0.2);
-                    gain.gain.setValueAtTime(0.18, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                }
-            } catch (e) {
-                console.log("WebAudio Error", e);
-            }
+        function addScore(points) {
+            score += points;
+            saveGlobalScores();
+            const scoreVal = document.getElementById('global-score');
+            if (scoreVal) scoreVal.innerText = `${score} 分`;
+            updatePinballLockState();
         }
 
-        // --- GAME SYSTEM ---
+        function addStreak() {
+            streak++;
+            saveGlobalScores();
+            const streakVal = document.getElementById('global-streak');
+            if (streakVal) streakVal.innerText = `${streak} 连击`;
+        }
+
+        function breakStreak() {
+            streak = 0;
+            saveGlobalScores();
+            const streakVal = document.getElementById('global-streak');
+            if (streakVal) streakVal.innerText = `0 连击`;
+        }
+
+        // --- GENERAL GAME MODE CONTROLLER ---
         function startGameMode(mode) {
             currentMode = mode;
             syncDatabaseState(); 
 
             const currentPool = getActiveQuestions();
-            const modeTracker = shownCounts[mode] || {};
+            const modeTracker = getModeTracker(mode);
             let availablePool = currentPool.filter(q => (modeTracker[q.id] || 0) < 3);
 
             if (availablePool.length < 10) {
@@ -960,6 +990,7 @@
             document.getElementById('screen-dragdrop').classList.add('hidden');
             document.getElementById('screen-quiz').classList.add('hidden');
             document.getElementById('screen-fps').classList.add('hidden');
+            document.getElementById('screen-pinball').classList.add('hidden');
 
             playList = shuffleArray(availablePool).slice(0, 10);
             currentQuestionIndex = 0;
@@ -970,7 +1001,8 @@
                 'matching': '激光连线消除',
                 'dragdrop': '概念拖拽归属',
                 'quiz': '限时单项选择',
-                'fps': '3D 极光射击考场'
+                'fps': '3D 极光射击考场',
+                'pinball': '蓄力极光弹球模式'
             };
             
             const screenTitle = document.getElementById('screen-title');
@@ -996,973 +1028,402 @@
                 if (fpsIntro) fpsIntro.classList.remove('hidden');
                 const fpsHudQuestion = document.getElementById('fps-hud-question');
                 if (fpsHudQuestion) fpsHudQuestion.innerText = "点击下方按钮开启射击";
+            } else if (mode === 'pinball') {
+                document.getElementById('screen-pinball').classList.remove('hidden');
+                startPinballGame();
             }
             updateIndicator();
             updateProgressStats();
         }
 
-        // --- MODE 1: MOXIE (WRITING) ---
-        function initMoxieQuestion() {
-            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成 10 道默写测验！学分累积+200。`);
-                addScore(200);
-                exitGameMode();
-                return;
+        function exitGameMode() {
+            currentMode = 'dashboard';
+            const playContainer = document.getElementById('play-container');
+            const dashboard = document.getElementById('screen-dashboard');
+            if (playContainer && dashboard) {
+                playContainer.classList.add('hidden');
+                dashboard.classList.remove('hidden');
             }
-            hasAnsweredCurrent = false;
-            updateIndicator();
-            
-            const currentItem = playList[currentQuestionIndex];
-            trackOccurrence(currentItem.id); 
-
-            document.getElementById('moxie-question').innerText = currentItem.q;
-            document.getElementById('moxie-input').value = "";
-            document.getElementById('moxie-feedback').classList.add('hidden');
-            document.getElementById('moxie-card-controls').classList.add('hidden');
-            cardFlipped = false;
-            
-            if (isMoxieInputType === 'type') {
-                document.getElementById('moxie-typing-area').classList.remove('hidden');
-                document.getElementById('moxie-card-area').classList.add('hidden');
-            } else {
-                document.getElementById('moxie-typing-area').classList.add('hidden');
-                document.getElementById('moxie-card-area').classList.remove('hidden');
-                document.getElementById('moxie-flip-card').innerHTML = `<div class="text-slate-400 font-semibold italic text-[11px]">轻触翻面 显现正确答案</div>`;
-            }
+            updateProgressStats();
+            stopFPSGameLoop();
+            stopPinballGameLoop();
         }
 
-        function submitMoxieAnswer() {
-            if (hasAnsweredCurrent) return;
-            const userInput = document.getElementById('moxie-input').value.trim();
-            if (!userInput) return;
-            const currentItem = playList[currentQuestionIndex];
-            const answer = currentItem.a;
-
-            let isCorrect = false;
-            const matchCount = Array.from(userInput).filter(char => answer.includes(char)).length;
-            const threshold = Math.min(answer.length * 0.4, 6); 
-            
-            if (userInput === answer || (userInput.length >= 2 && matchCount >= threshold)) {
-                isCorrect = true;
-            }
-
-            hasAnsweredCurrent = true;
-            sessionCompletedCount++;
-            updateIndicator();
-            showMoxieFeedback(isCorrect);
-        }
-
-        function showMoxieAnswer() {
-            if (hasAnsweredCurrent) return;
-            hasAnsweredCurrent = true;
-            sessionCompletedCount++;
-            updateIndicator();
-            showMoxieFeedback(false);
-        }
-
-        function showMoxieFeedback(isCorrect) {
-            const currentItem = playList[currentQuestionIndex];
-            const feedbackBox = document.getElementById('moxie-feedback');
-            const statusText = document.getElementById('moxie-status-text');
-            const refAnswer = document.getElementById('moxie-ref-answer');
-            
-            feedbackBox.classList.remove('hidden');
-            refAnswer.innerText = currentItem.a;
-
-            if (isCorrect) {
-                statusText.innerText = "🎉 回答正确！关键词高匹配度。";
-                statusText.className = "text-xs font-black text-emerald-400";
-                addScore(50);
-                addStreak();
-                playSynthSound('hit_correct');
-                markQuestionCompleted(currentItem.id);
-            } else {
-                statusText.innerText = "💡 别气馁，考点标准规范答案：";
-                statusText.className = "text-xs font-black text-cyan-400";
-                breakStreak();
-                playSynthSound('hit_wrong');
-                markQuestionCompleted(currentItem.id);
-            }
-        }
-
-        function flipMoxieCard() {
-            if (cardFlipped) return;
-            const currentItem = playList[currentQuestionIndex];
-            const card = document.getElementById('moxie-flip-card');
-            card.innerHTML = `<div class="text-white font-bold text-xs leading-relaxed max-w-full overflow-y-auto max-h-full">${currentItem.a}</div>`;
-            document.getElementById('moxie-card-controls').classList.remove('hidden');
-            cardFlipped = true;
-        }
-
-        function evaluateCard(isCorrect) {
-            if (hasAnsweredCurrent) return;
-            hasAnsweredCurrent = true;
-            sessionCompletedCount++;
-            updateIndicator();
-
-            const currentItem = playList[currentQuestionIndex];
-            if (isCorrect) {
-                addScore(40);
-                addStreak();
-                playSynthSound('hit_correct');
-                markQuestionCompleted(currentItem.id);
-                showToast("fa-circle-check", "掌握考点", "+40 积分", "bg-emerald-500/20 text-emerald-300");
-            } else {
-                breakStreak();
-                playSynthSound('hit_wrong');
-                showToast("fa-circle-xmark", "纳入错题本", "后期重点抽测", "bg-rose-500/20 text-rose-300");
-                markQuestionCompleted(currentItem.id);
-            }
-            nextMoxieQuestion();
-        }
-
-        function nextMoxieQuestion() {
-            currentQuestionIndex++;
-            initMoxieQuestion();
-        }
-
-        // --- MODE 2: MATCHING GAME ---
-        let selectedMatchingLeft = null;
-        let selectedMatchingRight = null;
-        let matchedPairsCount = 0;
-        let matchingSubset = [];
-
-        function initMatchingGame() {
-            const leftContainer = document.getElementById('matching-left');
-            const rightContainer = document.getElementById('matching-right');
-            const svg = document.getElementById('matching-svg');
-            
-            leftContainer.innerHTML = "";
-            rightContainer.innerHTML = "";
-            svg.innerHTML = "";
-            
-            selectedMatchingLeft = null;
-            selectedMatchingRight = null;
-
-            matchingSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 5);
-            if (matchingSubset.length === 0) {
-                showCustomModal('fa-award text-yellow-400', '连线完成！', `本轮连线成功，学分+150！`);
-                addScore(150);
-                exitGameMode();
-                return;
-            }
-
-            matchedPairsCount = 0;
-            document.getElementById('matching-remain').innerText = matchingSubset.length;
-
-            matchingSubset.forEach(q => trackOccurrence(q.id));
-
-            const shuffledLeft = shuffleArray(matchingSubset);
-            const shuffledRight = shuffleArray(matchingSubset);
-
-            shuffledLeft.forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-800 p-2.5 rounded-xl transition duration-200 flex items-center justify-between";
-                btn.id = `match-left-${item.id}`;
-                btn.innerHTML = `
-                    <span class="max-w-[85%] leading-tight">${item.q}</span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 inline-block shrink-0 ml-1"></span>
-                `;
-                btn.onclick = () => selectMatchingNode(item.id, 'left');
-                leftContainer.appendChild(btn);
-            });
-
-            shuffledRight.forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-800 p-2.5 rounded-xl transition duration-200 flex items-center justify-between";
-                btn.id = `match-right-${item.id}`;
-                btn.innerHTML = `
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 inline-block shrink-0 mr-1"></span>
-                    <span class="max-w-[85%] text-right ml-auto leading-tight">${item.a}</span>
-                `;
-                btn.onclick = () => selectMatchingNode(item.id, 'right');
-                rightContainer.appendChild(btn);
-            });
-        }
-
-        function selectMatchingNode(id, side) {
-            playSynthSound('shoot');
-            if (side === 'left') {
-                if (selectedMatchingLeft) {
-                    document.getElementById(`match-left-${selectedMatchingLeft}`).classList.remove('border-cyan-500', 'bg-cyan-950/40');
-                }
-                selectedMatchingLeft = id;
-                document.getElementById(`match-left-${id}`).classList.add('border-cyan-500', 'bg-cyan-950/40');
-            } else {
-                if (selectedMatchingRight) {
-                    document.getElementById(`match-right-${selectedMatchingRight}`).classList.remove('border-cyan-500', 'bg-cyan-950/40');
-                }
-                selectedMatchingRight = id;
-                document.getElementById(`match-right-${id}`).classList.add('border-cyan-500', 'bg-cyan-950/40');
-            }
-
-            if (selectedMatchingLeft !== null && selectedMatchingRight !== null) {
-                if (selectedMatchingLeft === selectedMatchingRight) {
-                    playSynthSound('hit_correct');
-                    const lid = selectedMatchingLeft;
-                    const leftBtn = document.getElementById(`match-left-${lid}`);
-                    const rightBtn = document.getElementById(`match-right-${lid}`);
-
-                    leftBtn.className = "w-full text-left bg-emerald-950/20 text-emerald-400 border border-emerald-500/30 p-2.5 rounded-xl transition duration-200 pointer-events-none flex items-center justify-between opacity-50";
-                    rightBtn.className = "w-full text-left bg-emerald-950/20 text-emerald-400 border border-emerald-500/30 p-2.5 rounded-xl transition duration-200 pointer-events-none flex items-center justify-between opacity-50";
-                    
-                    drawMatchingLine(lid);
-
-                    matchedPairsCount++;
-                    sessionCompletedCount++; 
-                    updateIndicator();
-
-                    document.getElementById('matching-remain').innerText = matchingSubset.length - matchedPairsCount;
-                    
-                    addScore(25);
-                    addStreak();
-                    markQuestionCompleted(lid);
-
-                    if (matchedPairsCount >= matchingSubset.length) {
-                        setTimeout(() => {
-                            nextMatchingGroup();
-                        }, 500);
-                    }
-                } else {
-                    playSynthSound('hit_wrong');
-                    const leftBtn = document.getElementById(`match-left-${selectedMatchingLeft}`);
-                    const rightBtn = document.getElementById(`match-right-${selectedMatchingRight}`);
-                    
-                    leftBtn.classList.add('animate-shake', 'border-rose-500');
-                    rightBtn.classList.add('animate-shake', 'border-rose-500');
-                    breakStreak();
-
-                    setTimeout(() => {
-                        leftBtn.classList.remove('animate-shake', 'border-rose-500', 'border-cyan-500', 'bg-cyan-950/40');
-                        rightBtn.classList.remove('animate-shake', 'border-rose-500', 'border-cyan-500', 'bg-cyan-950/40');
-                    }, 500);
-                }
-                selectedMatchingLeft = null;
-                selectedMatchingRight = null;
-            }
-        }
-
-        function drawMatchingLine(id) {
-            const leftDot = document.querySelector(`#match-left-${id} span:last-child`);
-            const rightDot = document.querySelector(`#match-right-${id} span:first-child`);
-            const svg = document.getElementById('matching-svg');
-            
-            if(!leftDot || !rightDot || !svg) return;
-
-            const rectLeft = leftDot.getBoundingClientRect();
-            const rectRight = rightDot.getBoundingClientRect();
-            const containerRect = svg.getBoundingClientRect();
-
-            const x1 = rectLeft.left + rectLeft.width / 2 - containerRect.left;
-            const y1 = rectLeft.top + rectLeft.height / 2 - containerRect.top;
-            const x2 = rectRight.left + rectRight.width / 2 - containerRect.left;
-            const y2 = rectRight.top + rectRight.height / 2 - containerRect.top;
-
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", x1);
-            line.setAttribute("y1", y1);
-            line.setAttribute("x2", x2);
-            line.setAttribute("y2", y2);
-            line.setAttribute("stroke", "#10b981");
-            line.setAttribute("stroke-width", "2");
-            line.setAttribute("stroke-dasharray", "3,3");
-
-            svg.appendChild(line);
-        }
-
-        function nextMatchingGroup() {
-            currentQuestionIndex += 5;
-            initMatchingGame();
-        }
-
-        function reloadMatching() {
-            initMatchingGame();
-        }
-
-        // --- MODE 3: DRAG & DROP GAME (DYNAMIC ADAPTIVE CATEGORIES) ---
-        let dragDropSubset = [];
-        let dynamicZones = []; 
-
-        function initDragDropGame() {
-            const itemsContainer = document.getElementById('dragdrop-items');
-            const zonesContainer = document.getElementById('dragdrop-zones');
-            
-            if (!itemsContainer || !zonesContainer) return;
-            itemsContainer.innerHTML = "";
-            zonesContainer.innerHTML = "";
-            activeSelectedCardId = null;
-
-            dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
-            if (dragDropSubset.length === 0) {
-                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
-                addScore(150);
-                exitGameMode();
-                return;
-            }
-
-            const uniqueCatsInSubset = [...new Set(dragDropSubset.map(item => item.cat))];
-            
-            dynamicZones = uniqueCatsInSubset.map((catName, idx) => {
-                return {
-                    id: `zone-dyn-${idx}`,
-                    name: catName
-                };
-            });
-
-            const boxCount = dynamicZones.length;
-            if (boxCount <= 2) {
-                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
-            } else if (boxCount === 3) {
-                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-3 gap-3";
-            } else {
-                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
-            }
-
-            dragDropSubset.forEach(item => {
-                trackOccurrence(item.id);
-
-                const matchedZone = dynamicZones.find(z => z.name === item.cat);
-                const targetZoneId = matchedZone ? matchedZone.id : 'zone-dyn-0';
-                
-                const card = document.createElement('div');
-                card.id = `dd-card-${item.id}`;
-                card.className = "bg-slate-900 border border-slate-800 hover:border-cyan-500/80 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-200 cursor-pointer active:scale-95 transition-all duration-200 select-none shadow-md max-w-xs truncate";
-                card.innerText = item.a;
-                card.title = item.a;
-                card.draggable = true;
-                card.dataset.targetZone = targetZoneId;
-                card.dataset.id = item.id;
-                card.dataset.evaluated = "false";
-
-                card.onclick = () => selectDragCard(item.id);
-
-                card.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', item.id);
-                    card.classList.add('opacity-40');
-                });
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('opacity-40');
-                });
-
-                itemsContainer.appendChild(card);
-            });
-
-            dynamicZones.forEach(zone => {
-                const box = document.createElement('div');
-                box.className = "bg-slate-950/80 border-2 border-dashed border-slate-850 hover:border-cyan-500/30 p-3 rounded-xl flex flex-col justify-start min-h-[140px] transition-colors relative text-xs";
-                box.id = zone.id;
-                box.innerHTML = `
-                    <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-extrabold mb-2 border-b border-slate-900 pb-1 text-center bg-cyan-950/10 py-1 rounded">${zone.name}</div>
-                    <div class="space-y-1.5 flex-grow flex flex-col justify-start items-center" id="${zone.id}-content"></div>
-                `;
-
-                box.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    box.classList.add('border-cyan-500/50', 'bg-cyan-950/10');
-                });
-                box.addEventListener('dragleave', () => {
-                    box.classList.remove('border-cyan-500/50', 'bg-cyan-950/10');
-                });
-                box.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    box.classList.remove('border-cyan-500/50', 'bg-cyan-950/10');
-                    const cardId = e.dataTransfer.getData('text/plain');
-                    dropCardInZone(cardId, zone.id);
-                });
-
-                box.onclick = () => {
-                    if (activeSelectedCardId) {
-                        dropCardInZone(activeSelectedCardId, zone.id);
-                        activeSelectedCardId = null;
-                    }
-                };
-
-                zonesContainer.appendChild(box);
-            });
-        }
-
-        function selectDragCard(cardId) {
-            playSynthSound('shoot');
-            if (activeSelectedCardId) {
-                const prevCard = document.getElementById(`dd-card-${activeSelectedCardId}`);
-                if (prevCard) prevCard.classList.remove('border-pink-500', 'bg-pink-950/20');
-            }
-            activeSelectedCardId = cardId;
-            const card = document.getElementById(`dd-card-${cardId}`);
-            if (card) card.classList.add('border-pink-500', 'bg-pink-950/20');
-            showToast("fa-arrows-to-dot", "选中考点答案", "轻触下方对应的动态分类盒即可归位", "bg-pink-500/20 text-pink-300");
-        }
-
-        function dropCardInZone(cardId, zoneId) {
-            const card = document.getElementById(`dd-card-${cardId}`);
-            if (!card) return;
-            
-            const destContent = document.getElementById(`${zoneId}-content`);
-            if (destContent) {
-                card.classList.remove('border-pink-500', 'bg-pink-950/20');
-                card.classList.add('scale-95');
-                destContent.appendChild(card);
-                playSynthSound('explosion');
-            }
-        }
-
-        function checkDragDropResult() {
-            let correctCount = 0;
-            let totalPlaced = 0;
-            let newlyCorrected = 0;
-
-            dynamicZones.forEach(zone => {
-                const zoneContent = document.getElementById(`${zone.id}-content`);
-                if (!zoneContent) return;
-                const cards = zoneContent.querySelectorAll('[id^="dd-card-"]');
-                
-                cards.forEach(card => {
-                    totalPlaced++;
-                    const targetZone = card.dataset.targetZone;
-                    if (targetZone === zone.id) {
-                        card.className = "bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center truncate pointer-events-none";
-                        correctCount++;
-                        
-                        if (card.dataset.evaluated === "false") {
-                            card.dataset.evaluated = "true";
-                            newlyCorrected++;
-                            sessionCompletedCount++; 
-                            markQuestionCompleted(parseInt(card.dataset.id));
-                        }
-                    } else {
-                        card.className = "bg-rose-950/30 border border-rose-500/40 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center animate-shake truncate";
-                        setTimeout(() => {
-                            card.className = "bg-slate-900 border border-slate-800 hover:border-cyan-500/80 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-200 cursor-pointer active:scale-95 transition-all duration-200 truncate";
-                            const itemsBox = document.getElementById('dragdrop-items');
-                            if (itemsBox) itemsBox.appendChild(card);
-                        }, 1200);
-                    }
-                });
-            });
-
-            if (totalPlaced === 0) {
-                showCustomModal('fa-triangle-exclamation text-rose-400', '没有放置卡片', '请先将卡片分类放置到相应的动态分类盒中！', false);
-                return;
-            }
-
-            updateIndicator();
-
-            if (newlyCorrected > 0) {
-                addScore(newlyCorrected * 25);
-                addStreak();
-                playSynthSound('hit_correct');
-            }
-
-            if (correctCount === dragDropSubset.length) {
-                showToast("fa-circle-check", "归类正确！", "自动载入下一组卡片", "bg-emerald-500/20 text-emerald-300");
-                setTimeout(() => {
-                    currentQuestionIndex += 6;
-                    initDragDropGame();
-                }, 1500);
-            } else {
-                playSynthSound('hit_wrong');
-                breakStreak();
-                showToast("fa-circle-xmark", "分类错误", "已自动退回答错的卡片，请重新分类", "bg-rose-500/20 text-rose-300");
-            }
-        }
-
-        // --- MODE 4: MCQ QUIZ ---
-        function initQuizQuestion() {
-            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-medal text-yellow-400', '竞速自测通关！', `恭喜通关！答题得分已转化计入全局学分积累中！`);
-                addScore(150);
-                exitGameMode();
-                return;
-            }
-            hasAnsweredCurrent = false;
-            updateIndicator();
-
-            const currentItem = playList[currentQuestionIndex];
-            trackOccurrence(currentItem.id);
-
-            document.getElementById('quiz-question').innerText = currentItem.q;
-
-            const pool = getActiveQuestions();
-            const distractors = shuffleArray(pool)
-                .filter(item => item.a !== currentItem.a)
-                .slice(0, 3)
-                .map(item => item.a);
-
-            const options = shuffleArray([currentItem.a, ...distractors]);
-            const optionsContainer = document.getElementById('quiz-options');
-            if (optionsContainer) {
-                optionsContainer.innerHTML = "";
-                options.forEach((opt, idx) => {
-                    const btn = document.createElement('button');
-                    btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 hover:border-cyan-500/50 text-slate-200 border border-slate-800 p-4 rounded-xl transition duration-200 active:scale-98 flex items-center space-x-2";
-                    btn.innerHTML = `
-                        <span class="w-6 h-6 rounded-full bg-slate-950 flex items-center justify-center font-bold text-[10px] border border-slate-800 shrink-0 text-slate-400">${String.fromCharCode(65 + idx)}</span>
-                        <span class="text-xs font-semibold leading-relaxed">${opt}</span>
-                    `;
-                    btn.onclick = () => selectQuizOption(opt, currentItem.a, btn);
-                    optionsContainer.appendChild(btn);
-                });
-            }
-        }
-
-        function selectQuizOption(selected, correct, btnNode) {
-            if (hasAnsweredCurrent) return;
-            hasAnsweredCurrent = true;
-            sessionCompletedCount++;
-            updateIndicator();
-
-            const allButtons = document.getElementById('quiz-options').children;
-            Array.from(allButtons).forEach(btn => btn.style.pointerEvents = 'none');
-
-            if (selected === correct) {
-                playSynthSound('hit_correct');
-                addScore(30 + streak * 5);
-                addStreak();
-                btnNode.className = "w-full text-left bg-emerald-950/30 text-emerald-300 border border-emerald-500 p-4 rounded-xl transition duration-200 flex items-center space-x-2 shadow-md";
-                
-                const ptsFloat = document.getElementById('quiz-points-added');
-                if (ptsFloat) {
-                    ptsFloat.innerText = `+${30 + streak * 5} pts`;
-                    ptsFloat.classList.remove('hidden');
-                    ptsFloat.className = "absolute top-4 left-1/2 transform -translate-x-1/2 text-xl font-black text-yellow-400 gaming-font animate-bounce";
-                }
-                
-                markQuestionCompleted(playList[currentQuestionIndex].id);
-
-                setTimeout(() => {
-                    if (ptsFloat) ptsFloat.classList.add('hidden');
-                    currentQuestionIndex++;
-                    initQuizQuestion();
-                }, 1000);
-            } else {
-                playSynthSound('hit_wrong');
-                breakStreak();
-                btnNode.className = "w-full text-left bg-rose-950/30 text-rose-300 border border-rose-500 p-4 rounded-xl transition duration-200 flex items-center space-x-2 shadow-md animate-shake";
-                
-                Array.from(allButtons).forEach(btn => {
-                    if (btn.querySelector('span:last-child').innerText === correct) {
-                        btn.className = "w-full text-left bg-emerald-950/20 text-emerald-300 border border-emerald-500/50 p-4 rounded-xl transition duration-200 flex items-center space-x-2";
-                    }
-                });
-                markQuestionCompleted(playList[currentQuestionIndex].id);
-
-                setTimeout(() => {
-                    currentQuestionIndex++;
-                    initQuizQuestion();
-                }, 2000);
-            }
-        }
-
-        // --- MODE 5: FPS SHOOTING GAME ---
-        let fpsCanvas, fpsCtx;
-        let fpsGameActive = false;
-        let fpsAnimationId = null;
-        let fpsTargets = [];
-        let fpsScoreVal = 0;
-        let fpsHealth = 100;
-        let fpsCurrentItem = null;
-        let particles = [];
-        let mouseX = 200, mouseY = 200;
-        let gunRecoil = 0;
-        let crosshairScale = 1.0;
-
-        function startFPSGame() {
-            const fpsIntro = document.getElementById('fps-intro');
-            if (fpsIntro) fpsIntro.classList.add('hidden');
-            
-            fpsCanvas = document.getElementById('fps-canvas');
-            if (!fpsCanvas) return;
-            fpsCtx = fpsCanvas.getContext('2d');
-            
-            fpsCanvas.width = fpsCanvas.parentElement.clientWidth;
-            fpsCanvas.height = fpsCanvas.parentElement.clientHeight;
-
-            fpsCanvas.addEventListener('mousemove', updateMousePosition);
-            fpsCanvas.addEventListener('touchmove', updateTouchPosition);
-            fpsCanvas.addEventListener('mousedown', triggerShoot);
-            fpsCanvas.addEventListener('touchstart', handleTouchShoot);
-
-            fpsGameActive = true;
-            fpsScoreVal = 0;
-            fpsHealth = 100;
-            fpsTargets = [];
-            particles = [];
-            document.getElementById('fps-score').innerText = "FPS得分: 0";
-            updateFPSHealthBar();
+        // --- NEW MODE 6: PINBALL GAME ENGINE (蓄力激光弹球) ---
+        let pinballCanvas, pinballCtx;
+        let pinballGameActive = false;
+        let pinballAnimationId = null;
+        let pinballScoreVal = 0;
+        let pinballLives = 3;
+        let pinballBall = { x: 200, y: 300, vx: 0, vy: 0, r: 8, isAnchored: true };
+        let pinballPaddle = { x: 150, y: 360, width: 80, height: 10 };
+        let pinballBricks = [];
+        let pinballParticles = [];
+        let pinballCurrentItem = null;
+
+        // Charging mechanics
+        let pinballIsCharging = false;
+        let pinballCharge = 0;
+
+        function startPinballGame() {
+            pinballCanvas = document.getElementById('pinball-canvas');
+            if (!pinballCanvas) return;
+            pinballCtx = pinballCanvas.getContext('2d');
+
+            // Responsive Canvas dimension setting
+            pinballCanvas.width = pinballCanvas.parentElement.clientWidth;
+            pinballCanvas.height = pinballCanvas.parentElement.clientHeight;
+
+            // Events mapping (Mouse + Touch drag glide)
+            pinballCanvas.addEventListener('mousemove', handlePinballMouseMove);
+            pinballCanvas.addEventListener('touchmove', handlePinballTouchMove);
+            pinballCanvas.addEventListener('mousedown', handlePinballMouseDown);
+            pinballCanvas.addEventListener('mouseup', handlePinballMouseUp);
+            pinballCanvas.addEventListener('touchstart', handlePinballTouchStart);
+            pinballCanvas.addEventListener('touchend', handlePinballTouchEnd);
+
+            pinballGameActive = true;
+            pinballScoreVal = 0;
+            pinballLives = 3;
+            pinballParticles = [];
+            document.getElementById('pinball-hud-score').innerText = `得分: 0`;
+            document.getElementById('pinball-lives').innerText = pinballLives;
 
             currentQuestionIndex = 0;
             sessionCompletedCount = 0;
-            loadNextFPSQuestion();
-            runFPSLoop();
+
+            loadNextPinballRound();
+            runPinballLoop();
         }
 
-        function updateMousePosition(e) {
-            if (!fpsCanvas) return;
-            const rect = fpsCanvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        }
-
-        function updateTouchPosition(e) {
-            if (e.touches.length > 0 && fpsCanvas) {
-                const rect = fpsCanvas.getBoundingClientRect();
-                mouseX = e.touches[0].clientX - rect.left;
-                mouseY = e.touches[0].clientY - rect.top;
+        function stopPinballGameLoop() {
+            pinballGameActive = false;
+            if (pinballAnimationId) {
+                cancelAnimationFrame(pinballAnimationId);
+                pinballAnimationId = null;
             }
         }
 
-        function handleTouchShoot(e) {
-            if (e.touches.length > 0 && fpsCanvas) {
-                const rect = fpsCanvas.getBoundingClientRect();
-                mouseX = e.touches[0].clientX - rect.left;
-                mouseY = e.touches[0].clientY - rect.top;
-                triggerShoot(e);
+        function handlePinballMouseMove(e) {
+            if (!pinballCanvas) return;
+            const rect = pinballCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            pinballPaddle.x = Math.max(0, Math.min(mouseX - pinballPaddle.width / 2, pinballCanvas.width - pinballPaddle.width));
+        }
+
+        function handlePinballTouchMove(e) {
+            if (e.touches.length > 0 && pinballCanvas) {
+                const rect = pinballCanvas.getBoundingClientRect();
+                const touchX = e.touches[0].clientX - rect.left;
+                pinballPaddle.x = Math.max(0, Math.min(touchX - pinballPaddle.width / 2, pinballCanvas.width - pinballPaddle.width));
             }
         }
 
-        function stopFPSGameLoop() {
-            fpsGameActive = false;
-            if (fpsAnimationId) {
-                cancelAnimationFrame(fpsAnimationId);
-                fpsAnimationId = null;
+        function handlePinballMouseDown(e) {
+            if (pinballBall.isAnchored) {
+                pinballIsCharging = true;
+                pinballCharge = 0;
+                playSynthSound('shoot');
             }
         }
 
-        function updateFPSHealthBar() {
-            const bar = document.getElementById('fps-health-fill');
-            if (bar) bar.style.width = `${fpsHealth}%`;
+        function handlePinballMouseUp(e) {
+            if (pinballIsCharging && pinballBall.isAnchored) {
+                launchPinball();
+            }
         }
 
-        function loadNextFPSQuestion() {
+        function handlePinballTouchStart(e) {
+            if (pinballBall.isAnchored && e.touches.length > 0) {
+                pinballIsCharging = true;
+                pinballCharge = 0;
+                playSynthSound('shoot');
+            }
+        }
+
+        function handlePinballTouchEnd(e) {
+            if (pinballIsCharging && pinballBall.isAnchored) {
+                launchPinball();
+            }
+        }
+
+        function launchPinball() {
+            // Velocity scales dynamically based on charge! (初速度从 4 扩展至 10)
+            const speed = 4.5 + pinballCharge * 5.5;
+            pinballBall.vx = (Math.random() * 2 - 1) * 2; 
+            pinballBall.vy = -speed;
+            pinballBall.isAnchored = false;
+            pinballIsCharging = false;
+            playSynthSound('shoot');
+            showToast("fa-bolt text-yellow-400", "蓄力发射！", `弹球初速度: ${Math.round(speed * 10)} KM/H`, "bg-yellow-500/20 text-yellow-300");
+        }
+
+        function loadNextPinballRound() {
             if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
-                stopFPSGameLoop();
-                showCustomModal('fa-circle-check text-emerald-400', '战绩卓越！', `恭喜通过射击考场！获得额外实战学分积累：${fpsScoreVal}！`, true);
-                addScore(fpsScoreVal);
+                stopPinballGameLoop();
+                showCustomModal('fa-trophy text-yellow-500', '蓄力极光弹球大捷！', `恭喜！成功通过 10 关弹球，本次实操收益积分：${pinballScoreVal} 已注入！`, true);
+                addScore(pinballScoreVal);
                 exitGameMode();
                 return;
             }
+
             hasAnsweredCurrent = false;
             updateIndicator();
 
-            fpsCurrentItem = playList[currentQuestionIndex];
-            trackOccurrence(fpsCurrentItem.id);
+            pinballCurrentItem = playList[currentQuestionIndex];
+            trackOccurrence(pinballCurrentItem.id);
 
-            const qBar = document.getElementById('fps-hud-question');
-            if (qBar) qBar.innerText = `实战：${fpsCurrentItem.q}`;
+            const qBar = document.getElementById('pinball-hud-question');
+            if (qBar) qBar.innerText = `目标：${pinballCurrentItem.q}`;
 
-            fpsTargets = [];
+            // Reset ball & pad anchorage
+            pinballBall.isAnchored = true;
+            pinballBall.vx = 0;
+            pinballBall.vy = 0;
+            pinballIsCharging = false;
+            pinballCharge = 0;
 
+            // Generate 3 target bricks dynamically arranged horizontally
             const pool = getActiveQuestions();
             const distractors = shuffleArray(pool)
-                .filter(item => item.a !== fpsCurrentItem.a)
+                .filter(item => item.a !== pinballCurrentItem.a)
                 .slice(0, 2)
                 .map(item => item.a);
 
-            const options = shuffleArray([fpsCurrentItem.a, ...distractors]);
+            const options = shuffleArray([pinballCurrentItem.a, ...distractors]);
 
-            options.forEach((opt, idx) => {
-                const targetSpacing = fpsCanvas.width / 3;
-                fpsTargets.push({
-                    x: targetSpacing * idx + (targetSpacing / 2) + (Math.random() * 20 - 10),
-                    y: Math.random() * 60 + 80, 
-                    vx: Math.random() * 1.4 - 0.7,
-                    vy: Math.random() * 0.6 - 0.3,
-                    r: 38, 
+            const spacing = pinballCanvas.width / 3;
+            const brickWidth = spacing - 12;
+            const brickHeight = 44;
+
+            pinballBricks = options.map((opt, idx) => {
+                return {
+                    x: spacing * idx + 6,
+                    y: 90,
+                    width: brickWidth,
+                    height: brickHeight,
                     text: opt,
-                    isCorrect: (opt === fpsCurrentItem.a),
-                    color: '#22d3ee', 
-                    opacity: 1.0,
-                    scale: 1.0
-                });
+                    isCorrect: (opt === pinballCurrentItem.a),
+                    active: true,
+                    color: opt === pinballCurrentItem.a ? '#06b6d4' : '#1e293b', // Cyan neon for correct, deep blue for false
+                    borderColor: opt === pinballCurrentItem.a ? '#22d3ee' : '#334155'
+                };
             });
         }
 
-        function triggerShoot(e) {
-            if (!fpsGameActive || hasAnsweredCurrent) return;
-            e.preventDefault();
-
-            playSynthSound('shoot');
-            gunRecoil = 22; 
-            crosshairScale = 1.35;
-
-            let hitTargetIndex = -1;
-            for (let i = 0; i < fpsTargets.length; i++) {
-                const target = fpsTargets[i];
-                const dx = mouseX - target.x;
-                const dy = mouseY - target.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist <= target.r) {
-                    hitTargetIndex = i;
-                    break;
-                }
-            }
-
-            if (hitTargetIndex !== -1) {
-                const hit = fpsTargets[hitTargetIndex];
-                createTargetParticles(hit.x, hit.y, hit.color);
-                playSynthSound('explosion');
-
-                if (hit.isCorrect) {
-                    hasAnsweredCurrent = true;
-                    sessionCompletedCount++; 
-                    updateIndicator();
-
-                    fpsScoreVal += 100;
-                    const scoreBoard = document.getElementById('fps-score');
-                    if (scoreBoard) scoreBoard.innerText = `FPS得分: ${fpsScoreVal}`;
-                    showToast("fa-circle-check", "射击正确答案！", "FPS得分+100", "bg-emerald-500/20 text-emerald-300");
-                    playSynthSound('hit_correct');
-                    markQuestionCompleted(fpsCurrentItem.id);
-
-                    fpsTargets = []; 
-                    setTimeout(() => {
-                        currentQuestionIndex++;
-                        loadNextFPSQuestion();
-                    }, 500);
-                } else {
-                    fpsHealth -= 35;
-                    if (fpsHealth <= 0) fpsHealth = 0;
-                    updateFPSHealthBar();
-                    playSynthSound('hit_wrong');
-                    showToast("fa-circle-xmark", "误射错误目标", "扣除战机能量！", "bg-rose-500/20 text-rose-300");
-
-                    if (fpsHealth <= 0) {
-                        stopFPSGameLoop();
-                        showCustomModal('fa-circle-xmark text-rose-400', '战败归来', '机体能量归零，请熟记考点后再行参战。', false);
-                        exitGameMode();
-                    }
-                }
-            } else {
-                createImpactSparks(mouseX, mouseY);
-            }
-        }
-
-        function createTargetParticles(x, y, color) {
-            const count = 20;
-            for (let i = 0; i < count; i++) {
-                particles.push({
+        function createPinballParticles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                pinballParticles.push({
                     x: x,
                     y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    r: Math.random() * 3 + 1.5,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    r: Math.random() * 2.5 + 1,
                     color: color,
                     life: 1.0,
-                    decay: Math.random() * 0.04 + 0.02
+                    decay: Math.random() * 0.05 + 0.02
                 });
             }
         }
 
-        function createImpactSparks(x, y) {
-            const count = 6;
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 3,
-                    vy: (Math.random() - 0.5) * 3,
-                    r: Math.random() * 1.5 + 0.8,
-                    color: '#fb7185', 
-                    life: 1.0,
-                    decay: 0.06
-                });
-            }
-        }
+        function runPinballLoop() {
+            if (!pinballGameActive || !pinballCtx) return;
 
-        function runFPSLoop() {
-            if (!fpsGameActive || !fpsCtx) return;
+            // Canvas clear
+            pinballCtx.fillStyle = '#020617';
+            pinballCtx.fillRect(0, 0, pinballCanvas.width, pinballCanvas.height);
 
-            fpsCtx.fillStyle = '#020617';
-            fpsCtx.fillRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+            // Draw grid lines
+            drawFurturisticGridPinball();
 
-            drawFurturisticGrid();
-
-            particles.forEach((p, idx) => {
+            // Render particles
+            pinballParticles.forEach((p, idx) => {
                 p.x += p.vx;
                 p.y += p.vy;
                 p.life -= p.decay;
                 
-                fpsCtx.fillStyle = p.color;
-                fpsCtx.globalAlpha = p.life;
-                fpsCtx.beginPath();
-                fpsCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                fpsCtx.fill();
-                fpsCtx.globalAlpha = 1.0;
+                pinballCtx.fillStyle = p.color;
+                pinballCtx.globalAlpha = p.life;
+                pinballCtx.beginPath();
+                pinballCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                pinballCtx.fill();
+                pinballCtx.globalAlpha = 1.0;
 
-                if (p.life <= 0) particles.splice(idx, 1);
+                if (p.life <= 0) pinballParticles.splice(idx, 1);
             });
 
-            fpsTargets.forEach(target => {
-                target.x += target.vx;
-                target.y += target.vy;
+            // Handle anchor mechanics
+            if (pinballBall.isAnchored) {
+                pinballBall.x = pinballPaddle.x + pinballPaddle.width / 2;
+                pinballBall.y = pinballPaddle.y - pinballBall.r - 2;
 
-                if (target.x - target.r <= 0 || target.x + target.r >= fpsCanvas.width) {
-                    target.vx = -target.vx;
+                // Handle charging accumulator
+                if (pinballIsCharging) {
+                    pinballCharge = Math.min(pinballCharge + 0.015, 1.0);
+                    // Draw neon charge beam
+                    pinballCtx.strokeStyle = '#eab308';
+                    pinballCtx.lineWidth = 3 * pinballCharge;
+                    pinballCtx.shadowColor = '#eab308';
+                    pinballCtx.shadowBlur = 10;
+                    pinballCtx.beginPath();
+                    pinballCtx.moveTo(pinballBall.x, pinballBall.y);
+                    pinballCtx.lineTo(pinballBall.x, pinballBall.y - 120);
+                    pinballCtx.stroke();
+                    pinballCtx.shadowBlur = 0;
                 }
-                if (target.y - target.r <= 35 || target.y + target.r >= fpsCanvas.height - 90) {
-                    target.vy = -target.vy;
+            } else {
+                // Ball movements
+                pinballBall.x += pinballBall.vx;
+                pinballBall.y += pinballBall.vy;
+
+                // Border collisions
+                if (pinballBall.x - pinballBall.r <= 0 || pinballBall.x + pinballBall.r >= pinballCanvas.width) {
+                    pinballBall.vx = -pinballBall.vx;
+                    playSynthSound('shoot');
+                }
+                if (pinballBall.y - pinballBall.r <= 35) { // Below HUD top
+                    pinballBall.vy = -pinballBall.vy;
+                    playSynthSound('shoot');
                 }
 
-                const grad = fpsCtx.createRadialGradient(target.x, target.y, 2, target.x, target.y, target.r);
-                grad.addColorStop(0, '#0f172a');
-                grad.addColorStop(0.85, 'rgba(15, 23, 42, 0.95)');
-                grad.addColorStop(1, target.color);
+                // Bottom boundary crossing (Dying)
+                if (pinballBall.y > pinballCanvas.height) {
+                    pinballLives--;
+                    document.getElementById('pinball-lives').innerText = pinballLives;
+                    playSynthSound('hit_wrong');
+                    showToast("fa-heart-broken text-rose-500", "弹球失落！", `生命剩余: ${pinballLives}`, "bg-rose-500/20 text-rose-300");
 
-                fpsCtx.shadowColor = target.color;
-                fpsCtx.shadowBlur = 10;
+                    if (pinballLives <= 0) {
+                        stopPinballGameLoop();
+                        showCustomModal('fa-circle-xmark text-rose-400', '战败出局', `您的生命值已耗尽。通关失败，积分计入总分。`, false);
+                        addScore(pinballScoreVal);
+                        exitGameMode();
+                        return;
+                    } else {
+                        // Reset anchorage
+                        pinballBall.isAnchored = true;
+                    }
+                }
 
-                fpsCtx.fillStyle = grad;
-                fpsCtx.beginPath();
-                fpsCtx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
-                fpsCtx.fill();
+                // Paddle collision physics
+                if (pinballBall.y + pinballBall.r >= pinballPaddle.y && 
+                    pinballBall.y - pinballBall.r <= pinballPaddle.y + pinballPaddle.height &&
+                    pinballBall.x >= pinballPaddle.x && 
+                    pinballBall.x <= pinballPaddle.x + pinballPaddle.width) {
+                    
+                    // Bounce off paddle depending on impact point
+                    const hitPos = (pinballBall.x - (pinballPaddle.x + pinballPaddle.width/2)) / (pinballPaddle.width/2);
+                    pinballBall.vx = hitPos * 4.5;
+                    pinballBall.vy = -Math.abs(pinballBall.vy);
+                    playSynthSound('shoot');
+                }
 
-                fpsCtx.lineWidth = 2;
-                fpsCtx.strokeStyle = target.color;
-                fpsCtx.stroke();
-                fpsCtx.shadowBlur = 0; 
+                // Bricks collision checks
+                pinballBricks.forEach(brick => {
+                    if (brick.active && 
+                        pinballBall.y + pinballBall.r >= brick.y &&
+                        pinballBall.y - pinballBall.r <= brick.y + brick.height &&
+                        pinballBall.x + pinballBall.r >= brick.x &&
+                        pinballBall.x - pinballBall.r <= brick.x + brick.width) {
 
-                fpsCtx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
-                fpsCtx.lineWidth = 1;
-                fpsCtx.setLineDash([4, 4]);
-                fpsCtx.beginPath();
-                fpsCtx.arc(target.x, target.y, target.r + 6, 0, Math.PI * 2);
-                fpsCtx.stroke();
-                fpsCtx.setLineDash([]); 
+                        // Reverse Y velocity
+                        pinballBall.vy = -pinballBall.vy;
 
-                fpsCtx.fillStyle = '#e2e8f0';
-                fpsCtx.font = "bold 8.5px sans-serif";
-                fpsCtx.textAlign = "center";
-                fpsCtx.textBaseline = "middle";
-                wrapCanvasText(fpsCtx, target.text, target.x, target.y, target.r * 1.6, 11);
+                        if (brick.isCorrect) {
+                            // Correct target brick smashed!
+                            brick.active = false;
+                            createPinballParticles(brick.x + brick.width/2, brick.y + brick.height/2, '#22d3ee');
+                            playSynthSound('hit_correct');
+
+                            pinballScoreVal += 100;
+                            document.getElementById('pinball-hud-score').innerText = `当前得分: ${pinballScoreVal}`;
+                            showToast("fa-circle-check text-emerald-400", "击中正确答案！", "+100 分", "bg-emerald-500/20 text-emerald-300");
+
+                            markQuestionCompleted(pinballCurrentItem.id);
+                            
+                            hasAnsweredCurrent = true;
+                            sessionCompletedCount++;
+                            updateIndicator();
+
+                            // Transition delay to loading the next card
+                            setTimeout(() => {
+                                currentQuestionIndex++;
+                                loadNextPinballRound();
+                            }, 800);
+                        } else {
+                            // Hit false brick
+                            createPinballParticles(pinballBall.x, pinballBall.y, '#f43f5e');
+                            playSynthSound('hit_wrong');
+                            pinballScoreVal = Math.max(0, pinballScoreVal - 30);
+                            document.getElementById('pinball-hud-score').innerText = `当前得分: ${pinballScoreVal}`;
+                            showToast("fa-circle-xmark text-rose-500", "击碎错误答案！", "分数扣减 30", "bg-rose-500/20 text-rose-300");
+                        }
+                    }
+                });
+            }
+
+            // Draw Bricks
+            pinballBricks.forEach(brick => {
+                if (!brick.active) return;
+                
+                // Outer card neon box
+                pinballCtx.fillStyle = brick.color;
+                pinballCtx.strokeStyle = brick.borderColor;
+                pinballCtx.lineWidth = 1.5;
+                pinballCtx.beginPath();
+                pinballCtx.roundRect(brick.x, brick.y, brick.width, brick.height, 8);
+                pinballCtx.fill();
+                pinballCtx.stroke();
+
+                // Brick label text
+                pinballCtx.fillStyle = '#f8fafc';
+                pinballCtx.font = "bold 8.5px sans-serif";
+                pinballCtx.textAlign = "center";
+                pinballCtx.textBaseline = "middle";
+                wrapCanvasText(pinballCtx, brick.text, brick.x + brick.width / 2, brick.y + brick.height / 2, brick.width - 10, 11);
             });
 
-            drawGunArm();
-            drawFPSCrosshair();
+            // Draw Paddle
+            pinballCtx.fillStyle = '#06b6d4';
+            pinballCtx.shadowColor = '#22d3ee';
+            pinballCtx.shadowBlur = 8;
+            pinballCtx.beginPath();
+            pinballCtx.roundRect(pinballPaddle.x, pinballPaddle.y, pinballPaddle.width, pinballPaddle.height, 4);
+            pinballCtx.fill();
+            pinballCtx.shadowBlur = 0;
 
-            fpsAnimationId = requestAnimationFrame(runFPSLoop);
+            // Draw Ball
+            pinballCtx.fillStyle = '#f43f5e';
+            pinballCtx.beginPath();
+            pinballCtx.arc(pinballBall.x, pinballBall.y, pinballBall.r, 0, Math.PI * 2);
+            pinballCtx.fill();
+
+            pinballAnimationId = requestAnimationFrame(runPinballLoop);
         }
 
-        function drawFurturisticGrid() {
-            if (!fpsCtx || !fpsCanvas) return;
-            fpsCtx.strokeStyle = 'rgba(15, 23, 42, 0.3)';
-            fpsCtx.lineWidth = 1;
+        function drawFurturisticGridPinball() {
+            if (!pinballCtx || !pinballCanvas) return;
+            pinballCtx.strokeStyle = 'rgba(15, 23, 42, 0.25)';
+            pinballCtx.lineWidth = 0.8;
             const size = 35;
-            for (let x = 0; x < fpsCanvas.width; x += size) {
-                fpsCtx.beginPath();
-                fpsCtx.moveTo(x, 0);
-                fpsCtx.lineTo(x, fpsCanvas.height);
-                fpsCtx.stroke();
+            for (let x = 0; x < pinballCanvas.width; x += size) {
+                pinballCtx.beginPath();
+                pinballCtx.moveTo(x, 0);
+                pinballCtx.lineTo(x, pinballCanvas.height);
+                pinballCtx.stroke();
             }
-            for (let y = 0; y < fpsCanvas.height; y += size) {
-                fpsCtx.beginPath();
-                fpsCtx.moveTo(0, y);
-                fpsCtx.lineTo(fpsCanvas.width, y);
-                fpsCtx.stroke();
-            }
-        }
-
-        function drawGunArm() {
-            if (!fpsCtx || !fpsCanvas) return;
-            const centerX = fpsCanvas.width / 2;
-            const centerY = fpsCanvas.height;
-            const aimDX = mouseX - centerX;
-            const aimDY = mouseY - centerY;
-            const angle = Math.atan2(aimDY, aimDX) + Math.PI/2;
-
-            fpsCtx.save();
-            fpsCtx.translate(centerX, centerY);
-            fpsCtx.rotate(angle * 0.35); 
-
-            if (gunRecoil > 0) gunRecoil -= 2.2;
-
-            const gunGrad = fpsCtx.createLinearGradient(-20, -gunRecoil, 20, -gunRecoil);
-            gunGrad.addColorStop(0, '#111827'); 
-            gunGrad.addColorStop(0.5, '#06b6d4'); 
-            gunGrad.addColorStop(1, '#0f172a');
-
-            fpsCtx.fillStyle = gunGrad;
-            fpsCtx.beginPath();
-            fpsCtx.moveTo(-15, 15);
-            fpsCtx.lineTo(-9, -80 + gunRecoil);
-            fpsCtx.lineTo(9, -80 + gunRecoil);
-            fpsCtx.lineTo(15, 15);
-            fpsCtx.closePath();
-            fpsCtx.fill();
-
-            fpsCtx.shadowColor = '#22d3ee';
-            fpsCtx.shadowBlur = 8;
-            fpsCtx.fillStyle = '#22d3ee';
-            fpsCtx.fillRect(-2, -70 + gunRecoil, 4, 50);
-            fpsCtx.shadowBlur = 0;
-
-            if (gunRecoil > 14) {
-                const flashGrad = fpsCtx.createRadialGradient(0, -85 + gunRecoil, 2, 0, -85 + gunRecoil, 20);
-                flashGrad.addColorStop(0, '#ffffff');
-                flashGrad.addColorStop(0.4, '#22d3ee');
-                flashGrad.addColorStop(1, 'transparent');
-                fpsCtx.fillStyle = flashGrad;
-                fpsCtx.beginPath();
-                fpsCtx.arc(0, -85 + gunRecoil, 20, 0, Math.PI * 2);
-                fpsCtx.fill();
-            }
-
-            fpsCtx.restore();
-        }
-
-        function drawFPSCrosshair() {
-            if (!fpsCtx) return;
-            if (crosshairScale > 1.0) crosshairScale -= 0.04;
-
-            fpsCtx.save();
-            fpsCtx.translate(mouseX, mouseY);
-            fpsCtx.scale(crosshairScale, crosshairScale);
-
-            fpsCtx.strokeStyle = '#22d3ee';
-            fpsCtx.lineWidth = 1.2;
-            fpsCtx.beginPath();
-            fpsCtx.arc(0, 0, 11, 0, Math.PI * 2);
-            fpsCtx.stroke();
-
-            fpsCtx.fillStyle = '#22d3ee';
-            fpsCtx.beginPath();
-            fpsCtx.arc(0, 0, 2, 0, Math.PI * 2);
-            fpsCtx.fill();
-
-            fpsCtx.restore();
-        }
-
-        function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
-            const words = text.split('');
-            let line = '';
-            let lines = [];
-
-            for (let n = 0; n < words.length; n++) {
-                let testLine = line + words[n];
-                let metrics = context.measureText(testLine);
-                let testWidth = metrics.width;
-                if (testWidth > maxWidth && n > 0) {
-                    lines.push(line);
-                    line = words[n];
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line);
-
-            const totalHeight = lines.length * lineHeight;
-            let startY = y - (totalHeight / 2) + (lineHeight / 2);
-
-            for (let i = 0; i < lines.length; i++) {
-                context.fillText(lines[i], x, startY);
-                startY += lineHeight;
+            for (let y = 0; y < pinballCanvas.height; y += size) {
+                pinballCtx.beginPath();
+                pinballCtx.moveTo(0, y);
+                pinballCtx.lineTo(pinballCanvas.width, y);
+                pinballCtx.stroke();
             }
         }
 
         // --- LIFE CYCLE INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             drawBackgroundStars();
-            syncDatabaseState(); // Initialize first active pool
+            syncDatabaseState(); 
         });
     </script>
 </body>
