@@ -1108,6 +1108,146 @@
             if (streakVal) streakVal.innerText = `0 连击`;
         }
 
+        // --- SHARED UI / UTILITY HELPERS ---
+        function shuffleArray(array) {
+            const result = Array.isArray(array) ? [...array] : [];
+            for (let i = result.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [result[i], result[j]] = [result[j], result[i]];
+            }
+            return result;
+        }
+
+        function updateIndicator() {
+            const indicator = document.getElementById('mode-progress-indicator');
+            if (indicator) {
+                const total = playList && playList.length ? playList.length : 10;
+                indicator.innerText = `已通关: ${sessionCompletedCount} / ${total}`;
+            }
+        }
+
+        function showCustomModal(iconClass, title, message, autoClose = false) {
+            const modal = document.getElementById('custom-modal');
+            const iconContainer = document.getElementById('modal-icon-container');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+
+            if (!modal || !iconContainer || !modalTitle || !modalMessage) return;
+
+            iconContainer.className = "w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl bg-slate-950 border border-slate-800";
+            iconContainer.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            modalTitle.innerText = title || '通知';
+            modalMessage.innerText = message || '';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (autoClose) {
+                window.setTimeout(closeCustomModal, 1600);
+            }
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        function showToast(iconClass, title, message, colorClass = "bg-cyan-500/20 text-cyan-300") {
+            const toast = document.createElement('div');
+            toast.className = `fixed left-1/2 top-20 z-[70] -translate-x-1/2 ${colorClass} border border-white/10 rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md flex items-center gap-3 max-w-[90vw] transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-lg shrink-0"></i>
+                <div class="text-left">
+                    <div class="text-xs font-black text-white">${title || '提示'}</div>
+                    <div class="text-[10px] opacity-90">${message || ''}</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            window.setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                window.setTimeout(() => toast.remove(), 320);
+            }, 1800);
+        }
+
+        function playSynthSound(type = 'shoot') {
+            if (!audioEnabled) return;
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                const ctx = new AudioContextClass();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const now = ctx.currentTime;
+                const presets = {
+                    shoot: [520, 0.05],
+                    hit_correct: [760, 0.08],
+                    hit_wrong: [180, 0.1],
+                    explosion: [90, 0.14]
+                };
+                const [freq, duration] = presets[type] || presets.shoot;
+                osc.type = type === 'hit_wrong' || type === 'explosion' ? 'sawtooth' : 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.55), now + duration);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration);
+                osc.onended = () => ctx.close();
+            } catch (e) {
+                // Audio should never block learning interactions.
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.querySelector('#audio-btn i');
+            if (icon) {
+                icon.className = `fa-solid ${audioEnabled ? 'fa-volume-high text-slate-300' : 'fa-volume-xmark text-rose-400'} text-xs`;
+            }
+            showToast(
+                audioEnabled ? 'fa-volume-high' : 'fa-volume-xmark',
+                audioEnabled ? '音效已开启' : '音效已关闭',
+                audioEnabled ? '点击操作将播放提示音' : '已静音，不影响继续背诵',
+                audioEnabled ? 'bg-cyan-500/20 text-cyan-300' : 'bg-rose-500/20 text-rose-300'
+            );
+        }
+
+        function resetFrequencyHistory(askConfirm = false) {
+            if (askConfirm && !window.confirm('确定要清空当前题库的出现次数记录吗？')) return;
+            const modes = currentMode === 'dashboard'
+                ? ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball']
+                : [currentMode];
+            modes.forEach(modeName => {
+                SafeStorage.removeItem(`politics_shown_counts_v6_${currentDatabase}_${modeName}`);
+                shownCounts[modeName] = {};
+            });
+            updateProgressStats();
+            showToast('fa-arrows-rotate', '频次记录已清空', '可以重新进入各背诵模式练习', 'bg-cyan-500/20 text-cyan-300');
+        }
+
+        function drawBackgroundStars() {
+            const canvas = document.getElementById('bg-stars');
+            if (!canvas || !canvas.getContext) return;
+            const ctx = canvas.getContext('2d');
+            const resize = () => {
+                canvas.width = window.innerWidth || document.documentElement.clientWidth || 800;
+                canvas.height = window.innerHeight || document.documentElement.clientHeight || 600;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < 90; i++) {
+                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.random() * 0.55 + 0.15})`;
+                    ctx.beginPath();
+                    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.4 + 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+            resize();
+            window.addEventListener('resize', resize);
+        }
+
         // --- GENERAL GAME MODE CONTROLLER ---
         function startGameMode(mode) {
             currentMode = mode;
