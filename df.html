@@ -371,7 +371,7 @@
 
             <!-- MODE 3: DRAG & DROP (拖拽归类) -->
             <div id="screen-dragdrop" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
-                <div class="text-center text-[11px] text-slate-500">轻触上方卡片（可点击选中或拖动），归纳到下方正确的政治法学、基本经济或中国精神容器中：</div>
+                <div class="text-center text-[11px] text-slate-500">轻触上方卡片（可点击选中或拖动），归纳到下方正确的分类容器中：</div>
                 
                 <!-- Draggable Items -->
                 <div id="dragdrop-items" class="flex flex-wrap justify-center gap-2 py-2 min-h-[70px]">
@@ -467,23 +467,23 @@
                         加载试题中...
                     </div>
 
-                    <canvas id="pinball-canvas" class="w-full h-full block"></canvas>
+                    <canvas id="pinball-canvas" class="w-full h-full block cursor-crosshair"></canvas>
                 </div>
             </div>
 
             <!-- Screen Footer Stats -->
             <div class="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 z-10 text-[10px] text-slate-500">
-                <span id="game-status-text">安全模式：已开启针对德法核心考点的防重复出现 3 次限定保护。</span>
+                <span id="game-status-text">安全模式：已开启针对当前题库核心考点的防重复出现保护。</span>
                 <div class="flex items-center space-x-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
-                    <span>状态在线</span>
+                    <span>沙盒存储在线</span>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- ANDROID STYLE DATABASE SWITCHER MODAL -->
-    <div id="db-switcher-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
+    <div id="db-switcher-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-5 transform scale-95 transition-transform duration-300">
             <!-- Modal Header -->
             <div class="flex items-center space-x-3 pb-3 border-b border-slate-800">
@@ -541,7 +541,7 @@
     </div>
 
     <!-- Global Custom Modal / Dialog -->
-    <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div id="custom-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
         <div class="glass max-w-sm w-full p-6 rounded-2xl border border-slate-800 text-center space-y-4 shadow-2xl">
             <div id="modal-icon-container" class="w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl"></div>
             <h3 id="modal-title" class="text-base font-bold text-white leading-tight">通知</h3>
@@ -559,6 +559,7 @@
     <script>
         // --- SAFE STANDALONE SANDBOXED LOCAL STORAGE ---
         const SafeStorage = {
+            memoryStore: {},
             getItem(key) {
                 try {
                     return window.localStorage.getItem(key);
@@ -579,12 +580,10 @@
                 } catch (e) {
                     delete this.memoryStore[key];
                 }
-            },
-            memoryStore: {}
+            }
         };
 
         // --- POLYFILL CanvasRenderingContext2D.prototype.roundRect ---
-        // (CRITICAL FIX FOR CRASHING ON OLD SAFARI/WEBVIEWS AND MOBILE IN-APP BROWSERS)
         if (typeof CanvasRenderingContext2D.prototype.roundRect !== 'function') {
             CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
                 if (typeof r === 'undefined') r = 0;
@@ -605,8 +604,8 @@
         // --- POOL A: HIGH FREQUENCY POINTS (76 Questions) ---
         const HIGH_FREQ_QUESTIONS = [
             { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "党与根本制度" },
-            { id: 2, q: "中国特色社会主义的本质要求 and 重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "法治与司法公正" },
-            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全全过程人民民主", cat: "全过程人民民主" },
+            { id: 2, q: "中国特色社会主义的本质要求和重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "法治与司法公正" },
+            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "全过程人民民主" },
             { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "全过程人民民主" },
             { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度、专家咨询制度、重大事项社会公示制度、社会听证制度", cat: "全过程人民民主" },
             { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "全过程人民民主" },
@@ -626,8 +625,8 @@
             { id: 20, q: "谁来设置国家机构？国家机关的工作原则？", a: "由宪法设置国家机构；工作原则是民主集中制原则", cat: "宪法权威与监督" },
             { id: 21, q: "谁监督宪法实施？谁在区域内保障宪法实施？谁有权解释宪法法律？监督有什么意义？", a: "全国人大及其常委会监督；地方人大及其常委会保障；全国人大常委会解释；具有基础性意义", cat: "宪法权威与监督" },
             { id: 22, q: "宪法核心内容？宪法的核心价值追求？", a: "核心内容是基本权利和基本义务；核心价值是规范国家权力运行以保障公民权利", cat: "宪法权威与监督" },
-            { id: 23, q: "我国的根本活动准则？一切组织 and 个人的行为准则？", a: "根本活动准则是宪法；行为准则是宪法、法律、道德、纪律规章", cat: "宪法权威与监督" },
-            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重 and 保障人权、民主集中制原则", cat: "宪法权威与监督" },
+            { id: 23, q: "我国的根本活动准则？一切组织和个人的行为准则？", a: "根本活动准则是宪法；行为准则是宪法、法律、道德、纪律规章", cat: "宪法权威与监督" },
+            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重和保障人权、民主集中制原则", cat: "宪法权威与监督" },
             { id: 25, q: "立法活动的基本要求？", a: "尊重和保障人权", cat: "宪法权威与监督" },
             { id: 26, q: "权力机关？最高权力机关？各自地位？", a: "权力机关：人民代表大会（主导地位）；最高权力机关：全国人民代表大会（最高地位）", cat: "党与根本制度" },
             { id: 27, q: "行政机关？最高行政机关？行政机关与权力机关的关系？", a: "行政机关：人民政府；最高行政机关：国务院；关系：政府是人大的执行机关，由人大产生，对人大负责，受人大监督", cat: "党与根本制度" },
@@ -648,8 +647,8 @@
             { id: 42, q: "自由和法治的关系？", a: "法治标定了自由的界限，法治也是自由的保障", cat: "法治与司法公正" },
             { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由权", cat: "公民权利与义务" },
             { id: 44, q: "社会经济与文化教育权利包括哪些？", a: "劳动权、财产权、物质帮助权、受教育权、文化权利", cat: "公民权利与义务" },
-            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利 and 自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
-            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一 and 民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
+            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利和自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
+            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一和民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
             { id: 47, q: "既是公民基本权利又是基本义务的有哪些？", a: "劳动和受教育", cat: "公民权利与义务" },
             { id: 48, q: "我国解决民族问题的基本原则和基本制度是什么？新型民族关系是什么？", a: "三方针是平等、团结、繁荣；基本制度是民族区域自治制度；关系是平等团结互助和谐", cat: "民族团结与统一" },
             { id: 49, q: "实现祖国完全统一的基本方针/最佳方式？发展两岸关系的政治基础？", a: "方针是“和平统一、一国两制”；政治基础是一个中国原则", cat: "民族团结与统一" },
@@ -662,18 +661,18 @@
             { id: 56, q: "权力正确运行的根本保证？什么监督具有基础性意义？", a: "根本保证是监督；基础性意义是宪法监督", cat: "宪法权威与监督" },
             { id: 57, q: "改革开放的地位如何？", a: "是当代中国最鲜明的特色、决定当代中国命运的关键抉择、实现复兴的关键一招、强国之路", cat: "基本经济与市场" },
             { id: 58, q: "建设现代化国家的首要任务？中国在世界舞台上充当什么力量？", a: "首要任务是高质量发展；中国是影响世界的重要力量", cat: "基本经济与市场" },
-            { id: 59, q: "全面依法治国的根本遵循 and 行动指南？", a: "习近平法治思想", cat: "宪法权威与监督" },
+            { id: 59, q: "全面依法治国的根本遵循和行动指南？", a: "习近平法治思想", cat: "宪法权威与监督" },
             { id: 60, q: "我国“五位一体”总体布局指什么？", a: "经济建设、政治建设、文化建设、社会建设、生态文明建设", cat: "精神文明与文化" },
             { id: 61, q: "高质量发展的五大新发展理念？", a: "创新、协调、绿色、开放、共享", cat: "基本经济与市场" },
-            { id: 62, q: "人民政协的性质、主要职能与两大主题？", a: "性质：中国人民爱国统一战线组织；职能：政治协商、民主监督、参政议政；主题：团结 and 民主", cat: "党与根本制度" },
-            { id: 63, q: "居民委员会 and 村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "全过程人民民主" },
+            { id: 62, q: "人民政协的性质、主要职能与两大主题？", a: "性质：中国人民爱国统一战线组织；职能：政治协商、民主监督、参政议政；主题：团结和民主", cat: "党与根本制度" },
+            { id: 63, q: "居民委员会和村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "全过程人民民主" },
             { id: 64, q: "自由的含义？平等的两层含义与表现？特权性质？", a: "自由是法律范围内的自由；平等是同等对待、不同情况区别对待，表现为权利/机会/规则公平；特权是贬义并坚决反对", cat: "法治与司法公正" },
             { id: 65, q: "公平和正义的价值表现是什么？", a: "公平：权利公平、机会公平、规则公平；正义：权利和义务的平等", cat: "法治与司法公正" },
             { id: 66, q: "中国特色社会主义建设中带有“中心”字眼的两大固定搭配？", a: "经济建设为中心；以人民为中心", cat: "基本经济与市场" },
             { id: 67, q: "有哪些监督主体和对应的监督职责（权）？", a: "公民拥有监督权、人大行使监督权、监察委履行监督首要职责、检察院作为法律监督机关、政协开展民主监督", cat: "全过程人民民主" },
             { id: 68, q: "当今时代的主题？", a: "和平与发展", cat: "世界舞台与外交" },
-            { id: 69, q: "国际竞争的实质是什么？", a: "以经济 and 科技实力为基础 of 综合国力的较量", cat: "基本经济与市场" },
-            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益 of 集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
+            { id: 69, q: "国际竞争的实质是什么？", a: "以经济和科技实力为基础的综合国力的较量", cat: "基本经济与市场" },
+            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益的集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
             { id: 71, q: "国家利益、人民利益、集体利益、个人利益的关系？", a: "根本利益上是一致的", cat: "民族团结与统一" },
             { id: 72, q: "社会秩序和社会规则谁保障谁？", a: "社会规则保障社会秩序", cat: "基本经济与市场" },
             { id: 73, q: "谁有权向法院提起公诉？", a: "人民检察院", cat: "法治与司法公正" },
@@ -703,7 +702,7 @@
             { id: 117, q: "维护社会秩序 and 遵守规则的底线？", a: "自觉守法；恪守道德；维护公平正义；践行行己有耻", cat: "道德修养与社会交往" },
             { id: 118, q: "坚持国家利益至上的多维意义？", a: "维护国家利益；理清个人与国家利益关系（根本一致）；国家人民利益统一；发扬爱国主义精神", cat: "国家利益与国家发展" },
             { id: 119, q: "树立总体国家安全观的基本职责？", a: "维护国家安全、国家荣誉与国家利益；承担时代责任，为祖国成就深感自豪", cat: "国家利益与国家发展" },
-            { id: 120, q: "关心国家发展的精神支撑？", a: "对国家发展充满必胜信心；弘扬 and 培育以爱国主义为核心的民族精神", cat: "国家利益与国家发展" },
+            { id: 120, q: "关心国家发展的精神支撑？", a: "对国家发展充满必胜信心；弘扬和培育以爱国主义为核心的民族精神", cat: "国家利益与国家发展" },
             { id: 121, q: "培养劳动意识，发扬实干精神？", a: "认识劳动光荣的意义；履行基本劳动义务；弘扬爱岗敬业精神；传承实干美德", cat: "国家利益与国家发展" },
             { id: 122, q: "做好职业准备，弘扬敬业精神？", a: "自觉承担职业责任；弘扬爱岗敬业；在劳动和奉献中养成亲社会行为", cat: "国家利益与国家发展" },
             { id: 123, q: "“法律在身边”的法治精髓？", a: "体现法律的特征；体现法律具有规范和保护作用；坚定不移地坚持全面依法治国", cat: "法治观念与宪法实施" },
@@ -722,13 +721,13 @@
             { id: 136, q: "如何追求民主价值？", a: "发展全过程人民民主（社会主义民主是新型民主）；保障人民当家作主，协商民主，积极参与并增强民主意识", cat: "全过程人民民主" },
             { id: 137, q: "如何“建设法治中国”？", a: "坚持科学立法、严格执法、公正司法、全民守法；政府行政权受法律规范；捍卫社会公平正义", cat: "法治观念与宪法实施" },
             { id: 138, q: "如何“守望精神家园”？", a: "传承中华优秀传统文化；坚定文化自信；弘扬民族和时代精神，践行社会主义核心价值观，守护文化安全", cat: "精神文明与文化" },
-            { id: 139, q: "如何“建设美丽中国”？", a: "坚持绿色发展道路与生态文明建设；贯彻保护环境与节约资源的基本国策；生态文明", cat: "国家利益与国家发展" },
-            { id: 140, q: "“坚持中华一家亲”的政治要求？", a: "维护民族团结与祖国统一；践行平等、团结、繁荣方针；一国两制；捍卫国家安全", cat: "民族团结与统一" },
+            { id: 139, q: "如何“建设美丽中国”？", a: "坚持绿色发展道路与生态文明建设；贯彻保护环境与节约资源的基本国策；坚持计划生育", cat: "国家利益与国家发展" },
+            { id: 140, q: "“坚持中华一家亲”的政治要求？", a: "维护民族团结与祖国统一；践行平等、团结、繁荣方针；实行一国两制；捍卫国家利益安全", cat: "民族团结与统一" },
             { id: 141, q: "如何共圆中华民族伟大复兴的“中国梦”？", a: "做自信的中国人；走中国道路，凝聚中国力量，发扬中国精神；坚持五大新发展理念", cat: "国家利益与国家发展" },
             { id: 142, q: "如何理解“同住地球村”的机遇与特征？", a: "积极面对经济全球化与世界开放；共享文化多样性，交流互鉴；提高中华文化的国际影响力", cat: "世界舞台与外交" },
             { id: 143, q: "如何理解“构建人类命运共同体”？", a: "致力于维护世界和平与发展；在世界多极化格局中，坚持合作共赢、互利互惠、共同发展", cat: "世界舞台与外交" },
             { id: 144, q: "如何理解“中国与世界紧相连”？", a: "中国是一个负责任的大国，彰显中国担当，贡献中国智慧与中国方案", cat: "世界舞台与外交" },
-            { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展成果，推动全球共同繁荣", cat: "世界舞台与外交" }
+            { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展机遇和成果，推动全球共同繁荣", cat: "世界舞台与外交" }
         ];
 
         // --- GAME & SYSTEM GLOBAL STATE ---
@@ -742,7 +741,6 @@
         
         let playList = [];
         let completedIds = [];
-        
         let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
         
         let isMoxieInputType = 'type'; 
@@ -750,17 +748,7 @@
         let hasAnsweredCurrent = false; 
         let audioEnabled = true;
 
-        // Retrieve sandboxed shown counts safely
-        function getModeTracker(modeName) {
-            if (!shownCounts) {
-                shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
-            }
-            if (!shownCounts[modeName] || typeof shownCounts[modeName] !== 'object') {
-                shownCounts[modeName] = {};
-            }
-            return shownCounts[modeName];
-        }
-
+        // --- CORE FUNCTIONS (FULLY DEFINED TO PREVENT CRASHES) ---
         function getActiveQuestions() {
             return currentDatabase === 'high_freq' ? HIGH_FREQ_QUESTIONS : CORE_VIEWPOINT_QUESTIONS;
         }
@@ -785,103 +773,92 @@
             });
         }
 
-        function syncDatabaseState() {
-            const keys = getLocalStorageKeys();
-            
-            // Sync completed progress safely
-            try {
-                const savedCompleted = SafeStorage.getItem(keys.completed);
-                completedIds = savedCompleted ? JSON.parse(savedCompleted) : [];
-                if (!Array.isArray(completedIds)) completedIds = [];
-            } catch(e) {
-                completedIds = [];
-            }
-
-            // Sync shown occurrences inside sandboxed memory safely (For all modes)
-            loadAllShownCounts();
-
-            // Interface text bindings
-            const headerTitle = document.getElementById('header-db-title');
-            const headerSub = document.getElementById('header-db-sub');
-            const heroTitle = document.getElementById('hero-db-main-title');
-            const heroTotal = document.getElementById('hero-stat-total');
-
-            const isHighFreq = currentDatabase === 'high_freq';
-
-            if (headerTitle) headerTitle.innerText = isHighFreq ? "德法 76 考点通关" : "德法核心观点通关";
-            if (headerSub) headerSub.innerText = isHighFreq ? "76 Core Knowledge Points Base" : "45 Core Viewpoints Base";
-            if (heroTitle) heroTitle.innerText = isHighFreq ? "76 考点速记" : "45 核心观点关联";
-            if (heroTotal) {
-                heroTotal.innerHTML = isHighFreq 
-                    ? `<i class="fa-solid fa-layer-group text-cyan-400"></i> <span>76 道全量高保真题库</span>`
-                    : `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
-            }
-
-            // Update UI Score displays
-            const gScore = document.getElementById('global-score');
-            const gStreak = document.getElementById('global-streak');
-            if (gScore) gScore.innerText = `${score} 分`;
-            if (gStreak) gStreak.innerText = `${streak} 连击`;
-
-            updateProgressStats();
-            updatePinballLockState();
-        }
-
-        // --- PUSH DYNAMIC LOCK COVER ON PINBALL ---
         function updatePinballLockState() {
             const progressFill = document.getElementById('pinball-unlock-progress');
             const overlay = document.getElementById('pinball-lock-overlay');
             const card = document.getElementById('card-pinball-locked');
 
+            if (!card) return;
+
             if (score >= 1000) {
                 if (overlay) overlay.classList.add('hidden');
-                if (card) {
-                    card.className = "relative group cursor-pointer glass p-4 rounded-xl border border-yellow-500/50 hover:border-yellow-400 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px] neon-glow bg-slate-900/30";
-                }
+                card.className = "relative group cursor-pointer glass p-4 rounded-xl border border-yellow-500/50 hover:border-yellow-400 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px] neon-glow bg-slate-900/30";
             } else {
                 if (overlay) overlay.classList.remove('hidden');
-                if (card) {
-                    card.className = "relative group cursor-not-allowed glass p-4 rounded-xl border border-slate-800/60 overflow-hidden flex flex-col justify-between min-h-[160px] opacity-75";
-                }
+                card.className = "relative group cursor-not-allowed glass p-4 rounded-xl border border-slate-800/60 overflow-hidden flex flex-col justify-between min-h-[160px] opacity-75";
                 const percentage = Math.min((score / 1000) * 100, 100);
                 if (progressFill) progressFill.style.width = `${percentage}%`;
             }
         }
 
-        function tryUnlockPinball() {
-            if (score >= 1000) {
-                startGameMode('pinball');
-            } else {
-                playSynthSound('hit_wrong');
-                showCustomModal('fa-lock text-yellow-500', '模式锁定中', `蓄力极光弹球模式将在您的全局积分达到 1000 分时自动开启！（当前积分：${score}）`, false);
+        function syncDatabaseState() {
+            try {
+                const keys = getLocalStorageKeys();
+                
+                try {
+                    const savedCompleted = SafeStorage.getItem(keys.completed);
+                    completedIds = savedCompleted ? JSON.parse(savedCompleted) : [];
+                    if (!Array.isArray(completedIds)) completedIds = [];
+                } catch(e) {
+                    completedIds = [];
+                }
+
+                // Hydrate all shownCounts arrays to prevent undefined loops
+                loadAllShownCounts();
+
+                const headerTitle = document.getElementById('header-db-title');
+                const headerSub = document.getElementById('header-db-sub');
+                const heroTitle = document.getElementById('hero-db-main-title');
+                const heroTotal = document.getElementById('hero-stat-total');
+
+                const isHighFreq = currentDatabase === 'high_freq';
+
+                if (headerTitle) headerTitle.innerText = isHighFreq ? "德法 76 考点通关" : "德法核心观点通关";
+                if (headerSub) headerSub.innerText = isHighFreq ? "76 Core Knowledge Points Base" : "45 Core Viewpoints Base";
+                if (heroTitle) heroTitle.innerText = isHighFreq ? "76 考点速记" : "45 核心观点关联";
+                if (heroTotal) {
+                    heroTotal.innerHTML = isHighFreq 
+                        ? `<i class="fa-solid fa-layer-group text-cyan-400"></i> <span>76 道全量高保真题库</span>`
+                        : `<i class="fa-solid fa-layer-group text-emerald-400"></i> <span>45 道新核心观点数据库</span>`;
+                }
+
+                const gScore = document.getElementById('global-score');
+                const gStreak = document.getElementById('global-streak');
+                if (gScore) gScore.innerText = `${score} 分`;
+                if (gStreak) gStreak.innerText = `${streak} 连击`;
+
+                updateProgressStats();
+                updatePinballLockState();
+            } catch (err) {
+                console.error("安全恢复机制触发: ", err);
             }
         }
 
-        // Switcher logic
+        // --- SWITCHER LOGIC ---
         function showDatabaseSwitcher() {
             playSynthSound('shoot');
             const switcher = document.getElementById('db-switcher-modal');
-            if (switcher) {
-                const highFreqCard = document.getElementById('db-opt-high_freq');
-                const coreViewpointCard = document.getElementById('db-opt-core_viewpoint');
-                const highFreqInd = document.getElementById('db-opt-indicator-high_freq');
-                const coreViewpointInd = document.getElementById('db-opt-indicator-core_viewpoint');
+            if (!switcher) return;
+            
+            const highFreqCard = document.getElementById('db-opt-high_freq');
+            const coreViewpointCard = document.getElementById('db-opt-core_viewpoint');
+            const highFreqInd = document.getElementById('db-opt-indicator-high_freq');
+            const coreViewpointInd = document.getElementById('db-opt-indicator-core_viewpoint');
 
-                if (currentDatabase === 'high_freq') {
-                    if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-cyan-500 bg-slate-950/80 cursor-pointer transition";
-                    if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
-                    if (highFreqInd) highFreqInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>`;
-                    if (coreViewpointInd) coreViewpointInd.innerHTML = ``;
-                } else {
-                    if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
-                    if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-emerald-500 bg-slate-950/80 cursor-pointer transition";
-                    if (highFreqInd) highFreqInd.innerHTML = ``;
-                    if (coreViewpointInd) coreViewpointInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>`;
-                }
-
-                switcher.classList.remove('hidden');
-                switcher.classList.add('flex');
+            if (currentDatabase === 'high_freq') {
+                if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-cyan-500 bg-slate-950/80 cursor-pointer transition";
+                if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
+                if (highFreqInd) highFreqInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>`;
+                if (coreViewpointInd) coreViewpointInd.innerHTML = ``;
+            } else {
+                if (highFreqCard) highFreqCard.className = "relative flex items-center justify-between p-4 rounded-2xl border border-slate-800 bg-slate-950/40 hover:border-cyan-500/30 cursor-pointer transition";
+                if (coreViewpointCard) coreViewpointCard.className = "relative flex items-center justify-between p-4 rounded-2xl border-2 border-emerald-500 bg-slate-950/80 cursor-pointer transition";
+                if (highFreqInd) highFreqInd.innerHTML = ``;
+                if (coreViewpointInd) coreViewpointInd.innerHTML = `<div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>`;
             }
+
+            switcher.classList.remove('hidden');
+            switcher.classList.add('flex');
         }
 
         function closeDatabaseSwitcher() {
@@ -939,16 +916,9 @@
             currentPool.forEach(q => {
                 aggregatedCounts[q.id] = 0;
                 modesList.forEach(m => {
-                    try {
-                        const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
-                        const raw = SafeStorage.getItem(modeKey);
-                        if (raw) {
-                            const parsed = JSON.parse(raw);
-                            if (parsed && parsed[q.id]) {
-                                aggregatedCounts[q.id] += parsed[q.id];
-                            }
-                        }
-                    } catch(e) {}
+                    if (shownCounts[m] && shownCounts[m][q.id]) {
+                        aggregatedCounts[q.id] += shownCounts[m][q.id];
+                    }
                 });
 
                 const count = aggregatedCounts[q.id];
@@ -967,120 +937,66 @@
             if (freqExhausted) freqExhausted.innerText = exhausted;
         }
 
-
-
-        // --- SHARED UI / UTILITY HELPERS ---
-        function shuffleArray(array) {
-            const result = Array.isArray(array) ? [...array] : [];
-            for (let i = result.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [result[i], result[j]] = [result[j], result[i]];
+        function resetFrequencyHistory(showModal = false) {
+            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'];
+            modesList.forEach(m => {
+                try {
+                    const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
+                    SafeStorage.removeItem(modeKey);
+                } catch(e) {}
+                shownCounts[m] = {};
+            });
+            
+            updateProgressStats();
+            if (showModal) {
+                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', `已清空当前题库在所有背诵方式下的记忆出现频次记录。`, true);
             }
-            return result;
         }
 
-        function updateIndicator() {
-            const indicator = document.getElementById('mode-progress-indicator');
-            if (!indicator) return;
-            const total = Math.max(playList.length || 10, sessionCompletedCount || 0);
-            indicator.innerText = `已通关: ${sessionCompletedCount} / ${total}`;
-        }
-
-        function showCustomModal(iconClass, title, message, autoClose = false) {
+        function showCustomModal(icon, title, msg, isSuccess = true) {
             const modal = document.getElementById('custom-modal');
             const iconContainer = document.getElementById('modal-icon-container');
-            const modalTitle = document.getElementById('modal-title');
-            const modalMessage = document.getElementById('modal-message');
-            if (!modal || !iconContainer || !modalTitle || !modalMessage) return;
-            iconContainer.className = "w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl bg-slate-950 border border-slate-800";
-            iconContainer.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
-            modalTitle.innerText = title || '通知';
-            modalMessage.innerText = message || '';
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            if (autoClose) window.setTimeout(closeCustomModal, 1600);
+            const mTitle = document.getElementById('modal-title');
+            const mMsg = document.getElementById('modal-message');
+            
+            if (iconContainer && mTitle && mMsg && modal) {
+                iconContainer.className = `w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl ${isSuccess ? 'bg-cyan-500/10 text-cyan-400' : 'bg-rose-500/10 text-rose-400'}`;
+                iconContainer.innerHTML = `<i class="${icon}"></i>`;
+                mTitle.innerText = title;
+                mMsg.innerText = msg;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
         }
 
         function closeCustomModal() {
             const modal = document.getElementById('custom-modal');
-            if (!modal) return;
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
         }
 
-        function showToast(iconClass, title, message, colorClass = "bg-cyan-500/20 text-cyan-300") {
+        function showToast(icon, title, text, styleClasses) {
             const toast = document.createElement('div');
-            toast.className = `fixed left-1/2 top-20 z-[70] -translate-x-1/2 ${colorClass} border border-white/10 rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md flex items-center gap-3 max-w-[90vw] transition-all duration-300`;
-            toast.innerHTML = `<i class="fa-solid ${iconClass} text-lg shrink-0"></i><div class="text-left"><div class="text-xs font-black text-white">${title || '提示'}</div><div class="text-[10px] opacity-90">${message || ''}</div></div>`;
+            toast.className = `fixed bottom-4 right-4 ${styleClasses} px-3.5 py-2.5 rounded-xl border border-slate-700/40 flex items-center space-x-2 z-50 shadow-lg pointer-events-none transform translate-y-8 opacity-0 transition-all duration-300 text-xs`;
+            toast.innerHTML = `
+                <i class="${icon}"></i>
+                <div>
+                    <h4 class="font-bold">${title}</h4>
+                    <p class="text-[10px] opacity-75">${text}</p>
+                </div>
+            `;
             document.body.appendChild(toast);
-            window.setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-2');
-                window.setTimeout(() => toast.remove(), 320);
-            }, 1800);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-8', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-8', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
         }
 
-        function playSynthSound(type = 'shoot') {
-            if (!audioEnabled) return;
-            try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
-                const ctx = new AudioContextClass();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                const now = ctx.currentTime;
-                const presets = { shoot: [520, 0.05], hit_correct: [760, 0.08], hit_wrong: [180, 0.1], explosion: [90, 0.14] };
-                const [freq, duration] = presets[type] || presets.shoot;
-                osc.type = type === 'hit_wrong' || type === 'explosion' ? 'sawtooth' : 'sine';
-                osc.frequency.setValueAtTime(freq, now);
-                osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.55), now + duration);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + duration);
-                osc.onended = () => ctx.close();
-            } catch (e) {}
-        }
-
-        function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            const icon = document.querySelector('#audio-btn i');
-            if (icon) icon.className = `fa-solid ${audioEnabled ? 'fa-volume-high text-slate-300' : 'fa-volume-xmark text-rose-400'} text-xs`;
-            showToast(audioEnabled ? 'fa-volume-high' : 'fa-volume-xmark', audioEnabled ? '音效已开启' : '音效已关闭', audioEnabled ? '点击操作将播放提示音' : '已静音，不影响继续背诵', audioEnabled ? 'bg-cyan-500/20 text-cyan-300' : 'bg-rose-500/20 text-rose-300');
-        }
-
-        function resetFrequencyHistory(askConfirm = false) {
-            if (askConfirm && !window.confirm('确定要清空当前题库的出现次数记录吗？')) return;
-            const modes = currentMode === 'dashboard' ? ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'] : [currentMode];
-            modes.forEach(modeName => {
-                SafeStorage.removeItem(`politics_shown_counts_v6_${currentDatabase}_${modeName}`);
-                shownCounts[modeName] = {};
-            });
-            updateProgressStats();
-            showToast('fa-arrows-rotate', '频次记录已清空', '可以重新进入各背诵模式练习', 'bg-cyan-500/20 text-cyan-300');
-        }
-
-        function drawBackgroundStars() {
-            const canvas = document.getElementById('bg-stars');
-            if (!canvas || !canvas.getContext) return;
-            const ctx = canvas.getContext('2d');
-            const resize = () => {
-                canvas.width = window.innerWidth || document.documentElement.clientWidth || 800;
-                canvas.height = window.innerHeight || document.documentElement.clientHeight || 600;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < 90; i++) {
-                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.random() * 0.55 + 0.15})`;
-                    ctx.beginPath();
-                    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.4 + 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            };
-            resize();
-            window.addEventListener('resize', resize);
-        }
-
-        // --- SCORE persistent setters ---
         function saveGlobalScores() {
             SafeStorage.setItem('politics_score_v6', score.toString());
             SafeStorage.setItem('politics_streak_v6', streak.toString());
@@ -1108,162 +1024,48 @@
             if (streakVal) streakVal.innerText = `0 连击`;
         }
 
-        // --- SHARED UI / UTILITY HELPERS ---
-        function shuffleArray(array) {
-            const result = Array.isArray(array) ? [...array] : [];
-            for (let i = result.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [result[i], result[j]] = [result[j], result[i]];
-            }
-            return result;
-        }
-
         function updateIndicator() {
             const indicator = document.getElementById('mode-progress-indicator');
             if (indicator) {
-                const total = playList && playList.length ? playList.length : 10;
-                indicator.innerText = `已通关: ${sessionCompletedCount} / ${total}`;
+                indicator.innerHTML = `已通关: <span class="text-cyan-400 font-extrabold text-xs">${sessionCompletedCount}</span> / 10`;
             }
         }
 
-        function showCustomModal(iconClass, title, message, autoClose = false) {
-            const modal = document.getElementById('custom-modal');
-            const iconContainer = document.getElementById('modal-icon-container');
-            const modalTitle = document.getElementById('modal-title');
-            const modalMessage = document.getElementById('modal-message');
-
-            if (!modal || !iconContainer || !modalTitle || !modalMessage) return;
-
-            iconContainer.className = "w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-2xl bg-slate-950 border border-slate-800";
-            iconContainer.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
-            modalTitle.innerText = title || '通知';
-            modalMessage.innerText = message || '';
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            if (autoClose) {
-                window.setTimeout(closeCustomModal, 1600);
-            }
-        }
-
-        function closeCustomModal() {
-            const modal = document.getElementById('custom-modal');
-            if (modal) {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }
-        }
-
-        function showToast(iconClass, title, message, colorClass = "bg-cyan-500/20 text-cyan-300") {
-            const toast = document.createElement('div');
-            toast.className = `fixed left-1/2 top-20 z-[70] -translate-x-1/2 ${colorClass} border border-white/10 rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md flex items-center gap-3 max-w-[90vw] transition-all duration-300`;
-            toast.innerHTML = `
-                <i class="fa-solid ${iconClass} text-lg shrink-0"></i>
-                <div class="text-left">
-                    <div class="text-xs font-black text-white">${title || '提示'}</div>
-                    <div class="text-[10px] opacity-90">${message || ''}</div>
-                </div>
-            `;
-            document.body.appendChild(toast);
-            window.setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-2');
-                window.setTimeout(() => toast.remove(), 320);
-            }, 1800);
-        }
-
-        function playSynthSound(type = 'shoot') {
-            if (!audioEnabled) return;
+        function trackOccurrence(qId) {
+            if (!shownCounts[currentMode]) shownCounts[currentMode] = {};
+            shownCounts[currentMode][qId] = (shownCounts[currentMode][qId] || 0) + 1;
             try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
-                const ctx = new AudioContextClass();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                const now = ctx.currentTime;
-                const presets = {
-                    shoot: [520, 0.05],
-                    hit_correct: [760, 0.08],
-                    hit_wrong: [180, 0.1],
-                    explosion: [90, 0.14]
-                };
-                const [freq, duration] = presets[type] || presets.shoot;
-                osc.type = type === 'hit_wrong' || type === 'explosion' ? 'sawtooth' : 'sine';
-                osc.frequency.setValueAtTime(freq, now);
-                osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.55), now + duration);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + duration);
-                osc.onended = () => ctx.close();
-            } catch (e) {
-                // Audio should never block learning interactions.
-            }
-        }
-
-        function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            const icon = document.querySelector('#audio-btn i');
-            if (icon) {
-                icon.className = `fa-solid ${audioEnabled ? 'fa-volume-high text-slate-300' : 'fa-volume-xmark text-rose-400'} text-xs`;
-            }
-            showToast(
-                audioEnabled ? 'fa-volume-high' : 'fa-volume-xmark',
-                audioEnabled ? '音效已开启' : '音效已关闭',
-                audioEnabled ? '点击操作将播放提示音' : '已静音，不影响继续背诵',
-                audioEnabled ? 'bg-cyan-500/20 text-cyan-300' : 'bg-rose-500/20 text-rose-300'
-            );
-        }
-
-        function resetFrequencyHistory(askConfirm = false) {
-            if (askConfirm && !window.confirm('确定要清空当前题库的出现次数记录吗？')) return;
-            const modes = currentMode === 'dashboard'
-                ? ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball']
-                : [currentMode];
-            modes.forEach(modeName => {
-                SafeStorage.removeItem(`politics_shown_counts_v6_${currentDatabase}_${modeName}`);
-                shownCounts[modeName] = {};
-            });
+                const key = `politics_shown_counts_v6_${currentDatabase}_${currentMode}`;
+                SafeStorage.setItem(key, JSON.stringify(shownCounts[currentMode]));
+            } catch(e) {}
             updateProgressStats();
-            showToast('fa-arrows-rotate', '频次记录已清空', '可以重新进入各背诵模式练习', 'bg-cyan-500/20 text-cyan-300');
-        }
-
-        function drawBackgroundStars() {
-            const canvas = document.getElementById('bg-stars');
-            if (!canvas || !canvas.getContext) return;
-            const ctx = canvas.getContext('2d');
-            const resize = () => {
-                canvas.width = window.innerWidth || document.documentElement.clientWidth || 800;
-                canvas.height = window.innerHeight || document.documentElement.clientHeight || 600;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < 90; i++) {
-                    ctx.fillStyle = `rgba(34, 211, 238, ${Math.random() * 0.55 + 0.15})`;
-                    ctx.beginPath();
-                    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 1.4 + 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            };
-            resize();
-            window.addEventListener('resize', resize);
         }
 
         // --- GENERAL GAME MODE CONTROLLER ---
+        function tryUnlockPinball() {
+            if (score >= 1000) {
+                startGameMode('pinball');
+            } else {
+                playSynthSound('hit_wrong');
+                showCustomModal('fa-lock text-yellow-500', '模式锁定中', `蓄力极光弹球模式将在您的全局积分达到 1000 分时自动开启！（当前积分：${score}）`, false);
+            }
+        }
+
         function startGameMode(mode) {
             currentMode = mode;
             syncDatabaseState(); 
 
             const currentPool = getActiveQuestions();
-            const modeTracker = getModeTracker(mode);
+            const modeTracker = shownCounts[mode] || {};
             let availablePool = currentPool.filter(q => (modeTracker[q.id] || 0) < 3);
 
             if (availablePool.length < 10) {
                 showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `由于本模式下未满 3 次练习的考点不足 10 道，系统已自动重置该分类下的频次记录以保证流畅学习！`, true);
-                try {
-                    const keys = getLocalStorageKeys();
-                    SafeStorage.removeItem(keys.shown);
-                } catch(e) {}
                 shownCounts[mode] = {};
+                try {
+                    const key = `politics_shown_counts_v6_${currentDatabase}_${mode}`;
+                    SafeStorage.removeItem(key);
+                } catch(e) {}
                 availablePool = currentPool;
             }
 
@@ -1376,28 +1178,22 @@
         }
 
         function toggleMoxieInputMode(mode) {
-            isMoxieInputType = mode === 'card' ? 'card' : 'type';
-            const typeBtn = document.getElementById('btn-moxie-type');
-            const cardBtn = document.getElementById('btn-moxie-card');
-            const typingArea = document.getElementById('moxie-typing-area');
-            const cardArea = document.getElementById('moxie-card-area');
-            const cardControls = document.getElementById('moxie-card-controls');
-            if (typeBtn) typeBtn.className = isMoxieInputType === 'type' ? "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white" : "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
-            if (cardBtn) cardBtn.className = isMoxieInputType === 'card' ? "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white" : "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
-            if (typingArea) typingArea.classList.toggle('hidden', isMoxieInputType !== 'type');
-            if (cardArea) cardArea.classList.toggle('hidden', isMoxieInputType !== 'card');
-            if (cardControls) cardControls.classList.add('hidden');
-            cardFlipped = false;
-            const flipCard = document.getElementById('moxie-flip-card');
-            if (flipCard) flipCard.innerHTML = `<div class="text-slate-400 font-semibold italic text-[11px]">轻触翻面 显现正确答案</div>`;
-            playSynthSound('shoot');
+            isMoxieInputType = mode;
+            const btnType = document.getElementById('btn-moxie-type');
+            const btnCard = document.getElementById('btn-moxie-card');
+            
+            if (mode === 'type') {
+                btnType.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white";
+                btnCard.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
+            } else {
+                btnCard.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-cyan-500 bg-cyan-600 text-white";
+                btnType.className = "px-3 py-1 rounded-lg text-xs font-semibold transition border border-slate-700 bg-slate-900 text-slate-300";
+            }
+            initMoxieQuestion();
         }
 
-        function handleMoxieKeyDown(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                submitMoxieAnswer();
-            }
+        function handleMoxieKeyDown(e) {
+            if (e.key === 'Enter') submitMoxieAnswer();
         }
 
         function submitMoxieAnswer() {
@@ -1439,14 +1235,14 @@
             refAnswer.innerText = currentItem.a;
 
             if (isCorrect) {
-                statusText.innerText = "🎉 回答正确！核心关键词匹配度极高。";
+                statusText.innerText = "🎉 回答正确！关键词匹配度极高。";
                 statusText.className = "text-xs font-black text-emerald-400";
                 addScore(50);
                 addStreak();
                 playSynthSound('hit_correct');
                 markQuestionCompleted(currentItem.id);
             } else {
-                statusText.innerText = "💡 正确规范参考答案如下：";
+                statusText.innerText = "💡 别急，考点规范答案如下：";
                 statusText.className = "text-xs font-black text-cyan-400";
                 breakStreak();
                 playSynthSound('hit_wrong');
@@ -1479,7 +1275,7 @@
             } else {
                 breakStreak();
                 playSynthSound('hit_wrong');
-                showToast("fa-circle-xmark", "纳入错题本", "重点高频复习", "bg-rose-500/20 text-rose-300");
+                showToast("fa-circle-xmark", "纳入错题本", "后期重点抽测", "bg-rose-500/20 text-rose-300");
                 markQuestionCompleted(currentItem.id);
             }
             nextMoxieQuestion();
@@ -1648,7 +1444,7 @@
             initMatchingGame();
         }
 
-        // --- MODE 3: DRAG & DROP GAME (DYNAMIC ADAPTIVE CATEGORIES) ---
+        // --- MODE 3: DRAG & DROP GAME ---
         let dragDropSubset = [];
         let dynamicZones = []; 
 
@@ -1663,7 +1459,7 @@
 
             dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
             if (dragDropSubset.length === 0) {
-                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
+                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！卡片全部分类准确。');
                 addScore(150);
                 exitGameMode();
                 return;
@@ -1759,7 +1555,7 @@
             activeSelectedCardId = cardId;
             const card = document.getElementById(`dd-card-${cardId}`);
             if (card) card.classList.add('border-pink-500', 'bg-pink-950/20');
-            showToast("fa-arrows-to-dot", "选中考点答案", "轻触下方对应的动态分类盒即可归位", "bg-pink-500/20 text-pink-300");
+            showToast("fa-arrows-to-dot", "选中考点答案", "轻触下方对应的分类盒即可归位", "bg-pink-500/20 text-pink-300");
         }
 
         function dropCardInZone(cardId, zoneId) {
@@ -2313,7 +2109,6 @@
         let pinballParticles = [];
         let pinballCurrentItem = null;
 
-        // Charging mechanics
         let pinballIsCharging = false;
         let pinballCharge = 0;
 
@@ -2325,7 +2120,7 @@
             pinballCanvas.width = pinballCanvas.parentElement.clientWidth;
             pinballCanvas.height = pinballCanvas.parentElement.clientHeight;
 
-            // Events mapping (Mouse + Touch drag glide)
+            // Events mapping
             pinballCanvas.addEventListener('mousemove', handlePinballMouseMove);
             pinballCanvas.addEventListener('touchmove', handlePinballTouchMove);
             pinballCanvas.addEventListener('mousedown', handlePinballMouseDown);
@@ -2528,7 +2323,8 @@
 
                 if (pinballBall.y > pinballCanvas.height) {
                     pinballLives--;
-                    document.getElementById('pinball-lives').innerText = pinballLives;
+                    const liveDisp = document.getElementById('pinball-lives');
+                    if (liveDisp) liveDisp.innerText = pinballLives;
                     playSynthSound('hit_wrong');
                     showToast("fa-heart-broken text-rose-500", "弹球失落！", `生命剩余: ${pinballLives}`, "bg-rose-500/20 text-rose-300");
 
@@ -2569,7 +2365,8 @@
                             playSynthSound('hit_correct');
 
                             pinballScoreVal += 100;
-                            document.getElementById('pinball-hud-score').innerText = `当前得分: ${pinballScoreVal}`;
+                            const pScore = document.getElementById('pinball-hud-score');
+                            if (pScore) pScore.innerText = `当前得分: ${pinballScoreVal}`;
                             showToast("fa-circle-check text-emerald-400", "击中正确答案！", "+100 分", "bg-emerald-500/20 text-emerald-300");
 
                             markQuestionCompleted(pinballCurrentItem.id);
@@ -2586,7 +2383,8 @@
                             createPinballParticles(pinballBall.x, pinballBall.y, '#f43f5e');
                             playSynthSound('hit_wrong');
                             pinballScoreVal = Math.max(0, pinballScoreVal - 30);
-                            document.getElementById('pinball-hud-score').innerText = `当前得分: ${pinballScoreVal}`;
+                            const pScore = document.getElementById('pinball-hud-score');
+                            if (pScore) pScore.innerText = `当前得分: ${pinballScoreVal}`;
                             showToast("fa-circle-xmark text-rose-500", "击碎错误答案！", "分数扣减 30", "bg-rose-500/20 text-rose-300");
                         }
                     }
@@ -2646,7 +2444,6 @@
             }
         }
 
-        // Keyboard navigation fallback
         window.addEventListener('keydown', (e) => {
             if (!pinballGameActive || !pinballCanvas) return;
             if (e.key === 'ArrowLeft') {
@@ -2660,10 +2457,41 @@
             }
         });
 
+        function wrapCanvasText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let line = '';
+            let lines = [];
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n];
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n];
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            const totalHeight = lines.length * lineHeight;
+            let startY = y - (totalHeight / 2) + (lineHeight / 2);
+
+            for (let i = 0; i < lines.length; i++) {
+                context.fillText(lines[i], x, startY);
+                startY += lineHeight;
+            }
+        }
+
         // --- LIFE CYCLE INIT ---
         window.addEventListener('DOMContentLoaded', () => {
-            drawBackgroundStars();
-            syncDatabaseState(); 
+            try {
+                drawBackgroundStars();
+                syncDatabaseState(); 
+            } catch (err) {
+                console.error("Initialization error heavily sandboxed: ", err);
+            }
         });
     </script>
 </body>
