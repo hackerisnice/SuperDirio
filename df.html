@@ -51,7 +51,7 @@
             75% { transform: translateX(4px); }
         }
         .animate-shake {
-            animation: shake 0.2s ease-in-out infinite;
+            animation: shake 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -62,7 +62,7 @@
 
     <!-- Top Navigation -->
     <header class="glass sticky top-0 z-50 px-4 py-3 border-b border-slate-800/80 flex justify-between items-center">
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="exitGameMode()">
             <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center neon-glow animate-pulse">
                 <i class="fa-solid fa-graduation-cap text-lg text-white"></i>
             </div>
@@ -102,7 +102,7 @@
                         全能冲刺 <span class="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">76 考点速记</span>
                     </h2>
                     <p class="text-slate-400 max-w-lg text-xs md:text-sm leading-relaxed">
-                        严密监测每个知识点的练习次数。**每个考点在五种背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保每分每秒都在记忆未知考点。
+                        系统严密监测每个知识点在不同模式的练习次数。**确保每个考点在单一背诵方式内最多仅出现 3 次**，强力阻击无效重复！确保高频自测效率。
                     </p>
                     <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-1">
                         <div class="flex items-center space-x-1.5 text-[11px] text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
@@ -111,7 +111,7 @@
                         </div>
                         <div class="flex items-center space-x-1.5 text-[11px] text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
                             <i class="fa-solid fa-arrows-spin text-teal-400"></i>
-                            <span>≤ 3次防重复精准池</span>
+                            <span>独立模式≤ 3次防重复过滤</span>
                         </div>
                     </div>
                 </div>
@@ -119,33 +119,33 @@
                 <!-- Live stats box -->
                 <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 w-full md:w-80 text-center space-y-4 z-10">
                     <div>
-                        <div class="text-xs text-slate-400 font-semibold mb-1">熟背通关进度 (已完成过1次)</div>
+                        <div class="text-xs text-slate-400 font-semibold mb-1">熟背通关进度 (已熟记考点)</div>
                         <div class="text-3xl font-black text-cyan-400 gaming-font" id="progress-percent">0%</div>
                         <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden mt-2.5 border border-slate-800/80">
                             <div id="progress-bar-fill" class="bg-gradient-to-r from-cyan-400 to-indigo-500 h-full w-0 transition-all duration-500"></div>
                         </div>
                         <div class="text-[10px] text-slate-400 mt-2 flex justify-between">
-                            <span>已熟记：<span id="stats-passed" class="text-cyan-300 font-bold">0</span> 道</span>
-                            <span>未熟记：<span id="stats-remaining" class="text-slate-500">76</span> 道</span>
+                            <span>已掌握：<span id="stats-passed" class="text-cyan-300 font-bold">0</span> 道</span>
+                            <span>未解锁：<span id="stats-remaining" class="text-slate-500">76</span> 道</span>
                         </div>
                     </div>
                     <!-- Frequency threshold stats -->
                     <div class="border-t border-slate-900 pt-3 text-left">
                         <div class="flex justify-between items-center text-xs text-slate-400">
-                            <span>高频过滤状态</span>
-                            <button onclick="resetFrequencyHistory(true)" class="text-[10px] text-rose-400 hover:text-rose-300 underline transition">重置重复次数</button>
+                            <span>模式防重复池统计</span>
+                            <button onclick="resetFrequencyHistory(true)" class="text-[10px] text-rose-400 hover:text-rose-300 underline transition">清空本模式次数</button>
                         </div>
-                        <div class="mt-2 grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                        <div id="freq-counters-area" class="mt-2 grid grid-cols-3 gap-1.5 text-center text-[10px]">
                             <div class="bg-slate-900/50 p-1.5 rounded border border-slate-800">
                                 <div class="text-slate-400">新考点</div>
                                 <div class="font-bold text-cyan-300 mt-0.5" id="freq-fresh">76</div>
                             </div>
                             <div class="bg-slate-900/50 p-1.5 rounded border border-slate-800">
-                                <div class="text-slate-400">复习中</div>
+                                <div class="text-slate-400">已现1-2次</div>
                                 <div class="font-bold text-yellow-500 mt-0.5" id="freq-reviewing">0</div>
                             </div>
                             <div class="bg-slate-900/50 p-1.5 rounded border border-slate-800">
-                                <div class="text-slate-400">已达3次</div>
+                                <div class="text-slate-400">已现3次</div>
                                 <div class="font-bold text-rose-400 mt-0.5" id="freq-exhausted">0</div>
                             </div>
                         </div>
@@ -205,7 +205,7 @@
                         <div>
                             <h3 class="font-bold text-sm text-white group-hover:text-indigo-400 transition">拖拽归类</h3>
                             <p class="text-slate-400 text-[11px] mt-1 leading-relaxed">
-                                抓取核心法理名词与国家制度。拖入相应体系盒子，理清大政治学科架构。
+                                精准提取卡片分类，动态自适应生成相应类别的归类容器，杜绝任何分流不合理。
                             </p>
                         </div>
                     </div>
@@ -267,7 +267,7 @@
                 </button>
                 <div class="flex items-center space-x-2 text-slate-300">
                     <span id="screen-title" class="gaming-font tracking-wider text-cyan-400 text-xs md:text-sm">模式加载中</span>
-                    <span id="mode-progress-indicator" class="text-[10px] bg-slate-950 border border-slate-800 px-2 py-0.5 rounded text-slate-400">0/10</span>
+                    <span id="mode-progress-indicator" class="text-[10px] bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded text-cyan-300 font-bold">已通关: 0 / 10</span>
                 </div>
             </div>
 
@@ -290,18 +290,18 @@
                         <button onclick="submitMoxieAnswer()" class="absolute right-2 top-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 transition text-white px-4 py-1.5 rounded-lg text-xs font-bold">提交</button>
                     </div>
                     <div class="flex justify-between items-center text-[11px] text-slate-500 px-2">
-                        <span>支持关键词核心匹配</span>
-                        <button onclick="showMoxieAnswer()" class="hover:text-cyan-400 underline">揭晓答案并标记学过</button>
+                        <span>支持核心词汇智能模糊匹配</span>
+                        <button onclick="showMoxieAnswer()" class="hover:text-cyan-400 underline">揭晓答案并标记已背</button>
                     </div>
                 </div>
 
                 <!-- Input area (Option B: Flip card self evaluation) -->
                 <div id="moxie-card-area" class="hidden max-w-md mx-auto w-full flex flex-col items-center gap-4 pb-6">
                     <div id="moxie-flip-card" onclick="flipMoxieCard()" class="w-full h-36 bg-gradient-to-br from-slate-900/60 to-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-center p-5 text-center cursor-pointer transform transition-all duration-300 hover:border-cyan-500">
-                        <div id="moxie-card-content" class="text-slate-400 font-semibold italic text-xs">点击卡片 展现参考标准答案</div>
+                        <div id="moxie-card-content" class="text-slate-400 font-semibold italic text-xs">点击卡片 展现标准答案</div>
                     </div>
                     <div id="moxie-card-controls" class="flex gap-3 w-full justify-center hidden">
-                        <button onclick="evaluateCard(false)" class="flex-1 bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500 text-rose-200 font-bold py-2.5 rounded-xl transition active:scale-95 text-xs">不会/记错</button>
+                        <button onclick="evaluateCard(false)" class="flex-1 bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500 text-rose-200 font-bold py-2.5 rounded-xl transition active:scale-95 text-xs">记错/不会</button>
                         <button onclick="evaluateCard(true)" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500 text-emerald-200 font-bold py-2.5 rounded-xl transition active:scale-95 text-xs">我记对了</button>
                     </div>
                 </div>
@@ -309,8 +309,8 @@
                 <!-- Correct Answer Showcase Overlay (Not Modal) -->
                 <div id="moxie-feedback" class="hidden max-w-xl mx-auto w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center space-y-2">
                     <div id="moxie-status-text" class="text-sm font-bold">正确！</div>
-                    <div class="text-[10px] text-slate-500">正确参考答案：</div>
-                    <div id="moxie-ref-answer" class="text-sm font-bold text-white leading-relaxed"></div>
+                    <div class="text-[10px] text-slate-500">标准参考答案：</div>
+                    <div id="moxie-ref-answer" class="text-xs font-bold text-slate-300 leading-relaxed bg-slate-900 p-3 rounded-lg border border-slate-800/80"></div>
                     <button onclick="nextMoxieQuestion()" class="mt-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-1.5 rounded-xl text-xs transition">继续下一题</button>
                 </div>
             </div>
@@ -328,14 +328,14 @@
                     <svg id="matching-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></svg>
                 </div>
                 <div class="flex justify-between items-center pt-4 border-t border-slate-800/60 text-[11px] text-slate-500">
-                    <span>当前配对剩余：<span id="matching-remain" class="text-slate-300 font-bold">0</span> 对</span>
-                    <button onclick="reloadMatching()" class="text-cyan-400 hover:underline text-xs"><i class="fa-solid fa-arrows-rotate mr-1"></i>重组此关</button>
+                    <span>本轮待消除：<span id="matching-remain" class="text-slate-300 font-bold">0</span> 对</span>
+                    <button onclick="reloadMatching()" class="text-cyan-400 hover:underline text-xs"><i class="fa-solid fa-arrows-rotate mr-1"></i>重新洗牌此关</button>
                 </div>
             </div>
 
             <!-- MODE 3: DRAG & DROP (拖拽归类) -->
             <div id="screen-dragdrop" class="hidden flex-grow flex flex-col justify-between gap-6 z-10">
-                <div class="text-center text-[11px] text-slate-500">轻触上方或拖放核心答案卡片，归纳到下方正确的法学、宪制、政治或经济概念容器中：</div>
+                <div class="text-center text-[11px] text-slate-500">轻触上方卡片（可点击选中或拖动），归纳到下方正确的政治法学、基本经济或中国精神容器中：</div>
                 
                 <!-- Draggable Items -->
                 <div id="dragdrop-items" class="flex flex-wrap justify-center gap-2 py-2 min-h-[70px]">
@@ -343,19 +343,19 @@
                 </div>
 
                 <!-- Drop Zones / Targets -->
-                <div id="dragdrop-zones" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div id="dragdrop-zones" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- Target Boxes Generated Dynamically -->
                 </div>
 
                 <div class="flex justify-end pt-2 border-t border-slate-800/40">
-                    <button onclick="checkDragDropResult()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition">核对归类结果</button>
+                    <button onclick="checkDragDropResult()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition">核对归类卡片</button>
                 </div>
             </div>
 
             <!-- MODE 4: MCQ QUIZ (选择题竞速) -->
             <div id="screen-quiz" class="hidden flex-grow flex flex-col justify-between gap-4 z-10">
                 <div class="space-y-3 max-w-2xl mx-auto w-full text-center py-2">
-                    <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full border border-yellow-500/30">模式 D · 单项选择竞速</span>
+                    <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full border border-yellow-500/30 font-semibold">模式 D · 单项选择竞速</span>
                     <h2 id="quiz-question" class="text-base md:text-lg font-bold leading-relaxed text-white"></h2>
                 </div>
 
@@ -379,10 +379,10 @@
                         </div>
                         <h3 class="text-lg font-black text-white gaming-font tracking-wider">3D 极光射击考场</h3>
                         <p class="text-slate-400 text-xs max-w-xs leading-relaxed">
-                            目标问题显示在顶部栏中。空中会漂浮高亮蓝色的高能气泡（尺寸调整为更紧凑的 38px）。瞄准并开火射击唯一的正确答案气球！
+                            空中会漂浮高亮蓝色的精美高能气泡（38px 灵巧尺寸）。瞄准并射击唯一的正确答案气球！
                         </p>
                         <div class="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 p-2 rounded-lg">
-                            击中正确目标：+100 分 | 误射：扣除生命值。
+                            射中正确：+100 分 | 误伤：扣减生命值。
                         </div>
                         <button onclick="startFPSGame()" class="bg-gradient-to-r from-pink-600 to-cyan-600 hover:from-pink-500 hover:to-cyan-500 text-white font-black py-2 px-6 rounded-xl text-xs tracking-wider transition active:scale-95">
                             开启考场对决
@@ -398,13 +398,13 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <div id="fps-score" class="text-sm font-black text-cyan-400 gaming-font">FPS得分: 0</div>
+                            <div id="fps-score" class="text-xs font-black text-cyan-400 gaming-font">FPS得分: 0</div>
                         </div>
                     </div>
 
                     <!-- Question Bar -->
                     <div class="absolute top-10 left-2 right-2 p-2 bg-slate-900/95 border border-slate-800 rounded-xl z-20 text-center text-xs font-semibold text-cyan-300 pointer-events-none" id="fps-hud-question">
-                        点击下方开启射击考场
+                        点击下方开启射击
                     </div>
 
                     <!-- Gun Canvas Overlay -->
@@ -414,10 +414,10 @@
 
             <!-- Screen Footer Stats -->
             <div class="flex justify-between items-center pt-3 border-t border-slate-800/80 mt-3 z-10 text-[10px] text-slate-500">
-                <span id="game-status-text">系统：所有试题均遵循最多出现 3 次的防护算法。</span>
+                <span id="game-status-text">安全模式：已开启针对 76 考点的防重复出现 3 次限定保护。</span>
                 <div class="flex items-center space-x-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
-                    <span>防护状态已开启</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
+                    <span>状态在线</span>
                 </div>
             </div>
         </div>
@@ -440,99 +440,105 @@
 
     <!-- Audio Synthesis Utility & Game Logic Scripts -->
     <script>
-        // --- COMPLETE 76 QUESTIONS FULL HIGH-FIDELITY DATABASE ---
+        // --- COMPLETE 76 QUESTIONS FULL HIGH-FIDELITY DATABASE (METICULOUSLY MANUALLY CLASSIFIED) ---
         const ALL_QUESTIONS = [
-            { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "政治/民主制度" },
-            { id: 2, q: "中国特色社会主义的本质要求和重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "宪法核心价值" },
-            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "政治/民主制度" },
-            { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "政治/民主制度" },
-            { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度、专家咨询制度、重大事项社会公示制度、社会听证制度", cat: "政治/民主制度" },
-            { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和社会管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "政治/民主制度" },
-            { id: 7, q: "人民掌握国家政权、行使权力的根本途径？", a: "人民代表大会制度", cat: "政治/民主制度" },
-            { id: 8, q: "我国的根本政治制度？", a: "人民代表大会制度", cat: "政治/民主制度" },
-            { id: 9, q: "我国的基本政治制度？", a: "中国共产党领导的多党合作和政治协商制度；民族区域自治制度；基层群众自治制度", cat: "政治/民主制度" },
-            { id: 10, q: "国家性质与基本国情分别决定基本经济制度的什么内容？", a: "国家性质决定公有制为主体；基本国情决定多种所有制经济共同发展", cat: "基本经济制度" },
-            { id: 11, q: "我国的基本经济制度？其中哪些体现社会主义性质？", a: "内容包括公有制为主体、多种所有制并存，按劳分配为主、多种分配并存，社会主义市场经济。体现性质的是：公有制、按劳分配", cat: "基本经济制度" },
-            { id: 12, q: "社会主义市场经济包括什么？", a: "公有制经济和非公有制经济", cat: "基本经济制度" },
-            { id: 13, q: "公有制经济地位、内容及国家态度？", a: "主体地位；包括国有、集体、混合所有制中的国有及集体成分；态度：巩固和发展", cat: "基本经济制度" },
-            { id: 14, q: "非公有制经济地位、内容及国家态度？", a: "社会主义市场经济的重要组成部分；包括个体、私营、外资经济；态度：鼓励、支持、引导", cat: "基本经济制度" },
-            { id: 15, q: "国有经济地位与作用？", a: "主导地位；发挥着至关重要的关键作用", cat: "基本经济制度" },
-            { id: 16, q: "资源配置中起决定性作用的是？政府作用是？", a: "决定性作用：市场（看不见的手）；政府作用：宏观调控（看得见的手）", cat: "基本经济制度" },
-            { id: 17, q: "立法、司法、依法行政权力分别归属于谁？", a: "党领导立法、人大立法、司法机关司法", cat: "政治/民主制度" },
-            { id: 18, q: "谁依法行政？谁依法执政？谁参政议政？", a: "政府依法行政；党依法执政；政协参政议政", cat: "政治/民主制度" },
-            { id: 19, q: "谁执法？谁独立行使监察权？谁独立行使检察权？", a: "政府执法；监察委员会行使监察权；检察院行使检察权", cat: "政治/民主制度" },
-            { id: 20, q: "谁来设置国家机构？其工作原则是什么？", a: "由宪法设置国家机构；工作原则是民主集中制", cat: "宪法核心价值" },
-            { id: 21, q: "谁监督宪法实施？谁有权解释宪法？宪法监督具有什么意义？", a: "全国人大及其常委会监督；全国人大常委会解释；具有基础性意义", cat: "宪法核心价值" },
-            { id: 22, q: "宪法的核心内容？宪法的核心价值追求？", a: "核心内容是基本权利和义务；核心价值是规范权力运行以保障公民权利", cat: "宪法核心价值" },
-            { id: 23, q: "我国的根本活动准则？一切组织和个人的行为准则？", a: "根本活动准则是宪法；行为准则是宪法、法律、道德、纪律规章", cat: "宪法核心价值" },
-            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重和保障人权、民主集中制原则", cat: "宪法核心价值" },
-            { id: 25, q: "立法活动的基本要求？", a: "尊重和保障人权", cat: "宪法核心价值" },
-            { id: 26, q: "国家权力机关、最高权力机关分别是什么？它们在国家机构中的地位如何？", a: "权力机关是人民代表大会（主导地位）；最高是全国人民代表大会（最高地位）", cat: "政治/民主制度" },
-            { id: 27, q: "国家行政机关是什么？它与国家权力机关的关系如何？", a: "行政机关是人民政府；政府是人大的执行机关，由人大产生、对其负责、受其监督", cat: "政治/民主制度" },
-            { id: 28, q: "国家的司法机关有哪些？分别行使什么权力？", a: "人民法院行使审判权；人民检察院行使检察权", cat: "政治/民主制度" },
-            { id: 29, q: "国家监察机关的首要职能和职责分别是什么？", a: "首要职能是监督；职责包括监督、调查、处置", cat: "政治/民主制度" },
-            { id: 30, q: "捍卫公平正义的最后一道防线？", a: "司法", cat: "宪法核心价值" },
-            { id: 31, q: "中国自信、民族自信的根本所在？", a: "中国共产党领导中国人民开辟了中国特色社会主义道路，形成了中国特色社会主义理论体系，确立了中国特色社会主义制度，发展了中国特色社会主义文化（即“四个自信”）", cat: "中国精神文化" },
-            { id: 32, q: "两个一百年奋斗目标具体指什么？", a: "建党一百年全面建成小康社会；建国一百年建成社会主义现代化强国", cat: "中国精神文化" },
-            { id: 33, q: "推动发展的第一动力？决定综合国力的决定性因素？", a: "第一动力是创新；决定性因素是科技创新能力", cat: "基本经济制度" },
-            { id: 34, q: "民族振兴、社会进步的基石？培养创新人才的根本途径？", a: "教育是基石；教育是培养创新人才的根本途径", cat: "基本经济制度" },
-            { id: 35, q: "中华民族精神的核心？时代精神的核心？爱国主义的本质？", a: "民族核心是爱国主义；时代核心是改革创新；本质是爱国爱党爱社会主义高度统一", cat: "中国精神文化" },
-            { id: 36, q: "最基本、最持久、最深沉的力量？", a: "文化自信", cat: "中国精神文化" },
-            { id: 37, q: "国家和民族的灵魂？中华文化的精髓是什么？", a: "文化是国家和民族的灵魂；中华传统美德是中华文化的精髓", cat: "中国精神文化" },
-            { id: 38, q: "中国精神由什么组成？其中精神支柱是什么？", a: "民族精神和时代精神；其中民族精神是精神支柱", cat: "中国精神文化" },
-            { id: 39, q: "中华民族的精神标识？社会价值导向？", a: "精神标识是中华文化；价值导向是社会主义核心价值观", cat: "中国精神文化" },
-            { id: 40, q: "法治和德治的辩证关系？", a: "法治对道德具有规范、促进和承载作用；道德对法治具有教化、滋养和支撑作用", cat: "宪法核心价值" },
-            { id: 41, q: "民主和法治的关系？", a: "民主是法治的基础，法治是民主的保障，两者相辅相成，相互促进", cat: "政治/民主制度" },
-            { id: 42, q: "自由和法治的关系？", a: "法治标定了自由的界限，法治也是自由的保障", cat: "宪法核心价值" },
-            { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由权", cat: "宪法核心价值" },
-            { id: 44, q: "社会经济与文化教育权利包括哪些？", a: "劳动权、财产权、物质帮助权、受教育权、文化权利", cat: "基本经济制度" },
-            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利和自由、人身自由、社会经济与文化教育权利", cat: "宪法核心价值" },
-            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一和民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "宪法核心价值" },
-            { id: 47, q: "既是公民基本权利又是基本义务的有哪些？", a: "劳动和受教育", cat: "基本经济制度" },
-            { id: 48, q: "我国解决民族问题的基本原则和基本制度是什么？新型民族关系是什么？", a: "三方针是平等、团结、繁荣；基本制度是民族区域自治制度；关系是平等团结互助和谐", cat: "中国精神文化" },
-            { id: 49, q: "实现祖国完全统一的基本方针/最佳方式？发展两岸关系的政治基础？", a: "方针是“和平统一、一国两制”；政治基础是一个中国原则", cat: "中国精神文化" },
-            { id: 50, q: "中华民族的最高利益？中华民族的根本利益所在？", a: "最高利益是促进民族团结、维护祖国统一；根本利益是解决台湾问题、实现国家完全统一", cat: "中国精神文化" },
-            { id: 51, q: "增进民族团结的必由之路？", a: "民族地区共同繁荣", cat: "中国精神文化" },
-            { id: 52, q: "高度自治和区域自治的分布地分别在哪？", a: "高度自治在港澳；区域自治在少数民族聚居区", cat: "政治/民主制度" },
-            { id: 53, q: "依法行政的核心是什么？", a: "规范政府的行政权", cat: "政治/民主制度" },
-            { id: 54, q: "中国式现代化的重要保障？法治的核心价值追求？", a: "保障是法治；核心价值追求是公平正义", cat: "宪法核心价值" },
-            { id: 55, q: "中国特色社会主义法律体系的核心？", a: "宪法", cat: "宪法核心价值" },
-            { id: 56, q: "权力正确运行的根本保证？什么监督具有基础性意义？", a: "根本保证是监督；基础性意义是宪法监督", cat: "宪法核心价值" },
-            { id: 57, q: "改革开放的地位如何？", a: "是当代中国最鲜明的特色、决定当代中国命运的关键抉择、实现中华民族伟大复兴的关键一招、强国之路", cat: "基本经济制度" },
-            { id: 58, q: "建设社会主义现代化国家的首要任务？中国在世界舞台上充当什么力量？", a: "首要任务是高质量发展；中国是影响世界的重要力量（非关键、非决定、非主导）", cat: "基本经济制度" },
-            { id: 59, q: "全面依法治国的根本遵循和行动指南？", a: "习近平法治思想", cat: "宪法核心价值" },
-            { id: 60, q: "我国“五位一体”总体布局指什么？", a: "经济建设、政治建设、文化建设、社会建设、生态文明建设", cat: "中国精神文化" },
-            { id: 61, q: "高质量发展的五大新发展理念？", a: "创新、协调、绿色、开放、共享", cat: "基本经济制度" },
-            { id: 62, q: "人民政协的性质、主要职能与两大主题？", a: "性质：中国人民爱国统一战线组织；职能：政治协商、民主监督、参政议政；主题：团结和民主", cat: "政治/民主制度" },
-            { id: 63, q: "居民委员会和村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "政治/民主制度" },
-            { id: 64, q: "自由的含义？平等的两层含义与表现？特权性质？", a: "自由是法律范围内的自由；平等是同等对待、不同情况区别对待，表现为权利/机会/规则公平；特权是贬义并坚决反对", cat: "宪法核心价值" },
-            { id: 65, q: "公平和正义的价值表现是什么？", a: "公平：权利公平、机会公平、规则公平；正义：权利和义务的平等", cat: "宪法核心价值" },
-            { id: 66, q: "中国特色社会主义建设中带有“中心”字眼的两大固定搭配？", a: "经济建设为中心；以人民为中心", cat: "政治/民主制度" },
-            { id: 67, q: "有哪些监督主体和对应的监督职责（权）？", a: "公民拥有监督权、人大行使监督权、监察委履行监督首要职责、检察院作为法律监督机关、政协开展民主监督", cat: "政治/民主制度" },
-            { id: 68, q: "当今时代的主题？", a: "和平与发展", cat: "中国精神文化" },
-            { id: 69, q: "国际竞争的实质是什么？", a: "以经济和科技实力为基础的综合国力的较量", cat: "基本经济制度" },
-            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益的集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "中国精神文化" },
-            { id: 71, q: "国家利益、人民利益、集体利益、个人利益的关系？", a: "根本利益上是一致的", cat: "中国精神文化" },
-            { id: 72, q: "社会秩序和社会规则谁保障谁？", a: "社会规则保障社会秩序", cat: "基本经济制度" },
-            { id: 73, q: "谁有权向法院提起公诉？", a: "人民检察院", cat: "政治/民主制度" },
-            { id: 74, q: "公民在什么情况下有获得国家物质帮助的权利？", a: "年老、疾病或者丧失劳动能力", cat: "宪法核心价值" },
-            { id: 75, q: "法治、诚信、友善分别属于社会主义核心价值观哪个层面？", a: "法治属于社会层面；诚信和友善属于个人层面", cat: "中国精神文化" },
-            { id: 76, q: "诚信在民事活动中是什么法律原则？", a: "民法的基本原则", cat: "宪法核心价值" }
+            { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "党与根本制度" },
+            { id: 2, q: "中国特色社会主义的本质要求和重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "法治与司法公正" },
+            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "全过程人民民主" },
+            { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "全过程人民民主" },
+            { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度、专家咨询制度、重大事项社会公示制度、社会听证制度", cat: "全过程人民民主" },
+            { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和社会管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "全过程人民民主" },
+            { id: 7, q: "人民掌握国家政权、行使权力的根本途径？", a: "人民代表大会制度", cat: "党与根本制度" },
+            { id: 8, q: "我国的根本政治制度？", a: "人民代表大会制度", cat: "党与根本制度" },
+            { id: 9, q: "我国的基本政治制度？", a: "中国共产党领导的多党合作和政治协商制度、民族区域自治制度、基层群众自治制度", cat: "党与根本制度" },
+            { id: 10, q: "国家性质、基本国情分别决定经济制度的什么内容？", a: "国家性质决定公有制为主体；基本国情决定多种所有制经济共同发展", cat: "基本经济与市场" },
+            { id: 11, q: "我国的基本经济制度有哪些？其中哪些部分体现社会主义性质？", a: "内容：公有制为主体，多种所有制经济共同发展；按劳分配为主体，多种分配方式并存；社会主义市场经济体制。体现性质：公有制、按劳分配", cat: "基本经济与市场" },
+            { id: 12, q: "社会主义市场经济包括什么？", a: "公有制经济和非公有制经济", cat: "基本经济与市场" },
+            { id: 13, q: "公有制经济地位、包括哪些、态度？", a: "地位：主体地位；包括：国有经济、集体经济、混合所有制经济中的国有和集体成分；态度：巩固和发展", cat: "基本经济与市场" },
+            { id: 14, q: "非公有制经济地位、包括哪些、态度？", a: "地位：重要组成部分；包括：个体经济、私营经济、外资经济；态度：鼓励、支持、引导", cat: "基本经济与市场" },
+            { id: 15, q: "国有经济地位、作用？", a: "地位：主导地位；作用：关键作用", cat: "基本经济与市场" },
+            { id: 16, q: "资源配置中起决定性作用的是？政府作用？", a: "市场（看不见的手）起决定性作用；政府（看得见的手）起宏观调控作用", cat: "基本经济与市场" },
+            { id: 17, q: "谁领导立法？谁立法？谁司法？", a: "党领导立法、人大立法、司法机关（法院、检察院）司法", cat: "法治与司法公正" },
+            { id: 18, q: "谁依法行政？谁依法执政？谁参政议政？", a: "政府依法行政、党依法执政、政协参政议政", cat: "法治与司法公正" },
+            { id: 19, q: "谁执法？谁监察？谁向法院提起公诉？", a: "政府执法、监察委员会监察、检察院提起公诉", cat: "法治与司法公正" },
+            { id: 20, q: "谁来设置国家机构？国家机关的工作原则？", a: "由宪法设置国家机构；工作原则是民主集中制原则", cat: "宪法权威与监督" },
+            { id: 21, q: "谁监督宪法实施？谁在区域内保障宪法实施？谁有权解释宪法法律？监督有什么意义？", a: "全国人大及其常委会监督；地方人大及其常委会保障；全国人大常委会解释；具有基础性意义", cat: "宪法权威与监督" },
+            { id: 22, q: "宪法核心内容？宪法的核心价值追求？", a: "核心内容是基本权利和基本义务；核心价值是规范国家权力运行以保障公民权利", cat: "宪法权威与监督" },
+            { id: 23, q: "我国的根本活动准则？一切组织和个人的行为准则？", a: "根本活动准则是宪法；行为准则是宪法、法律、道德、纪律规章", cat: "宪法权威与监督" },
+            { id: 24, q: "宪法的三大基本原则？", a: "一切权力属于人民、国家尊重和保障人权、民主集中制原则", cat: "宪法权威与监督" },
+            { id: 25, q: "立法活动的基本要求？", a: "尊重和保障人权", cat: "宪法权威与监督" },
+            { id: 26, q: "权力机关？最高权力机关？各自地位？", a: "权力机关：人民代表大会（主导地位）；最高权力机关：全国人民代表大会（最高地位）", cat: "党与根本制度" },
+            { id: 27, q: "行政机关？最高行政机关？行政机关与权力机关的关系？", a: "行政机关：人民政府；最高行政机关：国务院；关系：政府是人大的执行机关，由人大产生，对人大负责，受人大监督", cat: "党与根本制度" },
+            { id: 28, q: "国家司法机关包括哪些？分别行使什么权力？", a: "人民法院行使审判权；人民检察院行使检察权", cat: "法治与司法公正" },
+            { id: 29, q: "国家监察机关？首要职能及职责分别是什么？", a: "监察机关是监察委员会；首要职能是监督；职责是监督、调查、处置", cat: "法治与司法公正" },
+            { id: 30, q: "捍卫公平正义的最后一道防线？", a: "司法", cat: "法治与司法公正" },
+            { id: 31, q: "两个一百年奋斗目标具体指什么？第二个百年目标分哪两个阶段？", a: "建党一百年全面建成小康社会；建国一百年建成社会主义现代化强国。两个阶段：2020-2035年基本实现社会主义现代化，2035-2050年建成富强民主文明和谐美丽的社会主义现代化强国", cat: "科教兴国与创新" },
+            { id: 32, q: "推动发展的第一动力？综合国力的决定性因素？", a: "第一动力：创新；决定性因素：科技创新能力", cat: "科教兴国与创新" },
+            { id: 33, q: "民族振兴、社会进步的基石？培养创新人才的根本途径？", a: "教育是基石；教育是培养创新人才的根本途径", cat: "科教兴国与创新" },
+            { id: 34, q: "中华民族精神的核心？时代精神的核心？爱国主义的本质？", a: "民族精神核心：爱国主义；时代精神核心：改革创新；本质：爱国爱党爱社会主义的高度统一", cat: "精神文明与文化" },
+            { id: 35, q: "中国自信、民族自信根本所在？", a: "“四个自信”（道路自信、理论自信、制度自信、文化自信）", cat: "精神文明与文化" },
+            { id: 36, q: "最基本、最持久、最深沉的力量？", a: "文化自信", cat: "精神文明与文化" },
+            { id: 37, q: "国家和民族的灵魂？中华文化的精髓是什么？", a: "文化是灵魂；中华传统美德是中华文化的精髓", cat: "精神文明与文化" },
+            { id: 38, q: "中国精神由什么组成？其中精神支柱是什么？", a: "民族精神和时代精神；其中民族精神是精神支柱", cat: "精神文明与文化" },
+            { id: 39, q: "中华民族的精神标识？社会价值导向？", a: "精神标识是中华文化；价值导向是社会主义核心价值观", cat: "精神文明与文化" },
+            { id: 40, q: "法治和德治的辩证关系？", a: "法治对道德具有规范、促进和承载作用；道德对法治具有教化、滋养和支撑作用", cat: "法治与司法公正" },
+            { id: 41, q: "民主和法治的关系？", a: "民主是法治的基础，法治是民主的保障，两者相辅相成，相互促进", cat: "法治与司法公正" },
+            { id: 42, q: "自由和法治的关系？", a: "法治标定了自由的界限，法治也是自由的保障", cat: "法治与司法公正" },
+            { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由权", cat: "公民权利与义务" },
+            { id: 44, q: "社会经济与文化教育权利包括哪些？", a: "劳动权、财产权、物质帮助权、受教育权、文化权利", cat: "公民权利与义务" },
+            { id: 45, q: "公民的基本权利有哪些？", a: "政治权利和自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
+            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一和民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
+            { id: 47, q: "既是公民基本权利又是基本义务的有哪些？", a: "劳动和受教育", cat: "公民权利与义务" },
+            { id: 48, q: "我国解决民族问题的基本原则和基本制度是什么？新型民族关系是什么？", a: "三方针是平等、团结、繁荣；基本制度是民族区域自治制度；关系是平等团结互助和谐", cat: "民族团结与统一" },
+            { id: 49, q: "实现祖国完全统一的基本方针/最佳方式？发展两岸关系的政治基础？", a: "方针是“和平统一、一国两制”；政治基础是一个中国原则", cat: "民族团结与统一" },
+            { id: 50, q: "中华民族的最高利益？中华民族的根本利益所在？", a: "最高利益是促进民族团结、维护祖国统一；根本利益是解决台湾问题、实现国家完全统一", cat: "民族团结与统一" },
+            { id: 51, q: "增进民族团结的必由之路？", a: "少数民族和民族地区共同繁荣", cat: "民族团结与统一" },
+            { id: 52, q: "高度自治和区域自治的分布地分别在哪？", a: "高度自治在港澳；区域自治在少数民族聚居区", cat: "民族团结与统一" },
+            { id: 53, q: "依法行政的核心是什么？", a: "规范政府的行政权", cat: "法治与司法公正" },
+            { id: 54, q: "中国式现代化的重要保障？法治的核心价值追求？", a: "保障是法治；核心价值追求是公平正义", cat: "法治与司法公正" },
+            { id: 55, q: "中国特色社会主义法律体系的核心？", a: "宪法", cat: "宪法权威与监督" },
+            { id: 56, q: "权力正确运行的根本保证？什么监督具有基础性意义？", a: "根本保证是监督；基础性意义是宪法监督", cat: "宪法权威与监督" },
+            { id: 57, q: "改革开放的地位如何？", a: "是当代中国最鲜明的特色、决定当代中国命运的关键抉择、实现复兴的关键一招、强国之路", cat: "基本经济与市场" },
+            { id: 58, q: "建设现代化国家的首要任务？中国在世界舞台上充当什么力量？", a: "首要任务是高质量发展；中国是影响世界的重要力量", cat: "基本经济与市场" },
+            { id: 59, q: "全面依法治国的根本遵循和行动指南？", a: "习近平法治思想", cat: "宪法权威与监督" },
+            { id: 60, q: "我国“五位一体”总体布局指什么？", a: "经济建设、政治建设、文化建设、社会建设、生态文明建设", cat: "精神文明与文化" },
+            { id: 61, q: "高质量发展的五大新发展理念？", a: "创新、协调、绿色、开放、共享", cat: "基本经济与市场" },
+            { id: 62, q: "人民政协的性质、主要职能与两大主题？", a: "性质：中国人民爱国统一战线组织；职能：政治协商、民主监督、参政议政；主题：团结和民主", cat: "党与根本制度" },
+            { id: 63, q: "居民委员会和村民委员会的性质？", a: "基层群众性自治组织（非基层政权，非国家机构）", cat: "全过程人民民主" },
+            { id: 64, q: "自由的含义？平等的两层含义与表现？特权性质？", a: "自由是法律范围内的自由；平等是同等对待、不同情况区别对待，表现为权利/机会/规则公平；特权是贬义并坚决反对", cat: "法治与司法公正" },
+            { id: 65, q: "公平和正义的价值表现是什么？", a: "公平：权利公平、机会公平、规则公平；正义：权利和义务的平等", cat: "法治与司法公正" },
+            { id: 66, q: "中国特色社会主义建设中带有“中心”字眼的两大固定搭配？", a: "经济建设为中心；以人民为中心", cat: "基本经济与市场" },
+            { id: 67, q: "有哪些监督主体和对应的监督职责（权）？", a: "公民拥有监督权、人大行使监督权、监察委履行监督首要职责、检察院作为法律监督机关、政协开展民主监督", cat: "全过程人民民主" },
+            { id: 68, q: "当今时代的主题？", a: "和平与发展", cat: "世界舞台与外交" },
+            { id: 69, q: "国际竞争的实质是什么？", a: "以经济和科技实力为基础的综合国力的较量", cat: "基本经济与市场" },
+            { id: 70, q: "国家利益与谁的利益高度统一？国家利益是谁的利益的集中体现？", a: "国家利益与人民利益高度统一；国家利益是人民利益的集中体现", cat: "民族团结与统一" },
+            { id: 71, q: "国家利益、人民利益、集体利益、个人利益的关系？", a: "根本利益上是一致的", cat: "民族团结与统一" },
+            { id: 72, q: "社会秩序和社会规则谁保障谁？", a: "社会规则保障社会秩序", cat: "基本经济与市场" },
+            { id: 73, q: "谁有权向法院提起公诉？", a: "人民检察院", cat: "法治与司法公正" },
+            { id: 74, q: "公民在什么情况下有获得国家物质帮助的权利？", a: "年老、疾病或者丧失劳动能力", cat: "公民权利与义务" },
+            { id: 75, q: "法治、诚信、友善分别属于社会主义核心价值观哪个层面？", a: "法治属于社会层面；诚信和友善属于个人层面", cat: "精神文明与文化" },
+            { id: 76, q: "诚信在民事活动中是什么法律原则？", a: "民法的基本原则", cat: "法治与司法公正" }
         ];
 
         // --- GAME & ANTI-REPETITION STATE ---
         let currentMode = 'dashboard';
-        let currentQuestionIndex = 0;
+        let currentQuestionIndex = 0; 
+        let sessionCompletedCount = 0; 
         let score = 0;
         let streak = 0;
         let playList = [];
         let completedIds = JSON.parse(localStorage.getItem('politics_completed_ids') || '[]');
         
-        // Anti-Repetition counter: questionId -> shown count (limit to 3)
-        let shownCounts = JSON.parse(localStorage.getItem('politics_shown_counts') || '{}');
+        let shownCounts = JSON.parse(localStorage.getItem('politics_shown_counts_v4') || '{}');
+        const defaultShownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {} };
+        if (!shownCounts.moxie) {
+            shownCounts = defaultShownCounts;
+            localStorage.setItem('politics_shown_counts_v4', JSON.stringify(shownCounts));
+        }
         
         let isMoxieInputType = 'type'; 
         let cardFlipped = false;
+        let hasAnsweredCurrent = false; 
         let audioEnabled = true;
 
         // Sound Synthesis 
@@ -557,7 +563,7 @@
                     osc.type = 'sawtooth';
                     osc.frequency.setValueAtTime(750, now);
                     osc.frequency.exponentialRampToValueAtTime(100, now + 0.12);
-                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.setValueAtTime(0.12, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
                     osc.start(now);
                     osc.stop(now + 0.12);
@@ -582,7 +588,7 @@
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(50, now);
                     osc.frequency.linearRampToValueAtTime(5, now + 0.2);
-                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.setValueAtTime(0.18, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
                     osc.start(now);
                     osc.stop(now + 0.2);
@@ -652,13 +658,15 @@
             document.getElementById('stats-passed').innerText = completedIds.length;
             document.getElementById('stats-remaining').innerText = ALL_QUESTIONS.length - completedIds.length;
 
-            // Frequency state categorization
             let fresh = 0;
             let reviewing = 0;
             let exhausted = 0;
 
+            const currentModeKey = currentMode !== 'dashboard' ? currentMode : 'moxie';
+            const modeCounts = shownCounts[currentModeKey] || {};
+
             ALL_QUESTIONS.forEach(q => {
-                const count = shownCounts[q.id] || 0;
+                const count = modeCounts[q.id] || 0;
                 if (count === 0) fresh++;
                 else if (count < 3) reviewing++;
                 else exhausted++;
@@ -669,23 +677,14 @@
             document.getElementById('freq-exhausted').innerText = exhausted;
         }
 
-        // Reset frequency shown count manually with custom alert
         function resetFrequencyHistory(showModal = false) {
-            shownCounts = {};
-            localStorage.setItem('politics_shown_counts', JSON.stringify(shownCounts));
+            const currentModeKey = currentMode !== 'dashboard' ? currentMode : 'moxie';
+            shownCounts[currentModeKey] = {};
+            localStorage.setItem('politics_shown_counts_v4', JSON.stringify(shownCounts));
             updateProgressStats();
             if (showModal) {
-                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', '所有考点的练习次数均已清空归零。它们可以重新出现至多 3 次！', true);
+                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', `已清空「${currentModeKey}」模式下的所有考点出现频次记录。`, true);
             }
-        }
-
-        function shuffleArray(array) {
-            const newArr = [...array];
-            for (let i = newArr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            }
-            return newArr;
         }
 
         function showCustomModal(icon, title, msg, isSuccess = true) {
@@ -740,39 +739,45 @@
             document.getElementById('global-streak').innerText = `0 连击`;
         }
 
-        // --- GAME CONTROLLERS with Anti-Repetition logic (< 3 times) ---
-        function startGameMode(mode) {
-            // Filter ALL_QUESTIONS where shownCounts[q.id] < 3
-            let availablePool = ALL_QUESTIONS.filter(q => (shownCounts[q.id] || 0) < 3);
+        function updateIndicator() {
+            document.getElementById('mode-progress-indicator').innerHTML = `已通关: <span class="text-cyan-400 font-extrabold text-xs">${sessionCompletedCount}</span> / 10`;
+        }
 
-            // Handle edge case: If too few questions left in the pool (< 10)
+        function trackOccurrence(qId) {
+            if (!shownCounts[currentMode]) {
+                shownCounts[currentMode] = {};
+            }
+            shownCounts[currentMode][qId] = (shownCounts[currentMode][qId] || 0) + 1;
+            localStorage.setItem('politics_shown_counts_v4', JSON.stringify(shownCounts));
+            updateProgressStats();
+        }
+
+        // --- GAME CONTROLLERS ---
+        function startGameMode(mode) {
+            currentMode = mode;
+            
+            const modeTracker = shownCounts[mode] || {};
+            let availablePool = ALL_QUESTIONS.filter(q => (modeTracker[q.id] || 0) < 3);
+
             if (availablePool.length < 10) {
-                showCustomModal('fa-circle-info text-cyan-400', '触发自动重置防重复锁', '恭喜！大部分的 76 个核心考点已被您深度练习并达成 3 次配额，系统现已为您重置记忆频次，保持高频复习！', true);
-                resetFrequencyHistory(false);
+                showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `您已完成该模式大部分考点，系统现已为您重置该背诵方式的重复池！`, true);
+                shownCounts[mode] = {};
+                localStorage.setItem('politics_shown_counts_v4', JSON.stringify(shownCounts));
                 availablePool = ALL_QUESTIONS;
             }
 
-            currentMode = mode;
             document.getElementById('screen-dashboard').classList.add('hidden');
             document.getElementById('play-container').classList.remove('hidden');
             
-            // Hide sub-screens
             document.getElementById('screen-moxie').classList.add('hidden');
             document.getElementById('screen-matching').classList.add('hidden');
             document.getElementById('screen-dragdrop').classList.add('hidden');
             document.getElementById('screen-quiz').classList.add('hidden');
             document.getElementById('screen-fps').classList.add('hidden');
 
-            // Select 10 questions from the non-repetition-exhausted pool
             playList = shuffleArray(availablePool).slice(0, 10);
             currentQuestionIndex = 0;
-
-            // Track usage count! Increment count for all selected questions
-            playList.forEach(q => {
-                shownCounts[q.id] = (shownCounts[q.id] || 0) + 1;
-            });
-            localStorage.setItem('politics_shown_counts', JSON.stringify(shownCounts));
-            updateProgressStats();
+            sessionCompletedCount = 0;
 
             const modeTitles = {
                 'moxie': '键盘默写模式',
@@ -801,38 +806,23 @@
                 document.getElementById('fps-hud-question').innerText = "点击下方按钮开启射击";
             }
             updateIndicator();
-        }
-
-        function updateIndicator() {
-            document.getElementById('mode-progress-indicator').innerText = `${currentQuestionIndex + 1}/${playList.length}`;
-        }
-
-        function exitGameMode() {
-            currentMode = 'dashboard';
-            document.getElementById('play-container').classList.add('hidden');
-            document.getElementById('screen-dashboard').classList.remove('hidden');
-            updateProgressStats();
-            stopFPSGameLoop();
-        }
-
-        function markQuestionCompleted(qId) {
-            if (!completedIds.includes(qId)) {
-                completedIds.push(qId);
-                localStorage.setItem('politics_completed_ids', JSON.stringify(completedIds));
-            }
             updateProgressStats();
         }
 
         // --- MODE 1: MOXIE ---
         function initMoxieQuestion() {
-            if (currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-trophy text-yellow-400', '本轮自测圆满过关！', `本轮 10 个防重复考点已完成默写，学分积攒+200！`);
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成 10 道默写测验！学分累积+200。`);
                 addScore(200);
                 exitGameMode();
                 return;
             }
+            hasAnsweredCurrent = false;
             updateIndicator();
+            
             const currentItem = playList[currentQuestionIndex];
+            trackOccurrence(currentItem.id); 
+
             document.getElementById('moxie-question').innerText = currentItem.q;
             document.getElementById('moxie-input').value = "";
             document.getElementById('moxie-feedback').classList.add('hidden');
@@ -869,12 +859,12 @@
         }
 
         function submitMoxieAnswer() {
+            if (hasAnsweredCurrent) return;
             const userInput = document.getElementById('moxie-input').value.trim();
             if (!userInput) return;
             const currentItem = playList[currentQuestionIndex];
             const answer = currentItem.a;
 
-            // Fuzzy string validation based on shared character overlaps
             let isCorrect = false;
             const matchCount = Array.from(userInput).filter(char => answer.includes(char)).length;
             const threshold = Math.min(answer.length * 0.4, 6); 
@@ -883,10 +873,17 @@
                 isCorrect = true;
             }
 
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
             showMoxieFeedback(isCorrect);
         }
 
         function showMoxieAnswer() {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
             showMoxieFeedback(false);
         }
 
@@ -900,18 +897,18 @@
             refAnswer.innerText = currentItem.a;
 
             if (isCorrect) {
-                statusText.innerText = "🎉 极佳！关键词完全契合核心考点。";
+                statusText.innerText = "🎉 回答正确！关键词高匹配度。";
                 statusText.className = "text-xs font-black text-emerald-400";
                 addScore(50);
                 addStreak();
                 playSynthSound('hit_correct');
                 markQuestionCompleted(currentItem.id);
             } else {
-                statusText.innerText = "💡 答案对照，继续深化记忆：";
+                statusText.innerText = "💡 别气馁，考点标准规范答案：";
                 statusText.className = "text-xs font-black text-cyan-400";
                 breakStreak();
                 playSynthSound('hit_wrong');
-                markQuestionCompleted(currentItem.id); // Also count as reviewed
+                markQuestionCompleted(currentItem.id);
             }
         }
 
@@ -925,17 +922,23 @@
         }
 
         function evaluateCard(isCorrect) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+
             const currentItem = playList[currentQuestionIndex];
             if (isCorrect) {
                 addScore(40);
                 addStreak();
                 playSynthSound('hit_correct');
                 markQuestionCompleted(currentItem.id);
-                showToast("fa-circle-check", "精准掌握", "+40 学分", "bg-emerald-500/20 text-emerald-300");
+                showToast("fa-circle-check", "掌握考点", "+40 积分", "bg-emerald-500/20 text-emerald-300");
             } else {
                 breakStreak();
                 playSynthSound('hit_wrong');
-                showToast("fa-circle-xmark", "纳入错题本", "后期重点高频抽测", "bg-rose-500/20 text-rose-300");
+                showToast("fa-circle-xmark", "纳入错题本", "后期重点抽测", "bg-rose-500/20 text-rose-300");
+                markQuestionCompleted(currentItem.id);
             }
             nextMoxieQuestion();
         }
@@ -963,9 +966,18 @@
             selectedMatchingLeft = null;
             selectedMatchingRight = null;
 
-            matchingSubset = shuffleArray(playList).slice(0, 5);
+            matchingSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 5);
+            if (matchingSubset.length === 0) {
+                showCustomModal('fa-award text-yellow-400', '连线完成！', `本轮连线成功，学分+150！`);
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+
             matchedPairsCount = 0;
             document.getElementById('matching-remain').innerText = matchingSubset.length;
+
+            matchingSubset.forEach(q => trackOccurrence(q.id));
 
             const shuffledLeft = shuffleArray(matchingSubset);
             const shuffledRight = shuffleArray(matchingSubset);
@@ -1024,6 +1036,9 @@
                     drawMatchingLine(lid);
 
                     matchedPairsCount++;
+                    sessionCompletedCount++; 
+                    updateIndicator();
+
                     document.getElementById('matching-remain').innerText = matchingSubset.length - matchedPairsCount;
                     
                     addScore(25);
@@ -1032,7 +1047,6 @@
 
                     if (matchedPairsCount >= matchingSubset.length) {
                         setTimeout(() => {
-                            showCustomModal('fa-wand-magic-sparkles text-emerald-400', '消除成功！', '本组连线考点均已正确排除。');
                             nextMatchingGroup();
                         }, 500);
                     }
@@ -1085,27 +1099,16 @@
 
         function nextMatchingGroup() {
             currentQuestionIndex += 5;
-            if (currentQuestionIndex >= playList.length) {
-                showCustomModal('fa-award text-yellow-400', '连线配对大捷！', '本组连线消除项目通关！熟练度+100。');
-                addScore(100);
-                exitGameMode();
-            } else {
-                initMatchingGame();
-            }
+            initMatchingGame();
         }
 
         function reloadMatching() {
             initMatchingGame();
         }
 
-        // --- MODE 3: DRAG & DROP GAME ---
-        let dragDropZonesConfig = [
-            { id: 'zone-pol', name: '法理与监督体系', keywords: ['法律', '宪法', '党', '人大', '全国人', '司法', '监察', '监督', '法治'] },
-            { id: 'zone-eco', name: '基本经济体系', keywords: ['市场', '公有制', '非公有制', '分配', '经济', '主体', '主导', '改革开放', '资源配置', '国情'] },
-            { id: 'zone-rights', name: '政治民主制度', keywords: ['制度', '政治', '民主', '协商', '人民当家作主', '选举', '居委会', '村委会', '基层', '政协'] },
-            { id: 'zone-spr', name: '中国精神文化', keywords: ['精神', '文化', '爱国主义', '改革创新', '道德', '核心价值观', '中国自信', '德治', '灵魂'] }
-        ];
-        let activeSelectedCardId = null;
+        // --- MODE 3: DRAG & DROP GAME (DYNAMIC ADAPTIVE CATEGORIES) ---
+        let dragDropSubset = [];
+        let dynamicZones = []; // Holds the exact category objects for the drawn questions
 
         function initDragDropGame() {
             const itemsContainer = document.getElementById('dragdrop-items');
@@ -1115,17 +1118,43 @@
             zonesContainer.innerHTML = "";
             activeSelectedCardId = null;
 
-            const shuffledSet = shuffleArray(playList).slice(0, 6);
+            // Draw next 6 questions to make categories fit nicely
+            dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
+            if (dragDropSubset.length === 0) {
+                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+
+            // Extract exact unique category names from these drawn questions
+            const uniqueCatsInSubset = [...new Set(dragDropSubset.map(item => item.cat))];
             
-            shuffledSet.forEach(item => {
-                let targetZone = 'zone-pol'; 
-                for (const zone of dragDropZonesConfig) {
-                    const matches = zone.keywords.some(kw => item.q.includes(kw) || item.a.includes(kw) || item.cat.includes(kw));
-                    if (matches) {
-                        targetZone = zone.id;
-                        break;
-                    }
-                }
+            // Generate active dynamic categories configuration
+            dynamicZones = uniqueCatsInSubset.map((catName, idx) => {
+                return {
+                    id: `zone-dyn-${idx}`,
+                    name: catName
+                };
+            });
+
+            // Adjust grid layout depending on the number of dynamic boxes to keep it compact
+            const boxCount = dynamicZones.length;
+            if (boxCount <= 2) {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+            } else if (boxCount === 3) {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-3 gap-3";
+            } else {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3";
+            }
+
+            // Render cards
+            dragDropSubset.forEach(item => {
+                trackOccurrence(item.id);
+
+                // Locate which dynamic zone ID matches this item's statically defined category
+                const matchedZone = dynamicZones.find(z => z.name === item.cat);
+                const targetZoneId = matchedZone ? matchedZone.id : 'zone-dyn-0';
                 
                 const card = document.createElement('div');
                 card.id = `dd-card-${item.id}`;
@@ -1133,8 +1162,9 @@
                 card.innerText = item.a;
                 card.title = item.a;
                 card.draggable = true;
-                card.dataset.targetZone = targetZone;
+                card.dataset.targetZone = targetZoneId;
                 card.dataset.id = item.id;
+                card.dataset.evaluated = "false";
 
                 card.onclick = () => selectDragCard(item.id);
 
@@ -1149,12 +1179,13 @@
                 itemsContainer.appendChild(card);
             });
 
-            dragDropZonesConfig.forEach(zone => {
+            // Render dynamic target boxes
+            dynamicZones.forEach(zone => {
                 const box = document.createElement('div');
-                box.className = "bg-slate-950/80 border-2 border-dashed border-slate-800 hover:border-cyan-500/30 p-3 rounded-xl flex flex-col justify-start min-h-[130px] transition-colors relative text-xs";
+                box.className = "bg-slate-950/80 border-2 border-dashed border-slate-850 hover:border-cyan-500/30 p-3 rounded-xl flex flex-col justify-start min-h-[140px] transition-colors relative text-xs";
                 box.id = zone.id;
                 box.innerHTML = `
-                    <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2 border-b border-slate-900 pb-1">${zone.name}</div>
+                    <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-extrabold mb-2 border-b border-slate-900 pb-1 text-center bg-cyan-950/10 py-1 rounded">${zone.name}</div>
                     <div class="space-y-1.5 flex-grow flex flex-col justify-start items-center" id="${zone.id}-content"></div>
                 `;
 
@@ -1190,7 +1221,7 @@
             }
             activeSelectedCardId = cardId;
             document.getElementById(`dd-card-${cardId}`).classList.add('border-pink-500', 'bg-pink-950/20');
-            showToast("fa-arrows-to-dot", "选中考点核心答案", "轻触下方任一对应分类盒即可归位", "bg-pink-500/20 text-pink-300");
+            showToast("fa-arrows-to-dot", "选中考点答案", "轻触下方对应的动态分类盒即可归位", "bg-pink-500/20 text-pink-300");
         }
 
         function dropCardInZone(cardId, zoneId) {
@@ -1207,8 +1238,9 @@
         function checkDragDropResult() {
             let correctCount = 0;
             let totalPlaced = 0;
+            let newlyCorrected = 0;
 
-            dragDropZonesConfig.forEach(zone => {
+            dynamicZones.forEach(zone => {
                 const zoneContent = document.getElementById(`${zone.id}-content`);
                 const cards = zoneContent.querySelectorAll('[id^="dd-card-"]');
                 
@@ -1216,9 +1248,15 @@
                     totalPlaced++;
                     const targetZone = card.dataset.targetZone;
                     if (targetZone === zone.id) {
-                        card.className = "bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center truncate";
+                        card.className = "bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center truncate pointer-events-none";
                         correctCount++;
-                        markQuestionCompleted(parseInt(card.dataset.id));
+                        
+                        if (card.dataset.evaluated === "false") {
+                            card.dataset.evaluated = "true";
+                            newlyCorrected++;
+                            sessionCompletedCount++; 
+                            markQuestionCompleted(parseInt(card.dataset.id));
+                        }
                     } else {
                         card.className = "bg-rose-950/30 border border-rose-500/40 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center animate-shake truncate";
                         setTimeout(() => {
@@ -1230,36 +1268,45 @@
             });
 
             if (totalPlaced === 0) {
-                showCustomModal('fa-triangle-exclamation text-rose-400', '未移入卡片', '请先将上方卡片划分至各自盒子中！', false);
+                showCustomModal('fa-triangle-exclamation text-rose-400', '没有放置卡片', '请先将卡片分类放置到相应的动态分类盒中！', false);
                 return;
             }
 
-            if (correctCount === 6) {
-                playSynthSound('hit_correct');
-                addScore(150);
+            updateIndicator();
+
+            if (newlyCorrected > 0) {
+                addScore(newlyCorrected * 25);
                 addStreak();
-                showCustomModal('fa-shield-halved text-cyan-400', '概念归纳大师！', '归纳全对！你的理论架构高度精确，特奖励+150学分！');
+                playSynthSound('hit_correct');
+            }
+
+            if (correctCount === dragDropSubset.length) {
+                showToast("fa-circle-check", "归类正确！", "自动载入下一组卡片", "bg-emerald-500/20 text-emerald-300");
                 setTimeout(() => {
+                    currentQuestionIndex += 6;
                     initDragDropGame();
                 }, 1500);
             } else {
                 playSynthSound('hit_wrong');
                 breakStreak();
-                showToast("fa-circle-xmark", "分类核对完毕", `提示：其中有 ${correctCount} 项精确。错误的卡片已退回。`, "bg-rose-500/20 text-rose-300");
+                showToast("fa-circle-xmark", "分类错误", "已自动退回答错的卡片，请重新分类", "bg-rose-500/20 text-rose-300");
             }
         }
 
         // --- MODE 4: MCQ QUIZ ---
         function initQuizQuestion() {
-            if (currentQuestionIndex >= playList.length) {
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
                 showCustomModal('fa-medal text-yellow-400', '竞速自测通关！', `恭喜通关！答题得分已转化计入全局学分积累中！`);
                 addScore(150);
                 exitGameMode();
                 return;
             }
+            hasAnsweredCurrent = false;
             updateIndicator();
 
             const currentItem = playList[currentQuestionIndex];
+            trackOccurrence(currentItem.id);
+
             document.getElementById('quiz-question').innerText = currentItem.q;
 
             const distractors = shuffleArray(ALL_QUESTIONS)
@@ -1284,6 +1331,11 @@
         }
 
         function selectQuizOption(selected, correct, btnNode) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+
             const allButtons = document.getElementById('quiz-options').children;
             Array.from(allButtons).forEach(btn => btn.style.pointerEvents = 'none');
 
@@ -1315,6 +1367,7 @@
                         btn.className = "w-full text-left bg-emerald-950/20 text-emerald-300 border border-emerald-500/50 p-4 rounded-xl transition duration-200 flex items-center space-x-2";
                     }
                 });
+                markQuestionCompleted(playList[currentQuestionIndex].id);
 
                 setTimeout(() => {
                     currentQuestionIndex++;
@@ -1323,7 +1376,7 @@
             }
         }
 
-        // --- MODE 5: FPS SHOOTING GAME (射击挑战) ---
+        // --- MODE 5: FPS SHOOTING GAME ---
         let fpsCanvas, fpsCtx;
         let fpsGameActive = false;
         let fpsAnimationId = null;
@@ -1358,6 +1411,7 @@
             updateFPSHealthBar();
 
             currentQuestionIndex = 0;
+            sessionCompletedCount = 0;
             loadNextFPSQuestion();
             runFPSLoop();
         }
@@ -1398,16 +1452,19 @@
         }
 
         function loadNextFPSQuestion() {
-            if (currentQuestionIndex >= playList.length) {
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
                 stopFPSGameLoop();
-                showCustomModal('fa-circle-check text-emerald-400', '战绩卓越！', `恭喜通过本场射击，FPS 实战积累得分：${fpsScoreVal}！`, true);
+                showCustomModal('fa-circle-check text-emerald-400', '战绩卓越！', `恭喜通过射击考场！获得额外实战学分积累：${fpsScoreVal}！`, true);
                 addScore(fpsScoreVal);
                 exitGameMode();
                 return;
             }
+            hasAnsweredCurrent = false;
             updateIndicator();
 
             fpsCurrentItem = playList[currentQuestionIndex];
+            trackOccurrence(fpsCurrentItem.id);
+
             document.getElementById('fps-hud-question').innerText = `实战：${fpsCurrentItem.q}`;
 
             fpsTargets = [];
@@ -1426,10 +1483,10 @@
                     y: Math.random() * 60 + 80, 
                     vx: Math.random() * 1.4 - 0.7,
                     vy: Math.random() * 0.6 - 0.3,
-                    r: 38, // SLIGHTLY SMALLER BUBBLE SIZE (Updated from 55 to 38 for premium compact view)
+                    r: 38, // 38px Compact bubbles
                     text: opt,
                     isCorrect: (opt === fpsCurrentItem.a),
-                    color: '#22d3ee', // UNIFORM COLOR FOR ALL TARGET BUBBLES (Cyan-400)
+                    color: '#22d3ee', // Cyan neon tone
                     opacity: 1.0,
                     scale: 1.0
                 });
@@ -1437,7 +1494,7 @@
         }
 
         function triggerShoot(e) {
-            if (!fpsGameActive) return;
+            if (!fpsGameActive || hasAnsweredCurrent) return;
             e.preventDefault();
 
             playSynthSound('shoot');
@@ -1463,9 +1520,13 @@
                 playSynthSound('explosion');
 
                 if (hit.isCorrect) {
+                    hasAnsweredCurrent = true;
+                    sessionCompletedCount++; 
+                    updateIndicator();
+
                     fpsScoreVal += 100;
                     document.getElementById('fps-score').innerText = `FPS得分: ${fpsScoreVal}`;
-                    showToast("fa-circle-check", "精准击中正确气泡！", "FPS得分+100", "bg-emerald-500/20 text-emerald-300");
+                    showToast("fa-circle-check", "射击正确答案！", "FPS得分+100", "bg-emerald-500/20 text-emerald-300");
                     playSynthSound('hit_correct');
                     markQuestionCompleted(fpsCurrentItem.id);
 
@@ -1479,11 +1540,11 @@
                     if (fpsHealth <= 0) fpsHealth = 0;
                     updateFPSHealthBar();
                     playSynthSound('hit_wrong');
-                    showToast("fa-circle-xmark", "错误目标！生命流失", "请瞄准正确答案发射", "bg-rose-500/20 text-rose-300");
+                    showToast("fa-circle-xmark", "误射错误目标", "扣除战机能量！", "bg-rose-500/20 text-rose-300");
 
                     if (fpsHealth <= 0) {
                         stopFPSGameLoop();
-                        showCustomModal('fa-circle-xmark text-rose-400', '生命耗尽', '很遗憾，生命值归零。熟背之后再来重新对决吧！', false);
+                        showCustomModal('fa-circle-xmark text-rose-400', '战败归来', '机体能量归零，请熟记考点后再行参战。', false);
                         exitGameMode();
                     }
                 }
@@ -1558,7 +1619,6 @@
                     target.vy = -target.vy;
                 }
 
-                // Smooth glowing radial aura for compact bubbles
                 const grad = fpsCtx.createRadialGradient(target.x, target.y, 2, target.x, target.y, target.r);
                 grad.addColorStop(0, '#0f172a');
                 grad.addColorStop(0.85, 'rgba(15, 23, 42, 0.95)');
@@ -1577,7 +1637,6 @@
                 fpsCtx.stroke();
                 fpsCtx.shadowBlur = 0; 
 
-                // Elegant outer dotted frame
                 fpsCtx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
                 fpsCtx.lineWidth = 1;
                 fpsCtx.setLineDash([4, 4]);
@@ -1586,7 +1645,6 @@
                 fpsCtx.stroke();
                 fpsCtx.setLineDash([]); 
 
-                // Scaled responsive text wrapping (using smaller font for the compact bubbles)
                 fpsCtx.fillStyle = '#e2e8f0';
                 fpsCtx.font = "bold 8.5px sans-serif";
                 fpsCtx.textAlign = "center";
@@ -1633,7 +1691,7 @@
 
             const gunGrad = fpsCtx.createLinearGradient(-20, -gunRecoil, 20, -gunRecoil);
             gunGrad.addColorStop(0, '#111827'); 
-            gunGrad.addColorStop(0.5, '#06b6d4'); // Matching cyan core
+            gunGrad.addColorStop(0.5, '#06b6d4'); 
             gunGrad.addColorStop(1, '#0f172a');
 
             fpsCtx.fillStyle = gunGrad;
@@ -1645,14 +1703,12 @@
             fpsCtx.closePath();
             fpsCtx.fill();
 
-            // Glow core line
             fpsCtx.shadowColor = '#22d3ee';
             fpsCtx.shadowBlur = 8;
             fpsCtx.fillStyle = '#22d3ee';
             fpsCtx.fillRect(-2, -70 + gunRecoil, 4, 50);
             fpsCtx.shadowBlur = 0;
 
-            // Trigger flash explosion
             if (gunRecoil > 14) {
                 const flashGrad = fpsCtx.createRadialGradient(0, -85 + gunRecoil, 2, 0, -85 + gunRecoil, 20);
                 flashGrad.addColorStop(0, '#ffffff');
