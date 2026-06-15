@@ -260,7 +260,7 @@
                     </div>
                 </div>
 
-                <!-- NEW Mode 6: Locked Pinball Mode -->
+                <!-- Mode 6: Locked Pinball Mode -->
                 <div id="card-pinball-locked" onclick="tryUnlockPinball()" class="relative group cursor-pointer glass p-4 rounded-xl border border-slate-800/60 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[160px]">
                     <!-- Locking Overlay -->
                     <div id="pinball-lock-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-3 text-center space-y-2">
@@ -271,7 +271,7 @@
                         <div class="w-32 bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-800">
                             <div id="pinball-unlock-progress" class="bg-yellow-500 h-full w-0 transition-all duration-300"></div>
                         </div>
-                        <div class="text-[9px] text-slate-500">玩其他模式可快速赚积分</div>
+                        <div class="text-[9px] text-slate-500">完成其他复习获取积分</div>
                     </div>
 
                     <div class="space-y-3">
@@ -279,14 +279,14 @@
                             <i class="fa-solid fa-bowling-ball text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-sm text-white group-hover:text-yellow-400 transition">蓄力激光弹球</h3>
+                            <h3 class="font-bold text-sm text-white group-hover:text-yellow-400 transition">蓄力极光弹球</h3>
                             <p class="text-slate-400 text-[11px] mt-1 leading-relaxed">
-                                聚能激光弹球玩法。滑动挡板反弹，击碎政治标准砖块，高分神器！
+                                长按蓄力，调整发射倾角！滑动挡板反弹。击碎正确参考答案砖块即可秒杀通关！
                             </p>
                         </div>
                     </div>
                     <div class="mt-4 flex items-center justify-between text-[11px] font-semibold text-slate-400 group-hover:text-yellow-300 transition">
-                        <span>高能蓄力打击</span>
+                        <span>高能物理消砖</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </div>
                 </div>
@@ -448,13 +448,13 @@
                 </div>
             </div>
 
-            <!-- NEW MODE 6: PINBALL SCREEN -->
+            <!-- MODE 6: PINBALL SCREEN -->
             <div id="screen-pinball" class="hidden flex-grow flex flex-col justify-between gap-4 z-10 p-0 relative h-[450px]">
                 <div class="relative w-full h-[400px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden">
                     <!-- HUD -->
                     <div class="absolute top-0 left-0 w-full p-2 flex justify-between items-center bg-gradient-to-b from-slate-950/80 to-transparent z-20 pointer-events-none">
                         <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-heart text-yellow-500 text-xs"></i>
+                            <i class="fa-solid fa-heart text-yellow-500 text-xs animate-bounce"></i>
                             <div class="text-xs text-slate-300 font-bold">LIVES: <span id="pinball-lives">3</span></div>
                         </div>
                         <div class="text-right">
@@ -522,7 +522,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-100">核心观点及关联考点（45题）</h4>
-                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级德法重点。包含心理健康、道德修修养、总体国家安全及法治实施。</p>
+                            <p class="text-[10px] text-slate-400 leading-normal mt-0.5">提炼自九年级德法重点。包含心理健康、道德修养、总体国家安全及法治实施。</p>
                         </div>
                     </div>
                     <div id="db-opt-indicator-core_viewpoint" class="w-5 h-5 rounded-full border-2 border-slate-850 flex items-center justify-center shrink-0">
@@ -557,11 +557,56 @@
 
     <!-- Audio Synthesis Utility & Game Logic Scripts -->
     <script>
+        // --- SAFE STANDALONE SANDBOXED LOCAL STORAGE ---
+        const SafeStorage = {
+            getItem(key) {
+                try {
+                    return window.localStorage.getItem(key);
+                } catch (e) {
+                    return this.memoryStore[key] || null;
+                }
+            },
+            setItem(key, value) {
+                try {
+                    window.localStorage.setItem(key, value);
+                } catch (e) {
+                    this.memoryStore[key] = String(value);
+                }
+            },
+            removeItem(key) {
+                try {
+                    window.localStorage.removeItem(key);
+                } catch (e) {
+                    delete this.memoryStore[key];
+                }
+            },
+            memoryStore: {}
+        };
+
+        // --- POLYFILL CanvasRenderingContext2D.prototype.roundRect ---
+        // (CRITICAL FIX FOR CRASHING ON OLD SAFARI/WEBVIEWS AND MOBILE IN-APP BROWSERS)
+        if (typeof CanvasRenderingContext2D.prototype.roundRect !== 'function') {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (typeof r === 'undefined') r = 0;
+                if (Array.isArray(r)) r = r[0] || 0;
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+
         // --- POOL A: HIGH FREQUENCY POINTS (76 Questions) ---
         const HIGH_FREQ_QUESTIONS = [
             { id: 1, q: "中国特色社会主义的最本质特征、最大优势？", a: "中国共产党的领导", cat: "党与根本制度" },
             { id: 2, q: "中国特色社会主义的本质要求 and 重要保障？", a: "本质要求：共同富裕；重要保障：全面依法治国", cat: "法治与司法公正" },
-            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全过程人民民主", cat: "全过程人民民主" },
+            { id: 3, q: "社会主义民主政治的本质特征、本质属性？", a: "本质特征：人民当家作主；本质属性：全全过程人民民主", cat: "全过程人民民主" },
             { id: 4, q: "民主政治的特有形式、独特优势？", a: "协商民主", cat: "全过程人民民主" },
             { id: 5, q: "民主决策的四个小制度？", a: "社情民意反映制度、专家咨询制度、重大事项社会公示制度、社会听证制度", cat: "全过程人民民主" },
             { id: 6, q: "国家社会主义民主政治建设的基础？公民参与国家和管理的基础？", a: "民主政治建设的基础是基层群众自治制度；公民参与基础是选举权和被选举权", cat: "全过程人民民主" },
@@ -604,7 +649,7 @@
             { id: 43, q: "公民最基本、最重要的权利？", a: "人身自由权", cat: "公民权利与义务" },
             { id: 44, q: "社会经济与文化教育权利包括哪些？", a: "劳动权、财产权、物质帮助权、受教育权、文化权利", cat: "公民权利与义务" },
             { id: 45, q: "公民的基本权利有哪些？", a: "政治权利 and 自由、人身自由、社会经济与文化教育权利", cat: "公民权利与义务" },
-            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一和民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
+            { id: 46, q: "公民的基本义务有哪些？遵守宪法和法律有哪些具体表现？", a: "义务：遵守宪法和法律、维护国家统一 and 民族团结、服兵役、纳税等；表现：保守国家秘密、爱护公共财产、遵守公共秩序、遵守劳动纪律、尊重社会公德", cat: "公民权利与义务" },
             { id: 47, q: "既是公民基本权利又是基本义务的有哪些？", a: "劳动和受教育", cat: "公民权利与义务" },
             { id: 48, q: "我国解决民族问题的基本原则和基本制度是什么？新型民族关系是什么？", a: "三方针是平等、团结、繁荣；基本制度是民族区域自治制度；关系是平等团结互助和谐", cat: "民族团结与统一" },
             { id: 49, q: "实现祖国完全统一的基本方针/最佳方式？发展两岸关系的政治基础？", a: "方针是“和平统一、一国两制”；政治基础是一个中国原则", cat: "民族团结与统一" },
@@ -637,7 +682,7 @@
             { id: 76, q: "诚信在民事活动中是什么法律原则？", a: "民法的基本原则", cat: "法治与司法公正" }
         ];
 
-        // --- POOL B: CORE VIEWPOINTS AND ASSOCIATED KNOWLEDGE POINTS (45 Questions) ---
+        // --- POOL B: CORE VIEWPOINTS (45 Questions) ---
         const CORE_VIEWPOINT_QUESTIONS = [
             { id: 101, q: "正确认识自己的核心目的及方法？", a: "学会接纳、欣赏自己；努力做更好的自己", cat: "心理健康与健全人格" },
             { id: 102, q: "养护精神、活出生命精彩的途径？", a: "守望精神家园；传承中华优秀传统文化；积极承担社会责任，实现生命价值", cat: "心理健康与健全人格" },
@@ -656,9 +701,9 @@
             { id: 115, q: "养成亲社会行为对个人的终极要求？", a: "积极承担社会责任，奉献社会；追求止于至善的崇高道德境界", cat: "道德修养与社会交往" },
             { id: 116, q: "服务社会的具体表现？", a: "参加公益活动，不言代价与回报；热心服务社会，实现生命价值；迈向止于至善", cat: "道德修养与社会交往" },
             { id: 117, q: "维护社会秩序 and 遵守规则的底线？", a: "自觉守法；恪守道德；维护公平正义；践行行己有耻", cat: "道德修养与社会交往" },
-            { id: 118, q: "坚持国家利益至上的多维意义？", a: "维护国家利益；理清个人与国家利益关系（根本一致）；国家人民利益统一；发扬爱国爱国主义精神", cat: "国家利益与国家发展" },
+            { id: 118, q: "坚持国家利益至上的多维意义？", a: "维护国家利益；理清个人与国家利益关系（根本一致）；国家人民利益统一；发扬爱国主义精神", cat: "国家利益与国家发展" },
             { id: 119, q: "树立总体国家安全观的基本职责？", a: "维护国家安全、国家荣誉与国家利益；承担时代责任，为祖国成就深感自豪", cat: "国家利益与国家发展" },
-            { id: 120, q: "关心国家发展的精神支撑？", a: "对国家发展充满必胜信心；弘扬和培育以爱国主义为核心的民族精神", cat: "国家利益与国家发展" },
+            { id: 120, q: "关心国家发展的精神支撑？", a: "对国家发展充满必胜信心；弘扬 and 培育以爱国主义为核心的民族精神", cat: "国家利益与国家发展" },
             { id: 121, q: "培养劳动意识，发扬实干精神？", a: "认识劳动光荣的意义；履行基本劳动义务；弘扬爱岗敬业精神；传承实干美德", cat: "国家利益与国家发展" },
             { id: 122, q: "做好职业准备，弘扬敬业精神？", a: "自觉承担职业责任；弘扬爱岗敬业；在劳动和奉献中养成亲社会行为", cat: "国家利益与国家发展" },
             { id: 123, q: "“法律在身边”的法治精髓？", a: "体现法律的特征；体现法律具有规范和保护作用；坚定不移地坚持全面依法治国", cat: "法治观念与宪法实施" },
@@ -677,13 +722,13 @@
             { id: 136, q: "如何追求民主价值？", a: "发展全过程人民民主（社会主义民主是新型民主）；保障人民当家作主，协商民主，积极参与并增强民主意识", cat: "全过程人民民主" },
             { id: 137, q: "如何“建设法治中国”？", a: "坚持科学立法、严格执法、公正司法、全民守法；政府行政权受法律规范；捍卫社会公平正义", cat: "法治观念与宪法实施" },
             { id: 138, q: "如何“守望精神家园”？", a: "传承中华优秀传统文化；坚定文化自信；弘扬民族和时代精神，践行社会主义核心价值观，守护文化安全", cat: "精神文明与文化" },
-            { id: 139, q: "如何“建设美丽中国”？", a: "坚持绿色发展道路与生态文明建设；贯彻保护环境与节约资源的基本国策；坚持计划生育", cat: "国家利益与国家发展" },
-            { id: 140, q: "“坚持中华一家亲”的政治要求？", a: "维护民族团结与祖国统一；践行平等、团结、繁荣方针；实行一国两制；捍卫国家利益安全", cat: "民族团结与统一" },
+            { id: 139, q: "如何“建设美丽中国”？", a: "坚持绿色发展道路与生态文明建设；贯彻保护环境与节约资源的基本国策；生态文明", cat: "国家利益与国家发展" },
+            { id: 140, q: "“坚持中华一家亲”的政治要求？", a: "维护民族团结与祖国统一；践行平等、团结、繁荣方针；一国两制；捍卫国家安全", cat: "民族团结与统一" },
             { id: 141, q: "如何共圆中华民族伟大复兴的“中国梦”？", a: "做自信的中国人；走中国道路，凝聚中国力量，发扬中国精神；坚持五大新发展理念", cat: "国家利益与国家发展" },
             { id: 142, q: "如何理解“同住地球村”的机遇与特征？", a: "积极面对经济全球化与世界开放；共享文化多样性，交流互鉴；提高中华文化的国际影响力", cat: "世界舞台与外交" },
             { id: 143, q: "如何理解“构建人类命运共同体”？", a: "致力于维护世界和平与发展；在世界多极化格局中，坚持合作共赢、互利互惠、共同发展", cat: "世界舞台与外交" },
             { id: 144, q: "如何理解“中国与世界紧相连”？", a: "中国是一个负责任的大国，彰显中国担当，贡献中国智慧与中国方案", cat: "世界舞台与外交" },
-            { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展机遇和成果，推动全球共同繁荣", cat: "世界舞台与外交" }
+            { id: 145, q: "如何理解“中国与世界共发展”？", a: "辩证看待中国的机遇和挑战；向世界开放，分享中国的发展成果，推动全球共同繁荣", cat: "世界舞台与外交" }
         ];
 
         // --- GAME & SYSTEM GLOBAL STATE ---
@@ -692,14 +737,12 @@
         let currentQuestionIndex = 0; 
         let sessionCompletedCount = 0; 
         
-        // Anti-crash scoreboard loaded on bootstrap from localStorage
-        let score = parseInt(localStorage.getItem('politics_score_v6') || '0');
-        let streak = parseInt(localStorage.getItem('politics_streak_v6') || '0');
+        let score = parseInt(SafeStorage.getItem('politics_score_v6') || '0');
+        let streak = parseInt(SafeStorage.getItem('politics_streak_v6') || '0');
         
         let playList = [];
         let completedIds = [];
         
-        // Foo-proof shown counts structure
         let shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
         
         let isMoxieInputType = 'type'; 
@@ -707,7 +750,7 @@
         let hasAnsweredCurrent = false; 
         let audioEnabled = true;
 
-        // Retrieve shown tracker safely under any conditions
+        // Retrieve sandboxed shown counts safely
         function getModeTracker(modeName) {
             if (!shownCounts) {
                 shownCounts = { moxie: {}, matching: {}, dragdrop: {}, quiz: {}, fps: {}, pinball: {} };
@@ -729,28 +772,33 @@
             };
         }
 
+        function loadAllShownCounts() {
+            const modes = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'];
+            modes.forEach(m => {
+                const key = `politics_shown_counts_v6_${currentDatabase}_${m}`;
+                try {
+                    const raw = SafeStorage.getItem(key);
+                    shownCounts[m] = raw ? JSON.parse(raw) : {};
+                } catch(e) {
+                    shownCounts[m] = {};
+                }
+            });
+        }
+
         function syncDatabaseState() {
             const keys = getLocalStorageKeys();
             
-            // Sync completed items
+            // Sync completed progress safely
             try {
-                completedIds = JSON.parse(localStorage.getItem(keys.completed) || '[]');
+                const savedCompleted = SafeStorage.getItem(keys.completed);
+                completedIds = savedCompleted ? JSON.parse(savedCompleted) : [];
                 if (!Array.isArray(completedIds)) completedIds = [];
             } catch(e) {
                 completedIds = [];
             }
 
-            // Sync shown occurrences inside sandboxed memory
-            try {
-                const raw = localStorage.getItem(keys.shown);
-                if (raw) {
-                    shownCounts[currentMode] = JSON.parse(raw);
-                } else {
-                    shownCounts[currentMode] = {};
-                }
-            } catch(e) {
-                shownCounts[currentMode] = {};
-            }
+            // Sync shown occurrences inside sandboxed memory safely (For all modes)
+            loadAllShownCounts();
 
             // Interface text bindings
             const headerTitle = document.getElementById('header-db-title');
@@ -805,7 +853,7 @@
                 startGameMode('pinball');
             } else {
                 playSynthSound('hit_wrong');
-                showCustomModal('fa-lock text-yellow-500', '模式锁定中', `蓄力激光弹球模式将在您的全局积分达到 1000 分时自动开启！（当前积分：${score}）`, false);
+                showCustomModal('fa-lock text-yellow-500', '模式锁定中', `蓄力极光弹球模式将在您的全局积分达到 1000 分时自动开启！（当前积分：${score}）`, false);
             }
         }
 
@@ -893,7 +941,7 @@
                 modesList.forEach(m => {
                     try {
                         const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
-                        const raw = localStorage.getItem(modeKey);
+                        const raw = SafeStorage.getItem(modeKey);
                         if (raw) {
                             const parsed = JSON.parse(raw);
                             if (parsed && parsed[q.id]) {
@@ -919,26 +967,10 @@
             if (freqExhausted) freqExhausted.innerText = exhausted;
         }
 
-        function resetFrequencyHistory(showModal = false) {
-            const modesList = ['moxie', 'matching', 'dragdrop', 'quiz', 'fps', 'pinball'];
-            modesList.forEach(m => {
-                try {
-                    const modeKey = `politics_shown_counts_v6_${currentDatabase}_${m}`;
-                    localStorage.removeItem(modeKey);
-                    shownCounts[m] = {};
-                } catch(e) {}
-            });
-            
-            updateProgressStats();
-            if (showModal) {
-                showCustomModal('fa-arrows-spin text-cyan-400', '重置成功！', `已清空当前题库在所有背诵方式下的记忆出现频次记录。`, true);
-            }
-        }
-
         // --- SCORE persistent setters ---
         function saveGlobalScores() {
-            localStorage.setItem('politics_score_v6', score.toString());
-            localStorage.setItem('politics_streak_v6', streak.toString());
+            SafeStorage.setItem('politics_score_v6', score.toString());
+            SafeStorage.setItem('politics_streak_v6', streak.toString());
         }
 
         function addScore(points) {
@@ -976,7 +1008,7 @@
                 showCustomModal('fa-arrows-spin text-cyan-400', '自动解除频率锁', `由于本模式下未满 3 次练习的考点不足 10 道，系统已自动重置该分类下的频次记录以保证流畅学习！`, true);
                 try {
                     const keys = getLocalStorageKeys();
-                    localStorage.removeItem(keys.shown);
+                    SafeStorage.removeItem(keys.shown);
                 } catch(e) {}
                 shownCounts[mode] = {};
                 availablePool = currentPool;
@@ -1049,8 +1081,950 @@
             stopPinballGameLoop();
         }
 
-        // --- NEW MODE 6: PINBALL GAME ENGINE (蓄力激光弹球) ---
-        let pinballCanvas, pinballCtx;
+        function markQuestionCompleted(qId) {
+            if (!completedIds.includes(qId)) {
+                completedIds.push(qId);
+                try {
+                    const keys = getLocalStorageKeys();
+                    SafeStorage.setItem(keys.completed, JSON.stringify(completedIds));
+                } catch(e) {}
+            }
+            updateProgressStats();
+        }
+
+        // --- MODE 1: MOXIE ---
+        function initMoxieQuestion() {
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-trophy text-yellow-400', '通关成功！', `恭喜！已完成 10 道默写测验！学分累积+200。`);
+                addScore(200);
+                exitGameMode();
+                return;
+            }
+            hasAnsweredCurrent = false;
+            updateIndicator();
+            
+            const currentItem = playList[currentQuestionIndex];
+            trackOccurrence(currentItem.id); 
+
+            document.getElementById('moxie-question').innerText = currentItem.q;
+            document.getElementById('moxie-input').value = "";
+            document.getElementById('moxie-feedback').classList.add('hidden');
+            document.getElementById('moxie-card-controls').classList.add('hidden');
+            cardFlipped = false;
+            
+            if (isMoxieInputType === 'type') {
+                document.getElementById('moxie-typing-area').classList.remove('hidden');
+                document.getElementById('moxie-card-area').classList.add('hidden');
+            } else {
+                document.getElementById('moxie-typing-area').classList.add('hidden');
+                document.getElementById('moxie-card-area').classList.remove('hidden');
+                document.getElementById('moxie-flip-card').innerHTML = `<div class="text-slate-400 font-semibold italic text-[11px]">轻触翻面 显现正确答案</div>`;
+            }
+        }
+
+        function submitMoxieAnswer() {
+            if (hasAnsweredCurrent) return;
+            const userInput = document.getElementById('moxie-input').value.trim();
+            if (!userInput) return;
+            const currentItem = playList[currentQuestionIndex];
+            const answer = currentItem.a;
+
+            let isCorrect = false;
+            const matchCount = Array.from(userInput).filter(char => answer.includes(char)).length;
+            const threshold = Math.min(answer.length * 0.4, 6); 
+            
+            if (userInput === answer || (userInput.length >= 2 && matchCount >= threshold)) {
+                isCorrect = true;
+            }
+
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+            showMoxieFeedback(isCorrect);
+        }
+
+        function showMoxieAnswer() {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+            showMoxieFeedback(false);
+        }
+
+        function showMoxieFeedback(isCorrect) {
+            const currentItem = playList[currentQuestionIndex];
+            const feedbackBox = document.getElementById('moxie-feedback');
+            const statusText = document.getElementById('moxie-status-text');
+            const refAnswer = document.getElementById('moxie-ref-answer');
+            
+            feedbackBox.classList.remove('hidden');
+            refAnswer.innerText = currentItem.a;
+
+            if (isCorrect) {
+                statusText.innerText = "🎉 回答正确！核心关键词匹配度极高。";
+                statusText.className = "text-xs font-black text-emerald-400";
+                addScore(50);
+                addStreak();
+                playSynthSound('hit_correct');
+                markQuestionCompleted(currentItem.id);
+            } else {
+                statusText.innerText = "💡 正确规范参考答案如下：";
+                statusText.className = "text-xs font-black text-cyan-400";
+                breakStreak();
+                playSynthSound('hit_wrong');
+                markQuestionCompleted(currentItem.id);
+            }
+        }
+
+        function flipMoxieCard() {
+            if (cardFlipped) return;
+            const currentItem = playList[currentQuestionIndex];
+            const card = document.getElementById('moxie-flip-card');
+            card.innerHTML = `<div class="text-white font-bold text-xs leading-relaxed max-w-full overflow-y-auto max-h-full">${currentItem.a}</div>`;
+            document.getElementById('moxie-card-controls').classList.remove('hidden');
+            cardFlipped = true;
+        }
+
+        function evaluateCard(isCorrect) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+
+            const currentItem = playList[currentQuestionIndex];
+            if (isCorrect) {
+                addScore(40);
+                addStreak();
+                playSynthSound('hit_correct');
+                markQuestionCompleted(currentItem.id);
+                showToast("fa-circle-check", "掌握考点", "+40 积分", "bg-emerald-500/20 text-emerald-300");
+            } else {
+                breakStreak();
+                playSynthSound('hit_wrong');
+                showToast("fa-circle-xmark", "纳入错题本", "重点高频复习", "bg-rose-500/20 text-rose-300");
+                markQuestionCompleted(currentItem.id);
+            }
+            nextMoxieQuestion();
+        }
+
+        function nextMoxieQuestion() {
+            currentQuestionIndex++;
+            initMoxieQuestion();
+        }
+
+        // --- MODE 2: MATCHING GAME ---
+        let selectedMatchingLeft = null;
+        let selectedMatchingRight = null;
+        let matchedPairsCount = 0;
+        let matchingSubset = [];
+
+        function initMatchingGame() {
+            const leftContainer = document.getElementById('matching-left');
+            const rightContainer = document.getElementById('matching-right');
+            const svg = document.getElementById('matching-svg');
+            
+            leftContainer.innerHTML = "";
+            rightContainer.innerHTML = "";
+            svg.innerHTML = "";
+            
+            selectedMatchingLeft = null;
+            selectedMatchingRight = null;
+
+            matchingSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 5);
+            if (matchingSubset.length === 0) {
+                showCustomModal('fa-award text-yellow-400', '连线完成！', `本轮连线成功，学分+150！`);
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+
+            matchedPairsCount = 0;
+            document.getElementById('matching-remain').innerText = matchingSubset.length;
+
+            matchingSubset.forEach(q => trackOccurrence(q.id));
+
+            const shuffledLeft = shuffleArray(matchingSubset);
+            const shuffledRight = shuffleArray(matchingSubset);
+
+            shuffledLeft.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-800 p-2.5 rounded-xl transition duration-200 flex items-center justify-between";
+                btn.id = `match-left-${item.id}`;
+                btn.innerHTML = `
+                    <span class="max-w-[85%] leading-tight">${item.q}</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 inline-block shrink-0 ml-1"></span>
+                `;
+                btn.onclick = () => selectMatchingNode(item.id, 'left');
+                leftContainer.appendChild(btn);
+            });
+
+            shuffledRight.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-800 p-2.5 rounded-xl transition duration-200 flex items-center justify-between";
+                btn.id = `match-right-${item.id}`;
+                btn.innerHTML = `
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 inline-block shrink-0 mr-1"></span>
+                    <span class="max-w-[85%] text-right ml-auto leading-tight">${item.a}</span>
+                `;
+                btn.onclick = () => selectMatchingNode(item.id, 'right');
+                rightContainer.appendChild(btn);
+            });
+        }
+
+        function selectMatchingNode(id, side) {
+            playSynthSound('shoot');
+            if (side === 'left') {
+                if (selectedMatchingLeft) {
+                    document.getElementById(`match-left-${selectedMatchingLeft}`).classList.remove('border-cyan-500', 'bg-cyan-950/40');
+                }
+                selectedMatchingLeft = id;
+                document.getElementById(`match-left-${id}`).classList.add('border-cyan-500', 'bg-cyan-950/40');
+            } else {
+                if (selectedMatchingRight) {
+                    document.getElementById(`match-right-${selectedMatchingRight}`).classList.remove('border-cyan-500', 'bg-cyan-950/40');
+                }
+                selectedMatchingRight = id;
+                document.getElementById(`match-right-${id}`).classList.add('border-cyan-500', 'bg-cyan-950/40');
+            }
+
+            if (selectedMatchingLeft !== null && selectedMatchingRight !== null) {
+                if (selectedMatchingLeft === selectedMatchingRight) {
+                    playSynthSound('hit_correct');
+                    const lid = selectedMatchingLeft;
+                    const leftBtn = document.getElementById(`match-left-${lid}`);
+                    const rightBtn = document.getElementById(`match-right-${lid}`);
+
+                    leftBtn.className = "w-full text-left bg-emerald-950/20 text-emerald-400 border border-emerald-500/30 p-2.5 rounded-xl transition duration-200 pointer-events-none flex items-center justify-between opacity-50";
+                    rightBtn.className = "w-full text-left bg-emerald-950/20 text-emerald-400 border border-emerald-500/30 p-2.5 rounded-xl transition duration-200 pointer-events-none flex items-center justify-between opacity-50";
+                    
+                    drawMatchingLine(lid);
+
+                    matchedPairsCount++;
+                    sessionCompletedCount++; 
+                    updateIndicator();
+
+                    document.getElementById('matching-remain').innerText = matchingSubset.length - matchedPairsCount;
+                    
+                    addScore(25);
+                    addStreak();
+                    markQuestionCompleted(lid);
+
+                    if (matchedPairsCount >= matchingSubset.length) {
+                        setTimeout(() => {
+                            nextMatchingGroup();
+                        }, 500);
+                    }
+                } else {
+                    playSynthSound('hit_wrong');
+                    const leftBtn = document.getElementById(`match-left-${selectedMatchingLeft}`);
+                    const rightBtn = document.getElementById(`match-right-${selectedMatchingRight}`);
+                    
+                    leftBtn.classList.add('animate-shake', 'border-rose-500');
+                    rightBtn.classList.add('animate-shake', 'border-rose-500');
+                    breakStreak();
+
+                    setTimeout(() => {
+                        leftBtn.classList.remove('animate-shake', 'border-rose-500', 'border-cyan-500', 'bg-cyan-950/40');
+                        rightBtn.classList.remove('animate-shake', 'border-rose-500', 'border-cyan-500', 'bg-cyan-950/40');
+                    }, 500);
+                }
+                selectedMatchingLeft = null;
+                selectedMatchingRight = null;
+            }
+        }
+
+        function drawMatchingLine(id) {
+            const leftDot = document.querySelector(`#match-left-${id} span:last-child`);
+            const rightDot = document.querySelector(`#match-right-${id} span:first-child`);
+            const svg = document.getElementById('matching-svg');
+            
+            if(!leftDot || !rightDot || !svg) return;
+
+            const rectLeft = leftDot.getBoundingClientRect();
+            const rectRight = rightDot.getBoundingClientRect();
+            const containerRect = svg.getBoundingClientRect();
+
+            const x1 = rectLeft.left + rectLeft.width / 2 - containerRect.left;
+            const y1 = rectLeft.top + rectLeft.height / 2 - containerRect.top;
+            const x2 = rectRight.left + rectRight.width / 2 - containerRect.left;
+            const y2 = rectRight.top + rectRight.height / 2 - containerRect.top;
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", x1);
+            line.setAttribute("y1", y1);
+            line.setAttribute("x2", x2);
+            line.setAttribute("y2", y2);
+            line.setAttribute("stroke", "#10b981");
+            line.setAttribute("stroke-width", "2");
+            line.setAttribute("stroke-dasharray", "3,3");
+
+            svg.appendChild(line);
+        }
+
+        function nextMatchingGroup() {
+            currentQuestionIndex += 5;
+            initMatchingGame();
+        }
+
+        function reloadMatching() {
+            initMatchingGame();
+        }
+
+        // --- MODE 3: DRAG & DROP GAME (DYNAMIC ADAPTIVE CATEGORIES) ---
+        let dragDropSubset = [];
+        let dynamicZones = []; 
+
+        function initDragDropGame() {
+            const itemsContainer = document.getElementById('dragdrop-items');
+            const zonesContainer = document.getElementById('dragdrop-zones');
+            
+            if (!itemsContainer || !zonesContainer) return;
+            itemsContainer.innerHTML = "";
+            zonesContainer.innerHTML = "";
+            activeSelectedCardId = null;
+
+            dragDropSubset = playList.slice(currentQuestionIndex, currentQuestionIndex + 6);
+            if (dragDropSubset.length === 0) {
+                showCustomModal('fa-shield-halved text-cyan-400', '分类自测圆满过关！', '恭喜！10个考点卡片全部分类准确。');
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+
+            const uniqueCatsInSubset = [...new Set(dragDropSubset.map(item => item.cat))];
+            
+            dynamicZones = uniqueCatsInSubset.map((catName, idx) => {
+                return {
+                    id: `zone-dyn-${idx}`,
+                    name: catName
+                };
+            });
+
+            const boxCount = dynamicZones.length;
+            if (boxCount <= 2) {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+            } else if (boxCount === 3) {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-3 gap-3";
+            } else {
+                zonesContainer.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
+            }
+
+            dragDropSubset.forEach(item => {
+                trackOccurrence(item.id);
+
+                const matchedZone = dynamicZones.find(z => z.name === item.cat);
+                const targetZoneId = matchedZone ? matchedZone.id : 'zone-dyn-0';
+                
+                const card = document.createElement('div');
+                card.id = `dd-card-${item.id}`;
+                card.className = "bg-slate-900 border border-slate-800 hover:border-cyan-500/80 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-200 cursor-pointer active:scale-95 transition-all duration-200 select-none shadow-md max-w-xs truncate";
+                card.innerText = item.a;
+                card.title = item.a;
+                card.draggable = true;
+                card.dataset.targetZone = targetZoneId;
+                card.dataset.id = item.id;
+                card.dataset.evaluated = "false";
+
+                card.onclick = () => selectDragCard(item.id);
+
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                    card.classList.add('opacity-40');
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('opacity-40');
+                });
+
+                itemsContainer.appendChild(card);
+            });
+
+            dynamicZones.forEach(zone => {
+                const box = document.createElement('div');
+                box.className = "bg-slate-950/80 border-2 border-dashed border-slate-850 hover:border-cyan-500/30 p-3 rounded-xl flex flex-col justify-start min-h-[140px] transition-colors relative text-xs";
+                box.id = zone.id;
+                box.innerHTML = `
+                    <div class="text-[10px] uppercase tracking-wider text-cyan-400 font-extrabold mb-2 border-b border-slate-900 pb-1 text-center bg-cyan-950/10 py-1 rounded">${zone.name}</div>
+                    <div class="space-y-1.5 flex-grow flex flex-col justify-start items-center" id="${zone.id}-content"></div>
+                `;
+
+                box.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    box.classList.add('border-cyan-500/50', 'bg-cyan-950/10');
+                });
+                box.addEventListener('dragleave', () => {
+                    box.classList.remove('border-cyan-500/50', 'bg-cyan-950/10');
+                });
+                box.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    box.classList.remove('border-cyan-500/50', 'bg-cyan-950/10');
+                    const cardId = e.dataTransfer.getData('text/plain');
+                    dropCardInZone(cardId, zone.id);
+                });
+
+                box.onclick = () => {
+                    if (activeSelectedCardId) {
+                        dropCardInZone(activeSelectedCardId, zone.id);
+                        activeSelectedCardId = null;
+                    }
+                };
+
+                zonesContainer.appendChild(box);
+            });
+        }
+
+        function selectDragCard(cardId) {
+            playSynthSound('shoot');
+            if (activeSelectedCardId) {
+                const prevCard = document.getElementById(`dd-card-${activeSelectedCardId}`);
+                if (prevCard) prevCard.classList.remove('border-pink-500', 'bg-pink-950/20');
+            }
+            activeSelectedCardId = cardId;
+            const card = document.getElementById(`dd-card-${cardId}`);
+            if (card) card.classList.add('border-pink-500', 'bg-pink-950/20');
+            showToast("fa-arrows-to-dot", "选中考点答案", "轻触下方对应的动态分类盒即可归位", "bg-pink-500/20 text-pink-300");
+        }
+
+        function dropCardInZone(cardId, zoneId) {
+            const card = document.getElementById(`dd-card-${cardId}`);
+            if (!card) return;
+            
+            const destContent = document.getElementById(`${zoneId}-content`);
+            if (destContent) {
+                card.classList.remove('border-pink-500', 'bg-pink-950/20');
+                card.classList.add('scale-95');
+                destContent.appendChild(card);
+                playSynthSound('explosion');
+            }
+        }
+
+        function checkDragDropResult() {
+            let correctCount = 0;
+            let totalPlaced = 0;
+            let newlyCorrected = 0;
+
+            dynamicZones.forEach(zone => {
+                const zoneContent = document.getElementById(`${zone.id}-content`);
+                if (!zoneContent) return;
+                const cards = zoneContent.querySelectorAll('[id^="dd-card-"]');
+                
+                cards.forEach(card => {
+                    totalPlaced++;
+                    const targetZone = card.dataset.targetZone;
+                    if (targetZone === zone.id) {
+                        card.className = "bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center truncate pointer-events-none";
+                        correctCount++;
+                        
+                        if (card.dataset.evaluated === "false") {
+                            card.dataset.evaluated = "true";
+                            newlyCorrected++;
+                            sessionCompletedCount++; 
+                            markQuestionCompleted(parseInt(card.dataset.id));
+                        }
+                    } else {
+                        card.className = "bg-rose-950/30 border border-rose-500/40 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] w-full text-center animate-shake truncate";
+                        setTimeout(() => {
+                            card.className = "bg-slate-900 border border-slate-800 hover:border-cyan-500/80 hover:bg-slate-800 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-200 cursor-pointer active:scale-95 transition-all duration-200 truncate";
+                            const itemsBox = document.getElementById('dragdrop-items');
+                            if (itemsBox) itemsBox.appendChild(card);
+                        }, 1200);
+                    }
+                });
+            });
+
+            if (totalPlaced === 0) {
+                showCustomModal('fa-triangle-exclamation text-rose-400', '没有放置卡片', '请先将卡片分类放置到相应的动态分类盒中！', false);
+                return;
+            }
+
+            updateIndicator();
+
+            if (newlyCorrected > 0) {
+                addScore(newlyCorrected * 25);
+                addStreak();
+                playSynthSound('hit_correct');
+            }
+
+            if (correctCount === dragDropSubset.length) {
+                showToast("fa-circle-check", "归类正确！", "自动载入下一组卡片", "bg-emerald-500/20 text-emerald-300");
+                setTimeout(() => {
+                    currentQuestionIndex += 6;
+                    initDragDropGame();
+                }, 1500);
+            } else {
+                playSynthSound('hit_wrong');
+                breakStreak();
+                showToast("fa-circle-xmark", "分类错误", "已自动退回答错的卡片，请重新分类", "bg-rose-500/20 text-rose-300");
+            }
+        }
+
+        // --- MODE 4: MCQ QUIZ ---
+        function initQuizQuestion() {
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
+                showCustomModal('fa-medal text-yellow-400', '竞速自测通关！', `恭喜通关！答题得分已转化计入全局学分积累中！`);
+                addScore(150);
+                exitGameMode();
+                return;
+            }
+            hasAnsweredCurrent = false;
+            updateIndicator();
+
+            const currentItem = playList[currentQuestionIndex];
+            trackOccurrence(currentItem.id);
+
+            document.getElementById('quiz-question').innerText = currentItem.q;
+
+            const pool = getActiveQuestions();
+            const distractors = shuffleArray(pool)
+                .filter(item => item.a !== currentItem.a)
+                .slice(0, 3)
+                .map(item => item.a);
+
+            const options = shuffleArray([currentItem.a, ...distractors]);
+            const optionsContainer = document.getElementById('quiz-options');
+            if (optionsContainer) {
+                optionsContainer.innerHTML = "";
+                options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-slate-900 hover:bg-slate-800 hover:border-cyan-500/50 text-slate-200 border border-slate-800 p-4 rounded-xl transition duration-200 active:scale-98 flex items-center space-x-2";
+                    btn.innerHTML = `
+                        <span class="w-6 h-6 rounded-full bg-slate-950 flex items-center justify-center font-bold text-[10px] border border-slate-800 shrink-0 text-slate-400">${String.fromCharCode(65 + idx)}</span>
+                        <span class="text-xs font-semibold leading-relaxed">${opt}</span>
+                    `;
+                    btn.onclick = () => selectQuizOption(opt, currentItem.a, btn);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+        }
+
+        function selectQuizOption(selected, correct, btnNode) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+            sessionCompletedCount++;
+            updateIndicator();
+
+            const allButtons = document.getElementById('quiz-options').children;
+            Array.from(allButtons).forEach(btn => btn.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                playSynthSound('hit_correct');
+                addScore(30 + streak * 5);
+                addStreak();
+                btnNode.className = "w-full text-left bg-emerald-950/30 text-emerald-300 border border-emerald-500 p-4 rounded-xl transition duration-200 flex items-center space-x-2 shadow-md";
+                
+                const ptsFloat = document.getElementById('quiz-points-added');
+                if (ptsFloat) {
+                    ptsFloat.innerText = `+${30 + streak * 5} pts`;
+                    ptsFloat.classList.remove('hidden');
+                    ptsFloat.className = "absolute top-4 left-1/2 transform -translate-x-1/2 text-xl font-black text-yellow-400 gaming-font animate-bounce";
+                }
+                
+                markQuestionCompleted(playList[currentQuestionIndex].id);
+
+                setTimeout(() => {
+                    if (ptsFloat) ptsFloat.classList.add('hidden');
+                    currentQuestionIndex++;
+                    initQuizQuestion();
+                }, 1000);
+            } else {
+                playSynthSound('hit_wrong');
+                breakStreak();
+                btnNode.className = "w-full text-left bg-rose-950/30 text-rose-300 border border-rose-500 p-4 rounded-xl transition duration-200 flex items-center space-x-2 shadow-md animate-shake";
+                
+                Array.from(allButtons).forEach(btn => {
+                    if (btn.querySelector('span:last-child').innerText === correct) {
+                        btn.className = "w-full text-left bg-emerald-950/20 text-emerald-300 border border-emerald-500/50 p-4 rounded-xl transition duration-200 flex items-center space-x-2";
+                    }
+                });
+                markQuestionCompleted(playList[currentQuestionIndex].id);
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    initQuizQuestion();
+                }, 2000);
+            }
+        }
+
+        // --- MODE 5: FPS SHOOTING GAME ---
+        let fpsCanvas = null, fpsCtx = null;
+        let fpsGameActive = false;
+        let fpsAnimationId = null;
+        let fpsTargets = [];
+        let fpsScoreVal = 0;
+        let fpsHealth = 100;
+        let fpsCurrentItem = null;
+        let particles = [];
+        let mouseX = 200, mouseY = 200;
+        let gunRecoil = 0;
+        let crosshairScale = 1.0;
+
+        function startFPSGame() {
+            const fpsIntro = document.getElementById('fps-intro');
+            if (fpsIntro) fpsIntro.classList.add('hidden');
+            
+            fpsCanvas = document.getElementById('fps-canvas');
+            if (!fpsCanvas) return;
+            fpsCtx = fpsCanvas.getContext('2d');
+            
+            fpsCanvas.width = fpsCanvas.parentElement.clientWidth;
+            fpsCanvas.height = fpsCanvas.parentElement.clientHeight;
+
+            fpsCanvas.addEventListener('mousemove', updateMousePosition);
+            fpsCanvas.addEventListener('touchmove', updateTouchPosition);
+            fpsCanvas.addEventListener('mousedown', triggerShoot);
+            fpsCanvas.addEventListener('touchstart', handleTouchShoot);
+
+            fpsGameActive = true;
+            fpsScoreVal = 0;
+            fpsHealth = 100;
+            fpsTargets = [];
+            particles = [];
+            document.getElementById('fps-score').innerText = "FPS得分: 0";
+            updateFPSHealthBar();
+
+            currentQuestionIndex = 0;
+            sessionCompletedCount = 0;
+            loadNextFPSQuestion();
+            runFPSLoop();
+        }
+
+        function updateMousePosition(e) {
+            if (!fpsCanvas) return;
+            const rect = fpsCanvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        }
+
+        function updateTouchPosition(e) {
+            if (e.touches.length > 0 && fpsCanvas) {
+                const rect = fpsCanvas.getBoundingClientRect();
+                mouseX = e.touches[0].clientX - rect.left;
+                mouseY = e.touches[0].clientY - rect.top;
+            }
+        }
+
+        function handleTouchShoot(e) {
+            if (e.touches.length > 0 && fpsCanvas) {
+                const rect = fpsCanvas.getBoundingClientRect();
+                mouseX = e.touches[0].clientX - rect.left;
+                mouseY = e.touches[0].clientY - rect.top;
+                triggerShoot(e);
+            }
+        }
+
+        function stopFPSGameLoop() {
+            fpsGameActive = false;
+            if (fpsAnimationId) {
+                cancelAnimationFrame(fpsAnimationId);
+                fpsAnimationId = null;
+            }
+        }
+
+        function updateFPSHealthBar() {
+            const bar = document.getElementById('fps-health-fill');
+            if (bar) bar.style.width = `${fpsHealth}%`;
+        }
+
+        function loadNextFPSQuestion() {
+            if (sessionCompletedCount >= 10 || currentQuestionIndex >= playList.length) {
+                stopFPSGameLoop();
+                showCustomModal('fa-circle-check text-emerald-400', '战绩卓越！', `恭喜通过射击考场！获得额外实战学分积累：${fpsScoreVal}！`, true);
+                addScore(fpsScoreVal);
+                exitGameMode();
+                return;
+            }
+            hasAnsweredCurrent = false;
+            updateIndicator();
+
+            fpsCurrentItem = playList[currentQuestionIndex];
+            trackOccurrence(fpsCurrentItem.id);
+
+            const qBar = document.getElementById('fps-hud-question');
+            if (qBar) qBar.innerText = `实战：${fpsCurrentItem.q}`;
+
+            fpsTargets = [];
+
+            const pool = getActiveQuestions();
+            const distractors = shuffleArray(pool)
+                .filter(item => item.a !== fpsCurrentItem.a)
+                .slice(0, 2)
+                .map(item => item.a);
+
+            const options = shuffleArray([fpsCurrentItem.a, ...distractors]);
+
+            options.forEach((opt, idx) => {
+                const targetSpacing = fpsCanvas.width / 3;
+                fpsTargets.push({
+                    x: targetSpacing * idx + (targetSpacing / 2) + (Math.random() * 20 - 10),
+                    y: Math.random() * 60 + 80, 
+                    vx: Math.random() * 1.4 - 0.7,
+                    vy: Math.random() * 0.6 - 0.3,
+                    r: 38, 
+                    text: opt,
+                    isCorrect: (opt === fpsCurrentItem.a),
+                    color: '#22d3ee', 
+                    opacity: 1.0,
+                    scale: 1.0
+                });
+            });
+        }
+
+        function triggerShoot(e) {
+            if (!fpsGameActive || hasAnsweredCurrent) return;
+            e.preventDefault();
+
+            playSynthSound('shoot');
+            gunRecoil = 22; 
+            crosshairScale = 1.35;
+
+            let hitTargetIndex = -1;
+            for (let i = 0; i < fpsTargets.length; i++) {
+                const target = fpsTargets[i];
+                const dx = mouseX - target.x;
+                const dy = mouseY - target.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= target.r) {
+                    hitTargetIndex = i;
+                    break;
+                }
+            }
+
+            if (hitTargetIndex !== -1) {
+                const hit = fpsTargets[hitTargetIndex];
+                createTargetParticles(hit.x, hit.y, hit.color);
+                playSynthSound('explosion');
+
+                if (hit.isCorrect) {
+                    hasAnsweredCurrent = true;
+                    sessionCompletedCount++; 
+                    updateIndicator();
+
+                    fpsScoreVal += 100;
+                    const scoreBoard = document.getElementById('fps-score');
+                    if (scoreBoard) scoreBoard.innerText = `FPS得分: ${fpsScoreVal}`;
+                    showToast("fa-circle-check", "射击正确答案！", "FPS得分+100", "bg-emerald-500/20 text-emerald-300");
+                    playSynthSound('hit_correct');
+                    markQuestionCompleted(fpsCurrentItem.id);
+
+                    fpsTargets = []; 
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        loadNextFPSQuestion();
+                    }, 500);
+                } else {
+                    fpsHealth -= 35;
+                    if (fpsHealth <= 0) fpsHealth = 0;
+                    updateFPSHealthBar();
+                    playSynthSound('hit_wrong');
+                    showToast("fa-circle-xmark", "误射错误目标", "扣除战机能量！", "bg-rose-500/20 text-rose-300");
+
+                    if (fpsHealth <= 0) {
+                        stopFPSGameLoop();
+                        showCustomModal('fa-circle-xmark text-rose-400', '战败归来', '机体能量归零，请熟记考点后再行参战。', false);
+                        exitGameMode();
+                    }
+                }
+            } else {
+                createImpactSparks(mouseX, mouseY);
+            }
+        }
+
+        function createTargetParticles(x, y, color) {
+            const count = 20;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    r: Math.random() * 3 + 1.5,
+                    color: color,
+                    life: 1.0,
+                    decay: Math.random() * 0.04 + 0.02
+                });
+            }
+        }
+
+        function createImpactSparks(x, y) {
+            const count = 6;
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3,
+                    r: Math.random() * 1.5 + 0.8,
+                    color: '#fb7185', 
+                    life: 1.0,
+                    decay: 0.06
+                });
+            }
+        }
+
+        function runFPSLoop() {
+            if (!fpsGameActive || !fpsCtx) return;
+
+            fpsCtx.fillStyle = '#020617';
+            fpsCtx.fillRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+
+            drawFurturisticGrid();
+
+            particles.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                
+                fpsCtx.fillStyle = p.color;
+                fpsCtx.globalAlpha = p.life;
+                fpsCtx.beginPath();
+                fpsCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                fpsCtx.fill();
+                fpsCtx.globalAlpha = 1.0;
+
+                if (p.life <= 0) particles.splice(idx, 1);
+            });
+
+            fpsTargets.forEach(target => {
+                target.x += target.vx;
+                target.y += target.vy;
+
+                if (target.x - target.r <= 0 || target.x + target.r >= fpsCanvas.width) {
+                    target.vx = -target.vx;
+                }
+                if (target.y - target.r <= 35 || target.y + target.r >= fpsCanvas.height - 90) {
+                    target.vy = -target.vy;
+                }
+
+                const grad = fpsCtx.createRadialGradient(target.x, target.y, 2, target.x, target.y, target.r);
+                grad.addColorStop(0, '#0f172a');
+                grad.addColorStop(0.85, 'rgba(15, 23, 42, 0.95)');
+                grad.addColorStop(1, target.color);
+
+                fpsCtx.shadowColor = target.color;
+                fpsCtx.shadowBlur = 10;
+
+                fpsCtx.fillStyle = grad;
+                fpsCtx.beginPath();
+                fpsCtx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+                fpsCtx.fill();
+
+                fpsCtx.lineWidth = 2;
+                fpsCtx.strokeStyle = target.color;
+                fpsCtx.stroke();
+                fpsCtx.shadowBlur = 0; 
+
+                fpsCtx.strokeStyle = 'rgba(34, 211, 238, 0.2)';
+                fpsCtx.lineWidth = 1;
+                fpsCtx.setLineDash([4, 4]);
+                fpsCtx.beginPath();
+                fpsCtx.arc(target.x, target.y, target.r + 6, 0, Math.PI * 2);
+                fpsCtx.stroke();
+                fpsCtx.setLineDash([]); 
+
+                fpsCtx.fillStyle = '#e2e8f0';
+                fpsCtx.font = "bold 8.5px sans-serif";
+                fpsCtx.textAlign = "center";
+                fpsCtx.textBaseline = "middle";
+                wrapCanvasText(fpsCtx, target.text, target.x, target.y, target.r * 1.6, 11);
+            });
+
+            drawGunArm();
+            drawFPSCrosshair();
+
+            fpsAnimationId = requestAnimationFrame(runFPSLoop);
+        }
+
+        function drawFurturisticGrid() {
+            if (!fpsCtx || !fpsCanvas) return;
+            fpsCtx.strokeStyle = 'rgba(15, 23, 42, 0.3)';
+            fpsCtx.lineWidth = 1;
+            const size = 35;
+            for (let x = 0; x < fpsCanvas.width; x += size) {
+                fpsCtx.beginPath();
+                fpsCtx.moveTo(x, 0);
+                fpsCtx.lineTo(x, fpsCanvas.height);
+                fpsCtx.stroke();
+            }
+            for (let y = 0; y < fpsCanvas.height; y += size) {
+                fpsCtx.beginPath();
+                fpsCtx.moveTo(0, y);
+                fpsCtx.lineTo(fpsCanvas.width, y);
+                fpsCtx.stroke();
+            }
+        }
+
+        function drawGunArm() {
+            if (!fpsCtx || !fpsCanvas) return;
+            const centerX = fpsCanvas.width / 2;
+            const centerY = fpsCanvas.height;
+            const aimDX = mouseX - centerX;
+            const aimDY = mouseY - centerY;
+            const angle = Math.atan2(aimDY, aimDX) + Math.PI/2;
+
+            fpsCtx.save();
+            fpsCtx.translate(centerX, centerY);
+            fpsCtx.rotate(angle * 0.35); 
+
+            if (gunRecoil > 0) gunRecoil -= 2.2;
+
+            const gunGrad = fpsCtx.createLinearGradient(-20, -gunRecoil, 20, -gunRecoil);
+            gunGrad.addColorStop(0, '#111827'); 
+            gunGrad.addColorStop(0.5, '#06b6d4'); 
+            gunGrad.addColorStop(1, '#0f172a');
+
+            fpsCtx.fillStyle = gunGrad;
+            fpsCtx.beginPath();
+            fpsCtx.moveTo(-15, 15);
+            fpsCtx.lineTo(-9, -80 + gunRecoil);
+            fpsCtx.lineTo(9, -80 + gunRecoil);
+            fpsCtx.lineTo(15, 15);
+            fpsCtx.closePath();
+            fpsCtx.fill();
+
+            fpsCtx.shadowColor = '#22d3ee';
+            fpsCtx.shadowBlur = 8;
+            fpsCtx.fillStyle = '#22d3ee';
+            fpsCtx.fillRect(-2, -70 + gunRecoil, 4, 50);
+            fpsCtx.shadowBlur = 0;
+
+            if (gunRecoil > 14) {
+                const flashGrad = fpsCtx.createRadialGradient(0, -85 + gunRecoil, 2, 0, -85 + gunRecoil, 20);
+                flashGrad.addColorStop(0, '#ffffff');
+                flashGrad.addColorStop(0.4, '#22d3ee');
+                flashGrad.addColorStop(1, 'transparent');
+                fpsCtx.fillStyle = flashGrad;
+                fpsCtx.beginPath();
+                fpsCtx.arc(0, -85 + gunRecoil, 20, 0, Math.PI * 2);
+                fpsCtx.fill();
+            }
+
+            fpsCtx.restore();
+        }
+
+        function drawFPSCrosshair() {
+            if (!fpsCtx) return;
+            if (crosshairScale > 1.0) crosshairScale -= 0.04;
+
+            fpsCtx.save();
+            fpsCtx.translate(mouseX, mouseY);
+            fpsCtx.scale(crosshairScale, crosshairScale);
+
+            fpsCtx.strokeStyle = '#22d3ee';
+            fpsCtx.lineWidth = 1.2;
+            fpsCtx.beginPath();
+            fpsCtx.arc(0, 0, 11, 0, Math.PI * 2);
+            fpsCtx.stroke();
+
+            fpsCtx.fillStyle = '#22d3ee';
+            fpsCtx.beginPath();
+            fpsCtx.arc(0, 0, 2, 0, Math.PI * 2);
+            fpsCtx.fill();
+
+            fpsCtx.restore();
+        }
+
+        // --- NEW MODE 6: PINBALL GAME ENGINE ---
+        let pinballCanvas = null, pinballCtx = null;
         let pinballGameActive = false;
         let pinballAnimationId = null;
         let pinballScoreVal = 0;
@@ -1070,7 +2044,6 @@
             if (!pinballCanvas) return;
             pinballCtx = pinballCanvas.getContext('2d');
 
-            // Responsive Canvas dimension setting
             pinballCanvas.width = pinballCanvas.parentElement.clientWidth;
             pinballCanvas.height = pinballCanvas.parentElement.clientHeight;
 
@@ -1148,7 +2121,6 @@
         }
 
         function launchPinball() {
-            // Velocity scales dynamically based on charge! (初速度从 4 扩展至 10)
             const speed = 4.5 + pinballCharge * 5.5;
             pinballBall.vx = (Math.random() * 2 - 1) * 2; 
             pinballBall.vy = -speed;
@@ -1176,14 +2148,12 @@
             const qBar = document.getElementById('pinball-hud-question');
             if (qBar) qBar.innerText = `目标：${pinballCurrentItem.q}`;
 
-            // Reset ball & pad anchorage
             pinballBall.isAnchored = true;
             pinballBall.vx = 0;
             pinballBall.vy = 0;
             pinballIsCharging = false;
             pinballCharge = 0;
 
-            // Generate 3 target bricks dynamically arranged horizontally
             const pool = getActiveQuestions();
             const distractors = shuffleArray(pool)
                 .filter(item => item.a !== pinballCurrentItem.a)
@@ -1205,7 +2175,7 @@
                     text: opt,
                     isCorrect: (opt === pinballCurrentItem.a),
                     active: true,
-                    color: opt === pinballCurrentItem.a ? '#06b6d4' : '#1e293b', // Cyan neon for correct, deep blue for false
+                    color: opt === pinballCurrentItem.a ? '#06b6d4' : '#1e293b', 
                     borderColor: opt === pinballCurrentItem.a ? '#22d3ee' : '#334155'
                 };
             });
@@ -1229,14 +2199,11 @@
         function runPinballLoop() {
             if (!pinballGameActive || !pinballCtx) return;
 
-            // Canvas clear
             pinballCtx.fillStyle = '#020617';
             pinballCtx.fillRect(0, 0, pinballCanvas.width, pinballCanvas.height);
 
-            // Draw grid lines
             drawFurturisticGridPinball();
 
-            // Render particles
             pinballParticles.forEach((p, idx) => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -1252,15 +2219,12 @@
                 if (p.life <= 0) pinballParticles.splice(idx, 1);
             });
 
-            // Handle anchor mechanics
             if (pinballBall.isAnchored) {
                 pinballBall.x = pinballPaddle.x + pinballPaddle.width / 2;
                 pinballBall.y = pinballPaddle.y - pinballBall.r - 2;
 
-                // Handle charging accumulator
                 if (pinballIsCharging) {
                     pinballCharge = Math.min(pinballCharge + 0.015, 1.0);
-                    // Draw neon charge beam
                     pinballCtx.strokeStyle = '#eab308';
                     pinballCtx.lineWidth = 3 * pinballCharge;
                     pinballCtx.shadowColor = '#eab308';
@@ -1272,21 +2236,18 @@
                     pinballCtx.shadowBlur = 0;
                 }
             } else {
-                // Ball movements
                 pinballBall.x += pinballBall.vx;
                 pinballBall.y += pinballBall.vy;
 
-                // Border collisions
                 if (pinballBall.x - pinballBall.r <= 0 || pinballBall.x + pinballBall.r >= pinballCanvas.width) {
                     pinballBall.vx = -pinballBall.vx;
                     playSynthSound('shoot');
                 }
-                if (pinballBall.y - pinballBall.r <= 35) { // Below HUD top
+                if (pinballBall.y - pinballBall.r <= 35) { 
                     pinballBall.vy = -pinballBall.vy;
                     playSynthSound('shoot');
                 }
 
-                // Bottom boundary crossing (Dying)
                 if (pinballBall.y > pinballCanvas.height) {
                     pinballLives--;
                     document.getElementById('pinball-lives').innerText = pinballLives;
@@ -1300,25 +2261,21 @@
                         exitGameMode();
                         return;
                     } else {
-                        // Reset anchorage
                         pinballBall.isAnchored = true;
                     }
                 }
 
-                // Paddle collision physics
                 if (pinballBall.y + pinballBall.r >= pinballPaddle.y && 
                     pinballBall.y - pinballBall.r <= pinballPaddle.y + pinballPaddle.height &&
                     pinballBall.x >= pinballPaddle.x && 
                     pinballBall.x <= pinballPaddle.x + pinballPaddle.width) {
                     
-                    // Bounce off paddle depending on impact point
                     const hitPos = (pinballBall.x - (pinballPaddle.x + pinballPaddle.width/2)) / (pinballPaddle.width/2);
                     pinballBall.vx = hitPos * 4.5;
                     pinballBall.vy = -Math.abs(pinballBall.vy);
                     playSynthSound('shoot');
                 }
 
-                // Bricks collision checks
                 pinballBricks.forEach(brick => {
                     if (brick.active && 
                         pinballBall.y + pinballBall.r >= brick.y &&
@@ -1326,11 +2283,9 @@
                         pinballBall.x + pinballBall.r >= brick.x &&
                         pinballBall.x - pinballBall.r <= brick.x + brick.width) {
 
-                        // Reverse Y velocity
                         pinballBall.vy = -pinballBall.vy;
 
                         if (brick.isCorrect) {
-                            // Correct target brick smashed!
                             brick.active = false;
                             createPinballParticles(brick.x + brick.width/2, brick.y + brick.height/2, '#22d3ee');
                             playSynthSound('hit_correct');
@@ -1345,13 +2300,11 @@
                             sessionCompletedCount++;
                             updateIndicator();
 
-                            // Transition delay to loading the next card
                             setTimeout(() => {
                                 currentQuestionIndex++;
                                 loadNextPinballRound();
                             }, 800);
                         } else {
-                            // Hit false brick
                             createPinballParticles(pinballBall.x, pinballBall.y, '#f43f5e');
                             playSynthSound('hit_wrong');
                             pinballScoreVal = Math.max(0, pinballScoreVal - 30);
@@ -1362,11 +2315,9 @@
                 });
             }
 
-            // Draw Bricks
             pinballBricks.forEach(brick => {
                 if (!brick.active) return;
                 
-                // Outer card neon box
                 pinballCtx.fillStyle = brick.color;
                 pinballCtx.strokeStyle = brick.borderColor;
                 pinballCtx.lineWidth = 1.5;
@@ -1375,7 +2326,6 @@
                 pinballCtx.fill();
                 pinballCtx.stroke();
 
-                // Brick label text
                 pinballCtx.fillStyle = '#f8fafc';
                 pinballCtx.font = "bold 8.5px sans-serif";
                 pinballCtx.textAlign = "center";
@@ -1383,7 +2333,6 @@
                 wrapCanvasText(pinballCtx, brick.text, brick.x + brick.width / 2, brick.y + brick.height / 2, brick.width - 10, 11);
             });
 
-            // Draw Paddle
             pinballCtx.fillStyle = '#06b6d4';
             pinballCtx.shadowColor = '#22d3ee';
             pinballCtx.shadowBlur = 8;
@@ -1392,7 +2341,6 @@
             pinballCtx.fill();
             pinballCtx.shadowBlur = 0;
 
-            // Draw Ball
             pinballCtx.fillStyle = '#f43f5e';
             pinballCtx.beginPath();
             pinballCtx.arc(pinballBall.x, pinballBall.y, pinballBall.r, 0, Math.PI * 2);
@@ -1419,6 +2367,20 @@
                 pinballCtx.stroke();
             }
         }
+
+        // Keyboard navigation fallback
+        window.addEventListener('keydown', (e) => {
+            if (!pinballGameActive || !pinballCanvas) return;
+            if (e.key === 'ArrowLeft') {
+                pinballPaddle.x = Math.max(0, pinballPaddle.x - 25);
+            } else if (e.key === 'ArrowRight') {
+                pinballPaddle.x = Math.min(pinballCanvas.width - pinballPaddle.width, pinballPaddle.x + 25);
+            } else if (e.key === ' ' || e.key === 'Spacebar') {
+                if (pinballBall.isAnchored) {
+                    launchPinball();
+                }
+            }
+        });
 
         // --- LIFE CYCLE INIT ---
         window.addEventListener('DOMContentLoaded', () => {
