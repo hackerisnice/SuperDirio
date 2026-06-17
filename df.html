@@ -372,7 +372,7 @@
                         </div>
                         <h3 class="text-lg font-black text-white gaming-font tracking-wider">3D 极光射击考场</h3>
                         <p class="text-slate-400 text-xs max-w-xs leading-relaxed">
-                            空中会漂浮高亮蓝色的精美高能气泡（38px 灵巧尺寸）。瞄准并射击唯一的正确答案气球！
+                            空中会漂浮高亮蓝色的气泡。瞄准并射击唯一的正确答案气球！
                         </p>
                         <div class="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 p-2 rounded-lg">
                             射中正确：+100 分 | 误伤：扣减生命值。
@@ -2277,7 +2277,7 @@
             const options = shuffleArray([pinballCurrentItem.a, ...distractors]);
 
             const spacing = pinballCanvas.width / 3;
-            const brickWidth = spacing - 12;
+            const brickWidth = spacing - 5;
             const brickHeight = 44;
 
             pinballBricks = options.map((opt, idx) => {
