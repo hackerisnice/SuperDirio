@@ -2158,7 +2158,7 @@
             if (!pinballCanvas) return;
             pinballCtx = pinballCanvas.getContext('2d');
 
-            pinballCanvas.width = 10;
+            pinballCanvas.width = pinballCanvas.parentElement.clientWidth - 10;
             pinballCanvas.height = pinballCanvas.parentElement.clientHeight;
 
             // Events mapping
