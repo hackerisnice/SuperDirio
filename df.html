@@ -2158,7 +2158,7 @@
             if (!pinballCanvas) return;
             pinballCtx = pinballCanvas.getContext('2d');
 
-            pinballCanvas.width = pinballCanvas.parentElement.clientWidth - 10;
+            pinballCanvas.width = pinballCanvas.parentElement.clientHeight;
             pinballCanvas.height = pinballCanvas.parentElement.clientHeight;
 
             // Events mapping
@@ -2277,7 +2277,7 @@
             const options = shuffleArray([pinballCurrentItem.a, ...distractors]);
 
             const spacing = pinballCanvas.width / 3;
-            const brickWidth = spacing - 15;
+            const brickWidth = spacing - 50;
             const brickHeight = 44;
 
             pinballBricks = options.map((opt, idx) => {
